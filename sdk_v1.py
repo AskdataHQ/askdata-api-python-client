@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[36]:
+# In[65]:
 
 
 import requests
@@ -26,8 +26,8 @@ class Askdata:
         self.password = password
         self.domain = domain
         
-        ''' default domain '''
-        ''' default enviremnt '''
+        #''' default domain '''
+        #''' default enviremnt '''
         
 
 class Agent(Askdata):
@@ -48,40 +48,41 @@ class Agent(Askdata):
         r_json = r.json()
         Askdata.token = r_json['access_token']
         
-    def GetAgents(self):
+    def GetAgents():
         
         url_get_agent = 'https://smartbot-qa.askdata.com/agent?page=0&size=300'
         
         headers = {
         "Content-Type": "application/json",
-        "Authorization": "Bearer" + " " + self.token
+        "Authorization": "Bearer" + " " + Askdata.token
         }
         
         r = requests.get(url=url_get_agent, headers=headers)
         r_json = r.json()
+        agent_list = [tuple([d['name'],d['code'],d['id']]) for d in r_json['result']]
+        return agent_list
         
-        self.r = r_json
-        
-    def GetAgent(self, _code):
+    def GetAgent(_code):
         
         url_get_agent = 'https://smartbot-qa.askdata.com/agent?page=0&size=300'
         
         headers = {
         "Content-Type": "application/json",
-        "Authorization": "Bearer" + " " + self.token
+        "Authorization": "Bearer" + " " + Askdata.token
         }
         
         r = requests.get(url=url_get_agent, headers=headers)
         r_json = r.json()
         
-        test = [each for each if r_json['result'][each]['code'] == _code]
-        
-        return test
+        id_agent = [d['id'] for d in r_json['result'] if d['code'] == _code]
+                
+        return id_agent
     
-        ...agent...
+    
     
 
-class Insight(:
+
+class Insight():
     
     def ExecuteInsights(self, _id):
         
@@ -96,15 +97,15 @@ class Insight(:
         #https://smartinsightsv2-qa.askdata.com/insight/GROUPAMA_QA/MONTHLY_DM/REQ_D20_3_LIST_SP/produce
      
     
-    def getAgentInsights(..)
-        ... list of Insights
+#    def getAgentInsights():
+       # ... list of Insights
         
-class Dataset:        
-    def ExecuteDatasetSync(self, dataset_id):
-         headers = {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer" + " " + self.token
-        }
+#class Dataset():        
+#    def ExecuteDatasetSync(self, dataset_id):
+#         headers = {
+#        "Content-Type": "application/json",
+#        "Authorization": "Bearer" + " " + self.token
+#        }
             
         #url = sync_url + '/datasets/' + dataset_id + '/sync'
         #requests.post(url=url, headers=headers)
@@ -112,7 +113,7 @@ class Dataset:
         
 
 
-# In[37]:
+# In[66]:
 
 
 username = 'g.demaio@askdata.com'
@@ -122,47 +123,36 @@ password = 'g.demaio'
 Askdata = Askdata(username,password)
 
 
-# In[38]:
+# In[67]:
 
 
-Askdata.domain
+#instatiate client
+client = Agent.Login()
 
 
-# In[39]:
+# In[68]:
 
 
-Askdata.Login()
+# get list of Agents
+lista = Agent.GetAgents()
 
 
-# In[40]:
+# In[71]:
 
 
-Askdata.token
+# get id agent
+id_agent = Agent.GetAgent('AB_NYC_2019')
 
 
-# In[41]:
+# In[72]:
 
 
-Askdata.GetListAgents()
-
-
-# In[42]:
-
-
-
-_code = 'AB_NYC_2019'
-
-appoggio = Askdata.GetAgent(_code)
-
-
-# In[47]:
-
-
-(Askdata.r['result'][0]['code'] == _code == True)
+id_agent
 
 
 # In[45]:
 
 
-test = [each for each in range(0,len(Askdata.r['result']) if r_json['result'][each]['code'] == _code]
+# result of get 
+lista
 
