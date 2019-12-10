@@ -1,14 +1,8 @@
 
 # coding: utf-8
 
-# In[65]:
+# In[35]:
 
-
-import requests
-
-#TO DO:
-# 1. insert something for environment
-# 2. fixing BASE URL 
 
 import requests
 
@@ -20,61 +14,66 @@ class Askdata:
     
     #def BASE_URL_INSIGHT = 
     
-    # http://docs.python-requests.org/en/master/user/authentication/#new-forms-of-authentication
-    def __init__(self, username, password, domain='Askdata'):
+    def __init__(self, username, password, domain='Askdata', env = 'qa'):
         self.username = username
         self.password = password
         self.domain = domain
+        self.env = env
         
         #''' default domain '''
-        #''' default enviremnt '''
+        #''' default enviroment '''
         
-
 class Agent(Askdata):
     
-    def Login():
-        authentication_url = 'https://smartfeed-qa.askdata.com' + '/oauth/access_token'
+    def __init__(self, askdata): 
+        self.username = askdata.username 
+        self.password = askdata.password
+        self.domain = askdata.domain
+        self.env = askdata.env
+        
+    def Login(self):
         data = {
-            "username": Askdata.username,
-            "password": Askdata.password,
-            "domain": Askdata.domain
+            "username": self.username,
+            "password": self.password,
+            "domain": self.domain
         }
 
         headers = {
             "Content-Type": "application/json",
             "cache-control": "no-cache"
             }
-        r = requests.post(url=authentication_url, json=data, headers=headers)
-        r_json = r.json()
-        Askdata.token = r_json['access_token']
         
-    def GetAgents():
+        if self.env == 'qa':
+            authentication_url = 'https://smartfeed-qa.askdata.com' + '/oauth/access_token'
+            r = requests.post(url=authentication_url, json=data, headers=headers).json()
+            
+        self.token = r['access_token']
+        
+    def GetAgents(self):
         
         url_get_agent = 'https://smartbot-qa.askdata.com/agent?page=0&size=300'
         
         headers = {
         "Content-Type": "application/json",
-        "Authorization": "Bearer" + " " + Askdata.token
+        "Authorization": "Bearer" + " " + self.token
         }
         
-        r = requests.get(url=url_get_agent, headers=headers)
-        r_json = r.json()
-        agent_list = [tuple([d['name'],d['code'],d['id']]) for d in r_json['result']]
+        r = requests.get(url=url_get_agent, headers=headers).json()
+        agent_list = [tuple([d['name'],d['code'],d['id']]) for d in r['result']]
         return agent_list
         
-    def GetAgent(_code):
+    def GetAgent(self,_code):
         
         url_get_agent = 'https://smartbot-qa.askdata.com/agent?page=0&size=300'
         
         headers = {
         "Content-Type": "application/json",
-        "Authorization": "Bearer" + " " + Askdata.token
+        "Authorization": "Bearer" + " " + self.token
         }
         
-        r = requests.get(url=url_get_agent, headers=headers)
-        r_json = r.json()
+        r = requests.get(url=url_get_agent, headers=headers).json()
         
-        id_agent = [d['id'] for d in r_json['result'] if d['code'] == _code]
+        id_agent = [d['id'] for d in r['result'] if d['code'] == _code]
                 
         return id_agent
     
@@ -113,7 +112,7 @@ class Insight():
         
 
 
-# In[66]:
+# In[36]:
 
 
 username = 'g.demaio@askdata.com'
@@ -123,28 +122,34 @@ password = 'g.demaio'
 Askdata = Askdata(username,password)
 
 
-# In[67]:
+# In[37]:
 
 
 #instatiate client
-client = Agent.Login()
+client = Agent(Askdata)
 
 
-# In[68]:
+# In[38]:
+
+
+client.Login()
+
+
+# In[39]:
 
 
 # get list of Agents
-lista = Agent.GetAgents()
+lista = client.GetAgents()
 
 
-# In[71]:
+# In[40]:
 
 
 # get id agent
-id_agent = Agent.GetAgent('AB_NYC_2019')
+id_agent = client.GetAgent('AB_NYC_2019')
 
 
-# In[72]:
+# In[41]:
 
 
 id_agent
@@ -155,4 +160,10 @@ id_agent
 
 # result of get 
 lista
+
+
+# In[42]:
+
+
+
 
