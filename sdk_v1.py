@@ -10,6 +10,12 @@ import requests
 # 1. insert something for environment
 # 2. fixing BASE URL 
 
+import requests
+
+#TO DO:
+# 1. insert something for environment
+# 2. fixing BASE URL 
+
 class Askdata:
     
     #def BASE_URL_INSIGHT = 
@@ -23,16 +29,15 @@ class Askdata:
         ''' default domain '''
         ''' default enviremnt '''
         
-class Agent(Askdata):
-    def __init__(self, username, password, domain='Askdata'):
-        super().__init__(username,password,domain)
 
-    def Login(self):
+class Agent(Askdata):
+    
+    def Login():
         authentication_url = 'https://smartfeed-qa.askdata.com' + '/oauth/access_token'
         data = {
-            "username": self.username,
-            "password": self.password,
-            "domain": self.domain
+            "username": Askdata.username,
+            "password": Askdata.password,
+            "domain": Askdata.domain
         }
 
         headers = {
@@ -41,7 +46,7 @@ class Agent(Askdata):
             }
         r = requests.post(url=authentication_url, json=data, headers=headers)
         r_json = r.json()
-        self.token = r_json['access_token']
+        Askdata.token = r_json['access_token']
         
     def GetAgents(self):
         
