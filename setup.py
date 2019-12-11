@@ -10,7 +10,7 @@ setup(name='askdata-api-python-client',
       packages=['askdata_api_python_client'],
       install_requires=[
           'pandas',
-          'requests'
-      ]
+          'pyyaml'
+      ],
       zip_safe=False
      )
