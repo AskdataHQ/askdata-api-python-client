@@ -1,4 +1,4 @@
-/.idea/
+.idea/
 
 # Compiled python modules.
 *.pyc
@@ -8,3 +8,5 @@
 
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
+
+.DS_Store
