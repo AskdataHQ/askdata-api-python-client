@@ -13,7 +13,7 @@ with open(yaml_path, 'r') as file:
 
 class Askdata:
 
-    # def BASE_URL_INSIGHT =
+    # def BASE_URL_INSIGHT = prova
 
     def __init__(self, username, password, domain='Askdata', env='qa'):
         self.username = username
