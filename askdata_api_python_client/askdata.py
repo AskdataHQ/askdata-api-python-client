@@ -83,15 +83,40 @@ class Agent(Askdata):
         if self.env == 'prod':
             r = requests.get(url=url_list['BASE_URL_AGENT_PROD'], headers=headers).json()
 
-        id_agent = [d['id'] for d in r['result'] if d['code'] == _code]
+        self.agentId = [d['id'] for d in r['result'] if d['code'] == _code]
 
-        return id_agent
+        return self.agentId
 
 
 
-class Insight():
+class Insight(Agent):
+
+    def __init__(self, Agent):
+        self.token = Agent.token
+        self.env = Agent.env
+        self.agentId = Agent.agentId
+
+    def GetRules(self):
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self.token
+        }
+
+
+        if self.env == 'dev':
+            insight_url = url_list['BASE_URL_INSIGHT_DEV']+ self.agentId +'&page=0&limit=5'
+        if self.env == 'qa':
+            insight_url = url_list['BASE_URL_INSIGHT_QA'] + self.agentId +'&page=0&limit=5'
+        if self.env == 'prod':
+            insight_url = url_list['BASE_URL_INSIGHT_PROD'] + self.agentId +'&page=0&limit=5'
+
+        r = requests.get(url=insight_url, headers=headers).json()
+        listRules = [tuple([d['id'],d['name'], d['type'],d['code'], d['domain']]) for d in r['result']]
+        return listRules
+
     
-    def ExecuteInsights(self, _id):
+    def ExecuteRule(self, _id):
         
         headers = {
         "Content-Type": "application/json",
