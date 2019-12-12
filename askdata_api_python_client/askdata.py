@@ -83,7 +83,7 @@ class Agent(Askdata):
         if self.env == 'prod':
             r = requests.get(url=url_list['BASE_URL_AGENT_PROD'], headers=headers).json()
 
-        self.agentId = [d['id'] for d in r['result'] if d['code'] == _code]
+        self.agentId = [d['id'] for d in r['result'] if d['code'] == _code][0]
 
         return self.agentId
 
@@ -91,10 +91,10 @@ class Agent(Askdata):
 
 class Insight(Agent):
 
-    def __init__(self, Agent):
-        self.token = Agent.token
-        self.env = Agent.env
-        self.agentId = Agent.agentId
+    def __init__(self, agent):
+        self.token = agent.token
+        self.env = agent.env
+        self.agentId = agent.agentId
 
     def GetRules(self):
 
@@ -105,31 +105,32 @@ class Insight(Agent):
 
 
         if self.env == 'dev':
-            insight_url = url_list['BASE_URL_INSIGHT_DEV']+ self.agentId +'&page=0&limit=5'
+            insight_url = url_list['BASE_URL_INSIGHT_DEV'] + '?agentId=' + self.agentId +'&page=0&limit=5'
         if self.env == 'qa':
-            insight_url = url_list['BASE_URL_INSIGHT_QA'] + self.agentId +'&page=0&limit=5'
+            insight_url = url_list['BASE_URL_INSIGHT_QA'] + '?agentId=' + self.agentId + '&page=0&limit=5'
         if self.env == 'prod':
-            insight_url = url_list['BASE_URL_INSIGHT_PROD'] + self.agentId +'&page=0&limit=5'
+            insight_url = url_list['BASE_URL_INSIGHT_PROD'] + '?agentId=' + self.agentId +'&page=0&limit=5'
 
         r = requests.get(url=insight_url, headers=headers).json()
-        listRules = [tuple([d['id'],d['name'], d['type'],d['code'], d['domain']]) for d in r['result']]
+        listRules = [tuple([d['id'],d['name'], d['type'],d['code'], d['domain']]) for d in r['data']]
         return listRules
 
-    
-    def ExecuteRule(self, _id):
+    def ExecuteRule(self, id):
         
         headers = {
         "Content-Type": "application/json",
         "Authorization": "Bearer" + " " + self.token
         }
         if self.env == 'dev':
-            insight_url = url_list['BASE_URL_INSIGHT_DEV'] + self.domain + '/' + _type + '/' + _code +'/produce'
+            insight_url = url_list['BASE_URL_INSIGHT_DEV'] + '/' + id + '/produceAndSend'
         if self.env == 'qa':
-            insight_url = url_list['BASE_URL_INSIGHT_QA'] + self.domain + '/' + _type + '/' + _code +'/produce'
+            insight_url = url_list['BASE_URL_INSIGHT_QA'] + '/' + id + '/produceAndSend'
         if self.env == 'prod':
-            insight_url = url_list['BASE_URL_INSIGHT_PROD'] + self.domain + '/' + _type + '/' + _code + '/produce'
+            insight_url = url_list['BASE_URL_INSIGHT_PROD'] + '/' + id + '/produceAndSend'
 
-        r = requests.get(url=insight_url, headers=headers).json()
+        r = requests.post(url=insight_url, headers=headers)
+
+        return r
 
         
         #https://smartinsightsv2-qa.askdata.com/insight/GROUPAMA_QA/MONTHLY_DM/REQ_D20_3_LIST_SP/produce
