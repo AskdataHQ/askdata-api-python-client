@@ -13,14 +13,17 @@ if __name__ == '__main__':
     # login
     client.Login()
     # get list of Agents
-    list_agents = client.GetAgents()
-    print(list_agents)
+    dict_agents = client.GetAgents()
+    print(dict_agents)
     # get id agent
-    id_agent = client.GetAgent('AB_NYC_2019')
+    id_agent = client.GetAgent('SDK_TESTER')
     print (id_agent)
 
+    dict_insight = askdata.Insight.GetRules(client)
 
-    lista_insight = askdata.Insight.GetRules()
-    print(lista_insight)
-    #insight.ExecuteRule(lista_insight[0])
+    print(dict_insight)
+
+    askdata.Insight.ExecuteRule(client,dict_insight[0]['id'])
+
+
     #insight.ExecuteRuleAsync(lista_insight[0])

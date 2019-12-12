@@ -67,8 +67,9 @@ class Agent(Askdata):
         if self.env == 'prod':
             r = requests.get(url=url_list['BASE_URL_AGENT_PROD'], headers=headers).json()
 
-        agent_list = [tuple([d['name'], d['code'], d['id'],d['domain']]) for d in r['result']]
-        return agent_list
+        dictAgent = [dict(zip(['name', 'code', 'id','domain'], [d['name'], d['code'], d['id'],d['domain']])) for d in r['result']]
+
+        return dictAgent
 
     def GetAgent(self, _code):
 
@@ -112,8 +113,9 @@ class Insight(Agent):
             insight_url = url_list['BASE_URL_INSIGHT_PROD'] + '?agentId=' + self.agentId +'&page=0&limit=5'
 
         r = requests.get(url=insight_url, headers=headers).json()
-        listRules = [tuple([d['id'],d['name'], d['type'],d['code'], d['domain']]) for d in r['data']]
-        return listRules
+        dictRules = [dict(zip(['id', 'name', 'type', 'code', 'domain'], [d['id'], d['name'], d['type'], d['code'], d['domain']])) for d in r['data']]
+
+        return dictRules
 
     def ExecuteRule(self, id):
         
@@ -130,10 +132,8 @@ class Insight(Agent):
 
         r = requests.post(url=insight_url, headers=headers)
 
-        return r
 
-        
-        #https://smartinsightsv2-qa.askdata.com/insight/GROUPAMA_QA/MONTHLY_DM/REQ_D20_3_LIST_SP/produce
+
      
     
 #    def getAgentInsights():
