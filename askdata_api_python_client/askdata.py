@@ -67,7 +67,7 @@ class Agent(Askdata):
         if self.env == 'prod':
             r = requests.get(url=url_list['BASE_URL_AGENT_PROD'], headers=headers).json()
 
-        agent_list = [tuple([d['name'], d['code'], d['id']]) for d in r['result']]
+        agent_list = [tuple([d['name'], d['code'], d['id'],d['domain']]) for d in r['result']]
         return agent_list
 
     def GetAgent(self, _code):
