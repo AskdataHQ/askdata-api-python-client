@@ -156,14 +156,42 @@ class Dataset(Agent):
         self.env = agent.env
         self.agentId = agent.agentId
 
+    def GetDatasets(self):
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self.token
+        }
+
+        if self.env == 'dev':
+            dataset_url = url_list['BASE_URL_DATASET_DEV'] + '/' + self.agentId + '/datasets/list'
+        if self.env == 'qa':
+            dataset_url = url_list['BASE_URL_DATASET_QA'] + '/' + self.agentId + '/datasets/list'
+        if self.env == 'prod':
+            dataset_url = url_list['BASE_URL_DATASET_PROD'] + '/' + self.agentId + '/datasets/list'
+
+        r = requests.get(url=dataset_url, headers=headers).json()
+        dictRules = [
+            dict(zip(['label', 'type', 'code'], [d['label'], d['type'], d['code']]))
+            for d in r['payload']['data']]
+        return dictRules
+
+
 
     def ExecuteDatasetSync(self, dataset_id):
         headers = {
         "Content-Type": "application/json",
         "Authorization": "Bearer" + " " + self.token
         }
+
+        if self.env == 'dev':
+            dataset_url = url_list['BASE_URL_DATASET_DEV'] + '/' + self.agentId + '/datasets/' + self.dataset_id
+        if self.env == 'qa':
+            dataset_url = url_list['BASE_URL_DATASET_QA'] + '/' + self.agentId + '/datasets/' + self.dataset_id
+        if self.env == 'prod':
+            dataset_url = url_list['BASE_URL_DATASET_PROD'] + '/' + self.agentId + '/datasets/' + self.dataset_id
             
-        url = sync_url + '/datasets/' + dataset_id + '/sync'
+        sync_url = url_list['BASE_URL_DATASET_DEV'] + '/datasets/' + dataset_id + '/sync'
         requests.post(url=url, headers=headers)
         
 
