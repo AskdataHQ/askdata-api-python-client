@@ -1,20 +1,20 @@
 import requests
 import yaml
 import os
-root_dir = os.path.abspath(os.path.dirname(__file__))
 
+root_dir = os.path.abspath(os.path.dirname(__file__))
 # retrieving base url
-yaml_path = os.path.join(root_dir, '../askdata_api_python_client/config/base_url.yaml')
+yaml_path = os.path.join(root_dir, '../askdata_api_python_client/askdata_config/base_url.yaml')
 with open(yaml_path, 'r') as file:
     # The FullLoader parameter handles the conversion from YAML
     # scalar values to Python the dictionary format
-    url_list = yaml.load(file)
+    url_list = yaml.load(file, Loader=yaml.FullLoader)
 
 
 class Askdata:
-
-    # def BASE_URL_INSIGHT = prova
-
+    '''
+    Authentication Object
+    '''
     def __init__(self, username, password, domain='Askdata', env='qa'):
         self.username = username
         self.password = password
@@ -23,6 +23,10 @@ class Askdata:
 
 
 class Agent(Askdata):
+
+    '''
+    Agent Object
+    '''
 
     def __init__(self, askdata):
         self.username = askdata.username
@@ -92,6 +96,10 @@ class Agent(Askdata):
 
 class Insight(Agent):
 
+    '''
+    Insight Object
+    '''
+
     def __init__(self, agent):
         self.token = agent.token
         self.env = agent.env
@@ -103,8 +111,7 @@ class Insight(Agent):
             "Content-Type": "application/json",
             "Authorization": "Bearer" + " " + self.token
         }
-
-
+        
         if self.env == 'dev':
             insight_url = url_list['BASE_URL_INSIGHT_DEV'] + '?agentId=' + self.agentId +'&page=0&limit=5'
         if self.env == 'qa':
@@ -132,24 +139,34 @@ class Insight(Agent):
 
         r = requests.post(url=insight_url, headers=headers)
 
+        if r.status_code == 202:
+            print('Success!')
+        else:
+            print('Not Found.')
 
 
-     
-    
-#    def getAgentInsights():
-       # ... list of Insights
-        
-#class Dataset():        
-#    def ExecuteDatasetSync(self, dataset_id):
-#         headers = {
-#        "Content-Type": "application/json",
-#        "Authorization": "Bearer" + " " + self.token
-#        }
+class Dataset(Agent):
+
+    '''
+    Dataset Object
+    '''
+
+    def __init__(self, agent):
+        self.token = agent.token
+        self.env = agent.env
+        self.agentId = agent.agentId
+
+
+    def ExecuteDatasetSync(self, dataset_id):
+        headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer" + " " + self.token
+        }
             
-        #url = sync_url + '/datasets/' + dataset_id + '/sync'
-        #requests.post(url=url, headers=headers)
+        url = sync_url + '/datasets/' + dataset_id + '/sync'
+        requests.post(url=url, headers=headers)
         
-        
+
 
 
 
