@@ -23,12 +23,19 @@ if __name__ == '__main__':
 
     print(dict_insight)
 
-    askdata.Insight.ExecuteRule(client,dict_insight[0]['id'])
+    #askdata.Insight.ExecuteRule(client,dict_insight[0]['id'])
 
     dict_datasets = askdata.Dataset.GetDatasets(client)
-    # sync by dataset ID
-    client, dict_insight[0]['code']
 
     print(dict_datasets)
 
-    #insight.ExecuteRuleAsync(lista_insight[0])
+
+    # sync by dataset ID
+    askdata.Dataset.ExecuteDatasetSync(client, dict_datasets[0]['code'])
+
+
+    df = askdata.AskAgent.RequestAgent(client,'incassi per agenzia per canale')
+
+    print(df.head(5))
+
+
