@@ -10,3 +10,8 @@
 /*.egg-info
 
 /.DS_Store
+
+__pycache__
+
+# .ipynb python checkpoints.
+/tests/.ipynb_checkpoints/*

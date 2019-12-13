@@ -1,38 +1,27 @@
-# README #
+# Askdata python client
 
-This README list steps necessary to get your application seamlessly integrated with Askdata.
+Askdata python client is a friendly Python library that helps developers, data scientists and engineers build and manage agent using Askdata platform. 
 
-* Askdata python client 
-* Version: 0.1
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+For more information, see [Askdata's website](https://askdata.com).
 
-### How do I get set up? ###
+## Getting Started
 
-Example of usage:
+Getting up and running with Askdata python client is easy. Install client from [pypi](https://pypi.org/project/...../):
 
-from askdata.client import Askdata
+>```sh
+>pip install askdata_python_client
+>```
 
-from askdata.client import Askdata
+and access tutorials by typing:
 
-client = Askdata.authenticate('APP_SECRET_KEY', 'PASSOWRD')
-...
-client = Askdata.login('username@sss...', '***passowrd**')
+>```sh
+>askdata_client
+>```
+## Who do I talk to?
 
-agent = client.init_index('agent_id')
+## Get in Touch
+There are several ways to get in touch with us:
 
-''' Priority '''
-agent.executeInsightAutomation([{'insight_id': '235e43q234'}])
-agent.synchronizeDataset([{'dataset_id': '235e43q234'}])
-
-''' After '''
-agent.deleteInsights([{'feed_id': '235e43q234'}])
-agent.createInsight([{'feed_id': '235e43q234'}, 'insight': (new Insight ('title': 'Latest ressult', 'components' :[myTable1]  ))])
-
-''' '''
-myTable1 = askdata.dataframeToComponentTable(dataset1)
-
-
-
-### Who do I talk to? ###
-
-* This repository is mantained by the Askdata data science team datascience@askdata.com
+* ...
+* Email us at: datascience@askdata.com
+* ......
