@@ -1,6 +1,7 @@
 import requests
 import yaml
 import os
+import pandas as pd
 
 root_dir = os.path.abspath(os.path.dirname(__file__))
 # retrieving base url
@@ -71,9 +72,9 @@ class Agent(Askdata):
         if self.env == 'prod':
             r = requests.get(url=url_list['BASE_URL_AGENT_PROD'], headers=headers).json()
 
-        dictAgent = [dict(zip(['name', 'code', 'id','domain'], [d['name'], d['code'], d['id'],d['domain']])) for d in r['result']]
+        self.dictAgents = pd.DataFrame([dict(zip(['name', 'code', 'id','domain'], [d['name'], d['code'], d['id'],d['domain']])) for d in r['result']])
 
-        return dictAgent
+        return self.dictAgents
 
     def GetAgent(self, _code):
 
@@ -113,11 +114,11 @@ class Insight(Agent):
         }
         
         if self.env == 'dev':
-            insight_url = url_list['BASE_URL_INSIGHT_DEV'] + '?agentId=' + self.agentId +'&page=0&limit=5'
+            insight_url = url_list['BASE_URL_INSIGHT_DEV'] + '/' + 'rules' + '/' + '?agentId=' + self.agentId +'&page=0&limit=5'
         if self.env == 'qa':
-            insight_url = url_list['BASE_URL_INSIGHT_QA'] + '?agentId=' + self.agentId + '&page=0&limit=5'
+            insight_url = url_list['BASE_URL_INSIGHT_QA'] + '/' + 'rules' + '/' + '?agentId=' + self.agentId + '&page=0&limit=5'
         if self.env == 'prod':
-            insight_url = url_list['BASE_URL_INSIGHT_PROD'] + '?agentId=' + self.agentId +'&page=0&limit=5'
+            insight_url = url_list['BASE_URL_INSIGHT_PROD'] + '/' + 'rules' + '/' + '?agentId=' + self.agentId +'&page=0&limit=5'
 
         r = requests.get(url=insight_url, headers=headers).json()
         dictRules = [dict(zip(['id', 'name', 'type', 'code', 'domain'], [d['id'], d['name'], d['type'], d['code'], d['domain']])) for d in r['data']]
@@ -131,15 +132,35 @@ class Insight(Agent):
         "Authorization": "Bearer" + " " + self.token
         }
         if self.env == 'dev':
-            insight_url = url_list['BASE_URL_INSIGHT_DEV'] + '/' + id + '/produceAndSend'
+            insight_url = url_list['BASE_URL_INSIGHT_DEV'] + '/' + 'rules' + '/' + id + '/produceAndSend'
         if self.env == 'qa':
-            insight_url = url_list['BASE_URL_INSIGHT_QA'] + '/' + id + '/produceAndSend'
+            insight_url = url_list['BASE_URL_INSIGHT_QA'] + '/' + 'rules' + '/' + id + '/produceAndSend'
         if self.env == 'prod':
-            insight_url = url_list['BASE_URL_INSIGHT_PROD'] + '/' + id + '/produceAndSend'
+            insight_url = url_list['BASE_URL_INSIGHT_PROD'] + '/' + 'rules' + '/' + id + '/produceAndSend'
 
         r = requests.post(url=insight_url, headers=headers)
 
         if r.status_code == 202:
+            print('Success!')
+        else:
+            print('Not Found.')
+
+    def ExecuteRules(self, listId):
+        data = listId
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self.token
+        }
+        if self.env == 'dev':
+            insight_url = url_list['BASE_URL_INSIGHT_DEV'] + '/' + 'insight' + '/produceAndSend'
+        if self.env == 'qa':
+            insight_url = url_list['BASE_URL_INSIGHT_QA'] + '/' + 'insight' + '/produceAndSend'
+        if self.env == 'prod':
+            insight_url = url_list['BASE_URL_INSIGHT_PROD'] + '/' + 'insight' + '/produceAndSend'
+
+        r = requests.post(url=insight_url, headers=headers, json=data)
+
+        if r.status_code == 202 or r.status_code == 200:
             print('Success!')
         else:
             print('Not Found.')

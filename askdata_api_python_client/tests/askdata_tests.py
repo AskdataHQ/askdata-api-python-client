@@ -22,8 +22,8 @@ if __name__ == '__main__':
     dict_insight = askdata.Insight.GetRules(client)
 
     print(dict_insight)
-
-    askdata.Insight.ExecuteRule(client,dict_insight[0]['id'])
+    askdata.Insight.ExecuteRules(client, ['DF426F64-7D7E-4573-8789-E2D6F08ACB7B-MONTHLY_DM-REQ_DIR_1_VAR_TOT_INC'])
+    #askdata.Insight.ExecuteRule(client,dict_insight[0]['id'])
 
     dict_datasets = askdata.Dataset.GetDatasets(client)
     # sync by dataset ID
