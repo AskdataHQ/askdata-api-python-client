@@ -2,6 +2,7 @@ import requests
 import yaml
 import os
 import pandas as pd
+import numpy as np
 
 root_dir = os.path.abspath(os.path.dirname(__file__))
 # retrieving base url
@@ -90,6 +91,7 @@ class Agent(Askdata):
             r = requests.get(url=url_list['BASE_URL_AGENT_PROD'], headers=headers).json()
 
         self.agentId = [d['id'] for d in r['result'] if d['code'] == _code][0]
+        self.workspaceId = [d['domain'] for d in r['result'] if d['code'] == _code][0]
 
         return self.agentId
 
@@ -177,6 +179,7 @@ class Dataset(Agent):
         self.env = agent.env
         self.agentId = agent.agentId
 
+
     def GetDatasets(self):
 
         headers = {
@@ -192,30 +195,59 @@ class Dataset(Agent):
             dataset_url = url_list['BASE_URL_DATASET_PROD'] + '/' + self.agentId + '/datasets/list'
 
         r = requests.get(url=dataset_url, headers=headers).json()
+
         dictRules = [
             dict(zip(['label', 'type', 'code'], [d['label'], d['type'], d['code']]))
             for d in r['payload']['data']]
+
         return dictRules
 
-
-
     def ExecuteDatasetSync(self, dataset_id):
+
         headers = {
         "Content-Type": "application/json",
         "Authorization": "Bearer" + " " + self.token
         }
 
         if self.env == 'dev':
-            dataset_url = url_list['BASE_URL_DATASET_DEV'] + '/' + self.agentId + '/datasets/' + self.dataset_id
+            dataset_url = url_list['BASE_URL_DATASET_DEV'] + '/' + self.agentId + '/datasets/' + dataset_id + '/sync'
         if self.env == 'qa':
-            dataset_url = url_list['BASE_URL_DATASET_QA'] + '/' + self.agentId + '/datasets/' + self.dataset_id
+            dataset_url = url_list['BASE_URL_DATASET_QA'] + '/' + self.agentId + '/datasets/' + dataset_id + '/sync'
         if self.env == 'prod':
-            dataset_url = url_list['BASE_URL_DATASET_PROD'] + '/' + self.agentId + '/datasets/' + self.dataset_id
-            
-        sync_url = url_list['BASE_URL_DATASET_DEV'] + '/datasets/' + dataset_id + '/sync'
-        requests.post(url=url, headers=headers)
-        
+            dataset_url = url_list['BASE_URL_DATASET_PROD'] + '/' + self.agentId + '/datasets/' + dataset_id + '/sync'
+
+        r = requests.post(url=dataset_url, headers=headers).json()
 
 
+class AskAgent(Agent):
+    def __init__(self, agent):
+        self.token = agent.token
+        self.env = agent.env
+        self.agentId = agent.agentId
+        self.workspaceId = agent.workspaceId
 
+    def RequestAgent(self, text, payload = ''):
+
+        data = {
+            "text": text,
+            "payload": payload
+        }
+
+        headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer" + " " + self.token
+        }
+
+        if self.env == 'dev':
+            request_agent_url = url_list['BASE_URL_AUTH_DEV'] + '/' + self.workspaceId + '/agent/' + self.agentId
+        if self.env == 'qa':
+            request_agent_url = url_list['BASE_URL_AUTH_QA'] + '/' + self.workspaceId + '/agent/' + self.agentId
+        if self.env == 'prod':
+            request_agent_url = url_list['BASE_URL_AUTH_PROD'] + '/' + self.workspaceId + '/agent/' + self.agentId
+
+        r = requests.post(url=request_agent_url, headers=headers, json = data).json()
+        # dataframe creation
+        df = pd.DataFrame(np.array(r[0]['attachment']['body'][0]['details']['rows']), columns = r[0]['attachment']['body'][0]['details']['columns'])
+
+        return df
 
