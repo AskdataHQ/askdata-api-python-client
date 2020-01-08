@@ -4,37 +4,32 @@ if __name__ == '__main__':
 
     username = 'g.demaio@askdata.com'
     password = 'g.demaio'
-
-
-    Askdata = askdata.Askdata(username, password)
-
-    # instatiate client
-    client = askdata.Agent(Askdata)
-    # login
-    client.Login()
+    domain = 'Askdata'
+    env = 'qa'
+    Askdata = askdata.Askdata(username, password, domain, env)
     # get list of Agents
-    dict_agents = client.GetAgents()
-    print(dict_agents)
-    # get id agent
-    id_agent = client.GetAgent('SDK_TESTER')
-    print (id_agent)
+    df_GetAgents = Askdata.GetAgents()
+    # get agent
+    agent = askdata.Agent(Askdata,'SDK_TESTER')
 
-    dict_insight = askdata.Insight.GetRules(client)
+    print(agent)
 
-    print(dict_insight)
-    askdata.Insight.ExecuteRules(client, ['DF426F64-7D7E-4573-8789-E2D6F08ACB7B-MONTHLY_DM-REQ_DIR_1_VAR_TOT_INC'])
-    #askdata.Insight.ExecuteRule(client,dict_insight[0]['id'])
+    df_insight = askdata.Insight.GetRules(agent)
 
-    dict_datasets = askdata.Dataset.GetDatasets(client)
+    print(df_insight)
+    card = askdata.Insight.ExecuteRules(agent, ['DF426F64-7D7E-4573-8789-E2D6F08ACB7B-MONTHLY_DM-REQ_DIR_1_VAR_TOT_INC'])
+    #askdata.Insight.ExecuteRule(agent,df_insight[0]['id'])
+
+    dict_datasets = askdata.Dataset.GetDatasets(agent)
 
     print(dict_datasets)
 
 
     # sync by dataset ID
-    askdata.Dataset.ExecuteDatasetSync(client, dict_datasets[0]['code'])
+    resp_sync = askdata.Dataset.ExecuteDatasetSync(agent, dict_datasets['code'][0])
 
 
-    df = askdata.AskAgent.RequestAgent(client,'incassi per agenzia per canale')
+    df = askdata.AskAgent.RequestAgent(agent,'incassi per agenzia per canale')
 
     print(df.head(5))
 
