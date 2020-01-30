@@ -36,15 +36,13 @@ class Askdata:
         }
         if self.env == 'dev':
             authentication_url = url_list['BASE_URL_AUTH_DEV'] + '/domain/' + self.domain.lower() + '/oauth/token'
-            r = requests.post(url=authentication_url, data=data, headers=headers)
         if self.env == 'qa':
             # authentication_url = url_list['BASE_URL_AUTH_QA']  + '/oauth/access_token'
             authentication_url = url_list['BASE_URL_AUTH_QA'] + '/domain/' + self.domain.lower() + '/oauth/token'
-            r = requests.post(url=authentication_url, data=data, headers=headers)
         if self.env == 'prod':
             authentication_url = url_list['BASE_URL_AUTH_PROD'] + '/domain/' + self.domain.lower() + '/oauth/token'
-            r = requests.post(url=authentication_url, data=data, headers=headers)
 
+        r = requests.post(url=authentication_url, data=data, headers=headers)
         r.raise_for_status()
         self.token = r.json()['access_token']
         self.r = r
@@ -68,12 +66,9 @@ class Askdata:
             response.raise_for_status()
 
         r = response.json()
-        #self.dictAgents = pd.DataFrame([dict(zip(['name', 'code', 'id','domain'], [d['name'], d['code'], d['id'],d['domain']])) for d in r['result']])
-        self.dictAgents = pd.DataFrame(
-            [dict(zip(['name', 'id', 'domain'], [d['name'], d['id'], d['domain']])) for d in
-             r['result']])
+        self.df_agents = pd.DataFrame(response.json())
 
-        return self.dictAgents
+        return self.df_agents
 
 
 class Agent(Askdata):
@@ -88,55 +83,14 @@ class Agent(Askdata):
         self.domain = askdata.domain
         self.env = askdata.env
         self.token = askdata.token
-        # data = {
-        #     "grant_type": "password",
-        #     "username": self.username,
-        #     "password": self.password
-        # }
-        # # "domain": self.domain
-        # headers = {
-        #     "Authorization" : "Basic c21hcnRhZ2VudDpzbWFydGFnZW50",
-        #     "Content-Type": "application/x-www-form-urlencoded",
-        #     "cache-control": "no-cache,no-cache"
-        # }
-        # if self.env == 'dev':
-        #     authentication_url = url_list['BASE_URL_AUTH_DEV'] + '/domain/' + self.domain.lower() + '/oauth/token'
-        #     r = requests.post(url=authentication_url, data=data, headers=headers)
-        # if self.env == 'qa':
-        #     #authentication_url = url_list['BASE_URL_AUTH_QA']  + '/oauth/access_token'
-        #     authentication_url = url_list['BASE_URL_AUTH_QA'] + '/domain/' + self.domain.lower() + '/oauth/token'
-        #     r = requests.post(url=authentication_url, data=data, headers=headers)
-        # if self.env == 'prod':
-        #     authentication_url = url_list['BASE_URL_AUTH_PROD'] + '/domain/' + self.domain.lower() + '/oauth/token'
-        #     r = requests.post(url=authentication_url, data=data, headers=headers)
-        #
-        # r.raise_for_status()
-        # self.token = r.json()['access_token']
+        self.df_agents = askdata.df_agents
 
-
-    #def GetAgent(self, ):
-
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer" + " " + self.token
-        }
-        if self.env == 'dev':
-            response = requests.get(url=url_list['BASE_URL_AGENT_DEV'], headers=headers)
-            response.raise_for_status()
-        if self.env == 'qa':
-            response = requests.get(url=url_list['BASE_URL_AGENT_QA'], headers=headers)
-            response.raise_for_status()
-        if self.env == 'prod':
-            response = requests.get(url=url_list['BASE_URL_AGENT_PROD'], headers=headers)
-            response.raise_for_status()
-
-        r = response.json()
-        #print('Status:' + str(response.status_code))
         try:
-            self.agentId = [d['id'] for d in r['result'] if d['name'] == name][0]
-            self.workspaceId = [d['domain'] for d in r['result'] if d['name'] == name][0]
-            self.language = [d['language'] for d in r['result'] if d['name'] == name][0]
-            self.r = response
+            agent = self.df_agents[self.df_agents['name'] == name]
+            self.agentId = agent.iloc[0]['id']
+            self.workspaceId = agent.iloc[0]['domain']
+            self.language = agent.iloc[0]['language']
+
         except Exception as ex:
             raise NameError('Agent name not exsist')
 
@@ -157,60 +111,42 @@ class Insight(Agent):
         self.env = agent.env
         self.agentId = agent.agentId
 
+        self.headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self.token
+        }
+
+        if self.env == 'dev':
+            self.base_url = url_list['BASE_URL_INSIGHT_DEV']
+        if self.env == 'qa':
+            self.base_url = url_list['BASE_URL_INSIGHT_QA']
+        if self.env == 'prod':
+            self.base_url = url_list['BASE_URL_INSIGHT_PROD']
+
     def GetRules(self):
 
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer" + " " + self.token
-        }
-        
-        if self.env == 'dev':
-            insight_url = url_list['BASE_URL_INSIGHT_DEV'] + '/' + 'rules' + '/' + '?agentId=' + self.agentId +'&page=0&limit=5'
-        if self.env == 'qa':
-            insight_url = url_list['BASE_URL_INSIGHT_QA'] + '/' + 'rules' + '/' + '?agentId=' + self.agentId + '&page=0&limit=5'
-        if self.env == 'prod':
-            insight_url = url_list['BASE_URL_INSIGHT_PROD'] + '/' + 'rules' + '/' + '?agentId=' + self.agentId +'&page=0&limit=5'
-
-        response = requests.get(url=insight_url, headers=headers)
+        insight_url = self.base_url + '/' + 'rules' + '/' + '?agentId=' + self.agentId
+        response = requests.get(url=insight_url, headers=self.headers)
         response.raise_for_status()
         r = response.json()
-        dfRules = pd.DataFrame([dict(zip(['id', 'name', 'type', 'code', 'domain'], [d['id'], d['name'], d['type'], d['code'], d['domain']])) for d in r['data']])
+        df_rules = pd.DataFrame([dict(zip(['id', 'name', 'type', 'code', 'domain'], [d['id'], d['name'], d['type'], d['code'], d['domain']])) for d in r['data']])
 
-        return dfRules
+        return df_rules
 
-    def ExecuteRule(self, id):
-        
-        headers = {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer" + " " + self.token
-        }
-        if self.env == 'dev':
-            insight_url = url_list['BASE_URL_INSIGHT_DEV'] + '/' + 'rules' + '/' + id + '/produceAndSend'
-        if self.env == 'qa':
-            insight_url = url_list['BASE_URL_INSIGHT_QA'] + '/' + 'rules' + '/' + id + '/produceAndSend'
-        if self.env == 'prod':
-            insight_url = url_list['BASE_URL_INSIGHT_PROD'] + '/' + 'rules' + '/' + id + '/produceAndSend'
+    def ExecuteRule(self, id_insight):
 
-        r = requests.post(url=insight_url, headers=headers)
-
+        insight_url = self.base_url + '/' + 'rules' + '/' + id_insight + '/produceAndSend'
+        r = requests.post(url=insight_url, headers=self.headers)
         r.raise_for_status()
-        #print('Success! Status:'+str(r.status_code))
+
         return r
 
-    def ExecuteRules(self, listId):
-        data = listId
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer" + " " + self.token
-        }
-        if self.env == 'dev':
-            insight_url = url_list['BASE_URL_INSIGHT_DEV'] + '/' + 'insight' + '/produceAndSendAsync'
-        if self.env == 'qa':
-            insight_url = url_list['BASE_URL_INSIGHT_QA'] + '/' + 'insight' + '/produceAndSendAsync'
-        if self.env == 'prod':
-            insight_url = url_list['BASE_URL_INSIGHT_PROD'] + '/' + 'insight' + '/produceAndSendAsync'
+    def ExecuteRules(self, listid_insight):
 
-        r = requests.post(url=insight_url, headers=headers, json=data)
+        data = listid_insight
+
+        insight_url = self.base_url + '/' + 'insight' + '/produceAndSendAsync'
+        r = requests.post(url=insight_url, headers=self.headers, json=data)
 
         r.raise_for_status()
         #print('Success! Request is accepted, status: ' + str(r.status_code))
@@ -228,47 +164,36 @@ class Dataset(Agent):
         self.env = agent.env
         self.agentId = agent.agentId
 
-
-    def GetDatasets(self):
-
-        headers = {
+        self.headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer" + " " + self.token
         }
 
         if self.env == 'dev':
-            dataset_url = url_list['BASE_URL_DATASET_DEV'] + '/' + self.agentId + '/datasets/list'
+            self.base_url = url_list['BASE_URL_DATASET_DEV']
         if self.env == 'qa':
-            dataset_url = url_list['BASE_URL_DATASET_QA'] + '/' + self.agentId + '/datasets/list'
+            self.base_url = url_list['BASE_URL_DATASET_QA']
         if self.env == 'prod':
-            dataset_url = url_list['BASE_URL_DATASET_PROD'] + '/' + self.agentId + '/datasets/list'
+            self.base_url = url_list['BASE_URL_DATASET_PROD']
 
-        response = requests.get(url=dataset_url, headers=headers)
+    def GetDatasets(self):
+
+        #to do test
+        dataset_url = self.base_url + '/datasets?agentId=' + self.agentId
+        response = requests.get(url=dataset_url, headers=self.headers)
         response.raise_for_status()
         r = response.json()
-        df_datasets = pd.DataFrame([
-            dict(zip(['label', 'type', 'code'], [d['label'], d['type'], d['code']]))
-            for d in r['payload']['data']])
+        r_df = pd.DataFrame(r)
+        df_datasets = r_df.loc[:,['id', 'domain', 'type', 'code', 'name', 'description', 'createdBy', 'isActive', 'accessType', 'icon',
+         'version', 'syncCount', 'visible', 'public', 'createdAt']]
 
         return df_datasets
 
     def ExecuteDatasetSync(self, dataset_id):
 
-        headers = {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer" + " " + self.token
-        }
-
-        if self.env == 'dev':
-            dataset_url = url_list['BASE_URL_DATASET_DEV'] + '/' + self.agentId + '/datasets/' + dataset_id + '/sync'
-        if self.env == 'qa':
-            dataset_url = url_list['BASE_URL_DATASET_QA'] + '/' + self.agentId + '/datasets/' + dataset_id + '/sync'
-        if self.env == 'prod':
-            dataset_url = url_list['BASE_URL_DATASET_PROD'] + '/' + self.agentId + '/datasets/' + dataset_id + '/sync'
-
-        response = requests.post(url=dataset_url, headers=headers)
-        response.raise_for_status()
-        r = response.json()
+        dataset_url = self.base_url + '/datasets/' + dataset_id + '/sync'
+        r = requests.post(url=dataset_url, headers=self.headers)
+        r.raise_for_status()
         return r
 
 
