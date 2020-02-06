@@ -42,13 +42,11 @@ class Askdata:
         if self.env == 'prod':
             authentication_url = url_list['BASE_URL_AUTH_PROD'] + '/domain/' + self.domain.lower() + '/oauth/token'
 
-        r = requests.post(url=authentication_url, data=data, headers=headers)
-        r.raise_for_status()
-        self.token = r.json()['access_token']
-        self.r = r
+        r1 = requests.post(url=authentication_url, data=data, headers=headers)
+        r1.raise_for_status()
+        self.token = r1.json()['access_token']
+        self.r1 = r1
         #print('Status:' + str(r.status_code))
-
-    def GetAgents(self):
 
         headers = {
             "Content-Type": "application/json",
@@ -65,12 +63,18 @@ class Askdata:
             response = requests.get(url=url_list['BASE_URL_AGENT_PROD'], headers=headers)
             response.raise_for_status()
 
-        r = response.json()
+        self.r2 = response.json()
         self.df_agents = pd.DataFrame(response.json())
 
-        return self.df_agents
+    @property
+    # moved the logic for returning area to a separate method
+    def responce(self):
+        return self.r2
 
+    def __str__(self):
+        return '{}'.format(self.df_agents)
 
+# pensare di inserire quest classa in Askdata come metodo
 class Agent(Askdata):
 
     '''

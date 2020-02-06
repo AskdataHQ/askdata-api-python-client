@@ -3,6 +3,8 @@ import yaml
 import os
 import pandas as pd
 import logging
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 import numpy as np
 import json as json
 from askdata_api_python_client.askdata import Agent
@@ -73,8 +75,12 @@ class Channel:
             "visibility": visibility
         }
 
+        s = requests.Session()
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
         authentication_url = self.base_url + '/channels/'
-        r = requests.post(url=authentication_url, headers=self.headers, json=data)
+        r = s.post(url=authentication_url, headers=self.headers, json=data)
         r.raise_for_status()
         return r
 
@@ -112,8 +118,13 @@ class Channel:
 
     def GetUsers(self, channel_id):
 
+        s = requests.Session()
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
         authentication_url = self.base_url + '/channels/' + channel_id + '/users'
-        r = requests.get(url=authentication_url, headers=self.headers)
+        r = s.get(url=authentication_url, headers=self.headers)
+
         r.raise_for_status()
         df_users = pd.DataFrame(r.json())
         return df_users
@@ -126,8 +137,12 @@ class Channel:
             "mute": mute
         }
 
+        s = requests.Session()
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
         authentication_url = self.base_url + '/channels/' + channel_id + '/users'
-        r = requests.post(url=authentication_url, headers=self.headers, json=data)
+        r = s.post(url=authentication_url, headers=self.headers, json=data)
         r.raise_for_status()
         return r
 
@@ -145,7 +160,7 @@ class Channel:
         return r
 
     def UnMuteChannel(self, channel_id):
-        # to test
+
         authentication_url = self.base_url + '/channels/' + channel_id + '/unmute'
         r = requests.put(url=authentication_url, headers=self.headers)
         r.raise_for_status()
