@@ -98,8 +98,12 @@ class Channel:
                 "visibility": visibility
             }
 
+        s = requests.Session()
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
         authentication_url = self.base_url + '/channels/' + channel_id
-        r = requests.put(url=authentication_url, headers=self.headers,  json=data)
+        r = s.put(url=authentication_url, headers=self.headers,  json=data)
         r.raise_for_status()
         return r
 
