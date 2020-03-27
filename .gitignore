@@ -11,8 +11,12 @@
 /*.egg
 
 /.DS_Store
+*.DS_Store
+**/.DS_Store
 
 __pycache__
+**/__pycache__
+.pytest_cache/
 
 # .ipynb python checkpoints.
 /tests/.ipynb_checkpoints/*.ipynb

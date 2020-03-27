@@ -85,19 +85,24 @@ class Askdata:
         return '{}'.format(self.df_agents)
 
 # pensare di inserire quest classa in Askdata come metodo
-class Agent(Askdata):
+class Agent:
 
     '''
     Agent Object
     '''
 
-    def __init__(self,askdata,name):
-        self.username = askdata.username
-        self.password = askdata.password
-        self.domain = askdata.domain
-        self.env = askdata.env
-        self.token = askdata.token
-        self.df_agents = askdata.df_agents
+    def __init__(self,Askdata,name):
+        self.username = Askdata.username
+        self.password = Askdata.password
+        self.domain = Askdata.domain
+        self.env = Askdata.env
+        self.token = Askdata.token
+        self.df_agents = Askdata.df_agents
+
+        self.headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self.token
+        }
 
         try:
             agent = self.df_agents[self.df_agents['name'] == name]
@@ -112,7 +117,22 @@ class Agent(Askdata):
         return '{}'.format(self.agentId)
 
     def AgentSwitch(self):
-        pass
+
+        data = {
+            "agent_id": self.agentId
+        }
+
+        if self.env == 'dev':
+            self.base_url = url_list['BASE_URL_FEED_DEV']
+        if self.env == 'qa':
+            self.base_url = url_list['BASE_URL_FEED_QA']
+        if self.env == 'prod':
+            self.base_url = url_list['BASE_URL_FEED_PROD']
+
+        authentication_url = self.base_url + '/' + self.workspaceId + '/agent/switch'
+        r = requests.post(url=authentication_url, headers=self.headers, json=data)
+        r.raise_for_status()
+        return r
 
 
 # class Insight(Agent):

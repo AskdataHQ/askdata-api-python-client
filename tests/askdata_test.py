@@ -13,6 +13,7 @@ if __name__ == '__main__':
     # df_GetAgents = Askdata.df_agents
     # get agent
     agent = askdata.Agent(Askdata, 'SDK_TESTER')
+    switch = agent.AgentSwitch()
 
     # agent b
 
