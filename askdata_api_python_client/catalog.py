@@ -73,6 +73,7 @@ class Catalog:
             flag_ex = 'false'
 
         s = requests.Session()
+        s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 

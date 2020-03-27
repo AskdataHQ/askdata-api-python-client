@@ -15,13 +15,14 @@ Getting up and running with Askdata python client is easy. Install client from [
 and access tutorials by typing:
 
 >```sh
->askdata_client
+>working in progres
 >```
-## Who do I talk to?
+For to use askdata client, you send us a request on [Contact us](https://www.askdata.com/contact) or for e-mail.
+We'll send you as soon as possible your credentials to access.
 
 ## Get in Touch
 There are several ways to get in touch with us:
 
-* ...
+* [Contact us](https://www.askdata.com/contact)
 * Email us at: datascience@askdata.com
-* ......
+* Email us at: info@askdata.com

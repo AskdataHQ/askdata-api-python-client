@@ -8,11 +8,12 @@
 
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
+/*.egg
 
 /.DS_Store
 
 __pycache__
 
 # .ipynb python checkpoints.
-/tests/.ipynb_checkpoints/*
+/tests/.ipynb_checkpoints/*.ipynb
 /tests/utility/*

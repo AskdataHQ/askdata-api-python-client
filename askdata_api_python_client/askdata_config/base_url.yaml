@@ -8,9 +8,9 @@ BASE_URL_AUTH_PROD: 'https://security.askdata.com'
 BASE_URL_AUTH_QA: 'https://security-qa.askdata.com'
 BASE_URL_AUTH_DEV: 'https://security-dev.askdata.com'
 
-BASE_URL_AGENT_PROD: 'https://smartbot.askdata.com/agents?page=0&size=300'
-BASE_URL_AGENT_QA: 'https://smartbot-qa.askdata.com/agents?page=0&size=300'
-BASE_URL_AGENT_DEV: 'https://smartbot.askdata.com/agents?page=0&size=300'
+BASE_URL_AGENT_PROD: 'https://smartbot.askdata.com/agents?page=0&size=10000'
+BASE_URL_AGENT_QA: 'https://smartbot-qa.askdata.com/agents?page=0&size=10000'
+BASE_URL_AGENT_DEV: 'https://smartbot.askdata.com/agents?page=0&size=10000'
 
 BASE_URL_DATASET_PROD: 'https://smartdataset.askdata.com'
 BASE_URL_DATASET_QA: 'https://smartdataset-qa.askdata.com'
@@ -23,4 +23,8 @@ BASE_URL_FEED_DEV: 'https://smartfeed-dev.askdata.com'
 BASE_URL_MANGER_PROD: 'https://smartmanager.askdata.com'
 BASE_URL_MANGER_QA: 'https://smartmanager-qa.askdata.com'
 BASE_URL_MANGER_DEV: 'https://smartmanager-dev.askdata.com'
+
+BASE_URL_SECURITY_PROD: 'https://security.askdata.com'
+BASE_URL_SECURITY_QA: 'https://security-qa.askdata.com'
+BASE_URL_SECURITY_DEV: 'https://security-dev.askdata.com'
 

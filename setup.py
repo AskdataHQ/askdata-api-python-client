@@ -1,42 +1,34 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='askdata-api-python-client',
-      version='0.0.1',
+      version='0.2.32',
       description='A library for creating a client for interacting with Askdata',
-      url='https://github.com/AskdataINC',
+      url='https://github.com/AskdataInc/askdata-api-python-client',
       author=['Giuseppe De Maio','Matteo Giacalone'],
-      author_email=['g.demaio@askdata.com','m.giacalone@askdata.com'],
-      license='ASKDATA',
-      packages=['askdata_api_python_client'],
+      author_email='datascience@askdata.com',
+      license='Apache License 2.0',
+      packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests","entity.py","feedmessage.py","security.py"]),
+      long_description=open('README.md').read(),
+      long_description_content_type="text/markdown",
+      include_package_data=True,
       install_requires=[
-          'pandas',
-          'pyyaml'
+          'pandas>=0.23.4',
+          'numpy>=1.18.2',
+          'PyYAML>=5.1',
+          'yaml-1.3',
+          'requests>=2',
+          'urllib3>=1'
       ],
+
       classifiers=[
-    # How mature is this project? Common values are
-    #   3 - Alpha
-    #   4 - Beta
-    #   5 - Production/Stable
-    'Development Status :: 3 - Alpha',
-
-    # Indicate who your project is intended for
-    'Intended Audience :: Developers',
-    'Topic :: Software Development :: Build Tools',
-
-    # Pick your license as you wish (should match "license" above)
-     'License :: OSI Approved :: MIT License',
-
-    # Specify the Python versions you support here. In particular, ensure
-    # that you indicate whether you support Python 2, Python 3 or both.
-    'Programming Language :: Python :: 2',
-    'Programming Language :: Python :: 2.6',
-    'Programming Language :: Python :: 2.7',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.2',
-    'Programming Language :: Python :: 3.3',
-    'Programming Language :: Python :: 3.4',
-    ],
-    keywords='nlp',
-    python_requires='>=2.6, !=3.0.*, !=3.1.*, !=3.2.*, <4',
-    zip_safe=False
+        "Programming Language :: Python :: 3",
+        "Operating System :: OS Independent",
+        "License :: OSI Approved :: MIT License",
+        "Development Status :: 3 - Alpha",
+      ],
+      keywords='nlp',
+      python_requires='>=3, <4',
+      zip_safe=False,
+      setup_requires=['nose'],
+      test_suite='nose.collector'
      )

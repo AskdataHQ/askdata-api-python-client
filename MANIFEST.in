@@ -1,0 +1,13 @@
+include LICENSE
+
+include README.md
+
+include requirements.txt
+
+include askdata_api_python_client/askdata_config/base_url.yaml
+
+exclude askdata_api_python_client/entity.py
+
+exclude askdata_api_python_client/feedmessage.py
+
+exclude askdata_api_python_client/security.py
