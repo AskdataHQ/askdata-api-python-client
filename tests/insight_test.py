@@ -33,7 +33,7 @@ if __name__ == '__main__':
     df_insightb = insightb.GetRules()
 
     #  ---- test MigrationInsight method --------
-    migration = insight.MigrationInsight(agentb, df_insightb.loc[:3,:])
+    #migration = insight.MigrationInsight(agentb, df_insightb.loc[:3,:])
     # -- Test CreateRule , change code and type or domain for creating different insghtid ----
 
     df_insight['code'] = f'TEST_CREATION{random.randint(1,500000)}'

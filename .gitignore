@@ -23,3 +23,5 @@ __pycache__
 # .ipynb python checkpoints.
 /tests/.ipynb_checkpoints/*.ipynb
 /tests/utility/*
+/dev/*
+/dev/test_dev/*

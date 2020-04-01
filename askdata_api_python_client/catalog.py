@@ -42,18 +42,18 @@ class Catalog:
         }
 
         if self.env == 'dev':
-            self.base_url = url_list['BASE_URL_FEED_DEV']
+            self.base_url_cat = url_list['BASE_URL_FEED_DEV']
         if self.env == 'qa':
-            self.base_url = url_list['BASE_URL_FEED_QA']
+            self.base_url_cat = url_list['BASE_URL_FEED_QA']
         if self.env == 'prod':
-            self.base_url = url_list['BASE_URL_FEED_PROD']
+            self.base_url_cat = url_list['BASE_URL_FEED_PROD']
 
         if empty:
             flag = 'true'
         else:
             flag = 'false'
 
-        authentication_url = self.base_url + '/' + self.workspaceId + '/discovery?emptyIncluded=' + flag
+        authentication_url = self.base_url_cat + '/' + self.workspaceId + '/discovery?emptyIncluded=' + flag
         r = requests.get(url=authentication_url, headers=self.headers)
         r.raise_for_status()
         self.catalogs = pd.DataFrame(r.json()['discovery'])
@@ -77,7 +77,7 @@ class Catalog:
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self.base_url + '/agents/' + self.agentId + '/discovery-entry/' + entryid + '/queries?execute=' + flag_ex
+        authentication_url = self.base_url_cat + '/agents/' + self.agentId + '/discovery-entry/' + entryid + '/queries?execute=' + flag_ex
         r = s.post(url=authentication_url, headers=self.headers, json=data)
         r.raise_for_status()
 

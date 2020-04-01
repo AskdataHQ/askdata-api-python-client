@@ -15,7 +15,7 @@ if __name__ == '__main__':
     agent = askdata.Agent(Askdata, 'SDK_TESTER')
 
     ch = channel.Channel(agent)
-    create_channel = ch.CreateChannel('CH_TEST')
+    create_channel = ch.CreateChannel('CH_TEST2')
     list_channels = ch.GetChannels()
     #id_channel = list(list_channels[list_channels['name'] == 'CH_TEST']['id'])[0]
     id_channel = '1098c339-08ed-4cb5-8f86-4f959a8606e0'

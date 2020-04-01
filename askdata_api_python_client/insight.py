@@ -43,15 +43,15 @@ class Insight:
         }
 
         if self.env == 'dev':
-            self.base_url = url_list['BASE_URL_INSIGHT_DEV']
+            self.base_url_insight = url_list['BASE_URL_INSIGHT_DEV']
         if self.env == 'qa':
-            self.base_url = url_list['BASE_URL_INSIGHT_QA']
+            self.base_url_insight = url_list['BASE_URL_INSIGHT_QA']
         if self.env == 'prod':
-            self.base_url = url_list['BASE_URL_INSIGHT_PROD']
+            self.base_url_insight = url_list['BASE_URL_INSIGHT_PROD']
 
     def GetRules(self):
 
-        insight_url = self.base_url + '/' + 'rules' + '/' + '?agentId=' + self.agentId + '&page=0&limit=100000'
+        insight_url = self.base_url_insight + '/' + 'rules' + '/' + '?agentId=' + self.agentId + '&page=0&limit=100000'
         response = requests.get(url=insight_url, headers=self.headers)
         response.raise_for_status()
         r = response.json()
@@ -62,7 +62,7 @@ class Insight:
 
     def ExecuteRule(self, id_insight):
 
-        insight_url = self.base_url + '/' + 'rules' + '/' + id_insight + '/produceAndSend'
+        insight_url = self.base_url_insight + '/' + 'rules' + '/' + id_insight + '/produceAndSend'
         r = requests.post(url=insight_url, headers=self.headers)
         r.raise_for_status()
 
@@ -72,7 +72,7 @@ class Insight:
 
         data = listid_insight
 
-        insight_url = self.base_url + '/' + 'insight' + '/produceAndSendAsync'
+        insight_url = self.base_url_insight + '/' + 'insight' + '/produceAndSendAsync'
         r = requests.post(url=insight_url, headers=self.headers, json=data)
 
         r.raise_for_status()
@@ -88,7 +88,7 @@ class Insight:
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self.base_url + '/rules'
+        authentication_url = self.base_url_insight + '/rules'
         r = s.post(url=authentication_url, headers=self.headers, json=data)
         r.raise_for_status()
         return r

@@ -43,16 +43,16 @@ class Dataset():
         }
 
         if self.env == 'dev':
-            self.base_url = url_list['BASE_URL_DATASET_DEV']
+            self.base_url_dataset = url_list['BASE_URL_DATASET_DEV']
         if self.env == 'qa':
-            self.base_url = url_list['BASE_URL_DATASET_QA']
+            self.base_url_dataset = url_list['BASE_URL_DATASET_QA']
         if self.env == 'prod':
-            self.base_url = url_list['BASE_URL_DATASET_PROD']
+            self.base_url_dataset = url_list['BASE_URL_DATASET_PROD']
 
     def GetDatasets(self):
 
         #to do test
-        dataset_url = self.base_url + '/datasets?agentId=' + self.agentId
+        dataset_url = self.base_url_dataset + '/datasets?agentId=' + self.agentId
         response = requests.get(url=dataset_url, headers=self.headers)
         response.raise_for_status()
         r = response.json()
@@ -64,7 +64,7 @@ class Dataset():
 
     def ExecuteDatasetSync(self, dataset_id):
 
-        dataset_url = self.base_url + '/datasets/' + dataset_id + '/sync'
+        dataset_url = self.base_url_dataset + '/datasets/' + dataset_id + '/sync'
         r = requests.post(url=dataset_url, headers=self.headers)
         r.raise_for_status()
         return r
