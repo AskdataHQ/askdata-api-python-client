@@ -51,8 +51,12 @@ class Channel:
         if self.env == 'prod':
             self.base_url_ch = url_list['BASE_URL_FEED_PROD']
 
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
         authentication_url = self.base_url_ch + '/' + self.workspaceId + '/agent/switch'
-        r = requests.post(url=authentication_url, headers=self.headers, json=data)
+        r = s.post(url=authentication_url, headers=self.headers, json=data)
         r.raise_for_status()
         self.r = r
 
