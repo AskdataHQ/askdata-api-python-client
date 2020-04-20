@@ -27,43 +27,37 @@ with open(yaml_path, 'r') as file:
 
 class Channel:
 
-    def __init__(self, Agent):
-        self.agentId = Agent.agentId
-        self.workspaceId = Agent.workspaceId
-        self.username = Agent.username
-        self.language = Agent.language
-        self.token = Agent.token
-        self.env = Agent.env
+    def __init__(self, env, token,_agentId, _domain):
 
         data = {
-            "agent_id": self.agentId
+            "agent_id": _agentId
         }
 
-        self.headers = {
+        self._headers = {
             "Content-Type": "application/json",
-            "Authorization": "Bearer" + " " + self.token
+            "Authorization": "Bearer" + " " + token
         }
 
-        if self.env == 'dev':
-            self.base_url_ch = url_list['BASE_URL_FEED_DEV']
-        if self.env == 'qa':
-            self.base_url_ch = url_list['BASE_URL_FEED_QA']
-        if self.env == 'prod':
-            self.base_url_ch = url_list['BASE_URL_FEED_PROD']
+        if env == 'dev':
+            self._base_url_ch = url_list['BASE_URL_FEED_DEV']
+        if env == 'qa':
+            self._base_url_ch = url_list['BASE_URL_FEED_QA']
+        if env == 'prod':
+            self._base_url_ch = url_list['BASE_URL_FEED_PROD']
 
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
-        authentication_url = self.base_url_ch + '/' + self.workspaceId + '/agent/switch'
-        r = s.post(url=authentication_url, headers=self.headers, json=data)
+        authentication_url = self._base_url_ch + '/' + self._domain + '/agent/switch'
+        r = s.post(url=authentication_url, headers=self._headers, json=data)
         r.raise_for_status()
         self.r = r
 
     def GetChannels(self):
 
-        authentication_url = self.base_url_ch + '/channels/'+'?agentId='+self.agentId+'&page=0&limit=100000'
-        r = requests.get(url=authentication_url, headers=self.headers)
+        authentication_url = self._base_url_ch + '/channels/'+'?agentId='+self._agentId+'&page=0&limit=100000'
+        r = requests.get(url=authentication_url, headers=self._headers)
         r.raise_for_status()
         df_channels = pd.DataFrame(r.json())
 
@@ -75,7 +69,7 @@ class Channel:
         data = {
             "name": name,
             "icon": icon,
-            "agentId": self.agentId,
+            "agentId": self._agentId,
             "visibility": visibility
         }
 
@@ -84,10 +78,10 @@ class Channel:
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self.base_url_ch + '/channels/'
-        r = s.post(url=authentication_url, headers=self.headers, json=data)
+        authentication_url = self._base_url_ch + '/channels/'
+        r = s.post(url=authentication_url, headers=self._headers, json=data)
         r.raise_for_status()
-        return r
+        return r.json()['id']
 
     def UpdateChannel(self,channel_id,visibility,
                       icon='https://s3.eu-central-1.amazonaws.com/innaas.smartfeed/icons/groupama/icone/channel/icon_channel_dm.png',
@@ -108,14 +102,14 @@ class Channel:
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self.base_url_ch + '/channels/' + channel_id
-        r = s.put(url=authentication_url, headers=self.headers,  json=data)
+        authentication_url = self._base_url_ch + '/channels/' + channel_id
+        r = s.put(url=authentication_url, headers=self._headers,  json=data)
         r.raise_for_status()
         return r
 
     def DeleteChannel(self, channel_id):
-        authentication_url = self.base_url_ch + '/channels/' + channel_id
-        r = requests.delete(url=authentication_url, headers=self.headers)
+        authentication_url = self._base_url_ch + '/channels/' + channel_id
+        r = requests.delete(url=authentication_url, headers=self._headers)
         try:
             r.raise_for_status()
         except requests.exceptions.HTTPError as ex:
@@ -126,21 +120,21 @@ class Channel:
 
         return r
 
-    def GetUsers(self, channel_id):
+    def GetUsersFromCh(self, channel_id):
 
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self.base_url_ch + '/channels/' + channel_id + '/users'
-        r = s.get(url=authentication_url, headers=self.headers)
+        authentication_url = self._base_url_ch + '/channels/' + channel_id + '/users'
+        r = s.get(url=authentication_url, headers=self._headers)
 
         r.raise_for_status()
         df_users = pd.DataFrame(r.json())
         return df_users
 
-    def AddUser(self, channel_id, user_id, role="follower", mute="none"):
+    def AddUserToCh(self, channel_id, user_id, role="follower", mute="none"):
 
         data = {
             "userId": user_id,
@@ -153,14 +147,14 @@ class Channel:
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self.base_url_ch + '/channels/' + channel_id + '/users'
-        r = s.post(url=authentication_url, headers=self.headers, json=data)
+        authentication_url = self._base_url_ch + '/channels/' + channel_id + '/users'
+        r = s.post(url=authentication_url, headers=self._headers, json=data)
         r.raise_for_status()
         return r
 
-    def DeleteUser(self, channel_id, user_id):
-        authentication_url = self.base_url_ch + '/channels/' + channel_id + '/users/' + user_id
-        r = requests.delete(url=authentication_url, headers=self.headers)
+    def DeleteUserFromCh(self, channel_id, user_id):
+        authentication_url = self._base_url_ch + '/channels/' + channel_id + '/users/' + user_id
+        r = requests.delete(url=authentication_url, headers=self._headers)
         try:
             r.raise_for_status()
         except requests.exceptions.HTTPError as ex:
@@ -173,8 +167,8 @@ class Channel:
 
     def UnMuteChannel(self, channel_id):
 
-        authentication_url = self.base_url_ch + '/channels/' + channel_id + '/unmute'
-        r = requests.put(url=authentication_url, headers=self.headers)
+        authentication_url = self._base_url_ch + '/channels/' + channel_id + '/unmute'
+        r = requests.put(url=authentication_url, headers=self._headers)
         r.raise_for_status()
         return r
 
@@ -184,7 +178,7 @@ class Channel:
 
             "period": "DAYS_7"
         }
-        authentication_url = self.base_url_ch + '/channels/' + channel_id + '/mute'
-        r = requests.put(url=authentication_url, headers=self.headers, json=data)
+        authentication_url = self._base_url_ch + '/channels/' + channel_id + '/mute'
+        r = requests.put(url=authentication_url, headers=self._headers, json=data)
         r.raise_for_status()
         return r

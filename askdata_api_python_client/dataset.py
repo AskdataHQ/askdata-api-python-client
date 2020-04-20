@@ -32,28 +32,28 @@ class Dataset():
     Dataset Object
     '''
 
-    def __init__(self, Agent):
-        self.token = Agent.token
-        self.env = Agent.env
-        self.agentId = Agent.agentId
+    _agentId = None
+    _domain = None
 
-        self.headers = {
+    def __init__(self, env, token):
+
+        self._headers = {
             "Content-Type": "application/json",
-            "Authorization": "Bearer" + " " + self.token
+            "Authorization": "Bearer" + " " +token
         }
 
-        if self.env == 'dev':
-            self.base_url_dataset = url_list['BASE_URL_DATASET_DEV']
-        if self.env == 'qa':
-            self.base_url_dataset = url_list['BASE_URL_DATASET_QA']
-        if self.env == 'prod':
-            self.base_url_dataset = url_list['BASE_URL_DATASET_PROD']
+        if env == 'dev':
+            self._base_url_dataset = url_list['BASE_URL_DATASET_DEV']
+        if env == 'qa':
+            self._base_url_dataset = url_list['BASE_URL_DATASET_QA']
+        if env == 'prod':
+            self._base_url_dataset = url_list['BASE_URL_DATASET_PROD']
 
     def GetDatasets(self):
 
         #to do test
-        dataset_url = self.base_url_dataset + '/datasets?agentId=' + self.agentId
-        response = requests.get(url=dataset_url, headers=self.headers)
+        dataset_url = self._base_url_dataset + '/datasets?agentId=' + self._agentId
+        response = requests.get(url=dataset_url, headers=self._headers)
         response.raise_for_status()
         r = response.json()
         r_df = pd.DataFrame(r)
@@ -64,7 +64,7 @@ class Dataset():
 
     def ExecuteDatasetSync(self, dataset_id):
 
-        dataset_url = self.base_url_dataset + '/datasets/' + dataset_id + '/sync'
-        r = requests.post(url=dataset_url, headers=self.headers)
+        dataset_url = self._base_url_dataset + '/datasets/' + dataset_id + '/sync'
+        r = requests.post(url=dataset_url, headers=self._headers)
         r.raise_for_status()
         return r

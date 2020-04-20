@@ -28,43 +28,46 @@ with open(yaml_path, 'r') as file:
 
 class Catalog:
 
-    def __init__(self, Agent , empty=True):
-        self.agentId = Agent.agentId
-        self.workspaceId = Agent.workspaceId
-        self.username = Agent.username
-        self.language = Agent.language
-        self.token = Agent.token
-        self.env = Agent.env
+    _language = None
+    _agentId = None
+    _domain = None
 
-        self.headers = {
+    def __init__(self, env ,token):
+
+        self._headers = {
             "Content-Type": "application/json",
-            "Authorization": "Bearer" + " " + self.token
+            "Authorization": "Bearer" + " " + token
         }
 
-        if self.env == 'dev':
-            self.base_url_cat = url_list['BASE_URL_FEED_DEV']
-        if self.env == 'qa':
-            self.base_url_cat = url_list['BASE_URL_FEED_QA']
-        if self.env == 'prod':
-            self.base_url_cat = url_list['BASE_URL_FEED_PROD']
+        if env == 'dev':
+            self._base_url_cat = url_list['BASE_URL_FEED_DEV']
+        if env == 'qa':
+            self._base_url_cat = url_list['BASE_URL_FEED_QA']
+        if env == 'prod':
+            self._base_url_cat = url_list['BASE_URL_FEED_PROD']
+
+
+    def GetCatalogs(self, empty=True):
 
         if empty:
             flag = 'true'
         else:
             flag = 'false'
-
-        authentication_url = self.base_url_cat + '/' + self.workspaceId + '/discovery?emptyIncluded=' + flag
-        r = requests.get(url=authentication_url, headers=self.headers)
+        # empty = True is for including all bookmarks (catalog) also empty
+        authentication_url = self._base_url_cat + '/' + self._domain + '/discovery?emptyIncluded=' + flag
+        r = requests.get(url=authentication_url, headers=self._headers)
         r.raise_for_status()
-        self.catalogs = pd.DataFrame(r.json()['discovery'])
+        df_catalogs = pd.DataFrame(r.json()['discovery'])
 
-    def PushQuery(self,query,entryid,execute=False):
+        return df_catalogs
+
+    def PushQueryCt(self,query,entryid,execute=False):
 
         data = {
             "type": "text",
             "payload": query,
             "title": query,
-            "lang": self.language
+            "lang": self._language
             }
 
         if execute:
@@ -77,11 +80,11 @@ class Catalog:
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self.base_url_cat + '/agents/' + self.agentId + '/discovery-entry/' + entryid + '/queries?execute=' + flag_ex
-        r = s.post(url=authentication_url, headers=self.headers, json=data)
+        authentication_url = self._base_url_cat + '/agents/' + self._agentId + '/discovery-entry/' + entryid + '/queries?execute=' + flag_ex
+        r = s.post(url=authentication_url, headers=self._headers, json=data)
         r.raise_for_status()
 
         return r
 
-    def DeleteQuery(self):
-        pass
+    # def DeleteQuery(self):
+    #     pass
