@@ -167,8 +167,8 @@ class Agent(Insight, Channel, Catalog, Dataset):
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
-        authentication_url = self.base_url + '/' + self.workspaceId + '/agent/switch'
-        r = s.post(url=authentication_url, headers=self.headers, json=data)
+        authentication_url = self._base_url + '/' + self._domain + '/agent/switch'
+        r = s.post(url=authentication_url, headers=self._headers, json=data)
         r.raise_for_status()
 
         return r

@@ -8,7 +8,6 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import re
 from datetime import datetime
-#import askdata_api_python_client.askdata as askdata
 
 _LOG_FORMAT = "[%(filename)s:%(lineno)s - %(funcName)20s() ] - %(asctime)s --> %(message)s"
 g_logger = logging.getLogger()

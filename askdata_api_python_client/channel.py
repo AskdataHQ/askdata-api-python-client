@@ -7,7 +7,6 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import numpy as np
 import json as json
-from askdata_api_python_client.askdata import Agent
 import uuid
 from datetime import datetime
 
