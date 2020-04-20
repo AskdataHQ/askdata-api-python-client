@@ -16,14 +16,12 @@ if __name__ == '__main__':
     agent = askdata.Agent(Askdata, 'SDK_TESTER')
 
     # --------------------------------   Dataset  -------------------------------------------
-
-    dataset = dats.Dataset(agent)
-    df_datasets = dataset.GetDatasets()
+    df_datasets = agent.GetDatasets()
 
     # print(df_datasets)
 
     # -------------------------------- sync by dataset ID -------------------------------
 
-    resp_sync = dataset.ExecuteDatasetSync(
+    resp_sync = agent.ExecuteDatasetSync(
         'DF426F64-7D7E-4573-8789-E2D6F08ACB7B-MYSQL-23232444-bc2c-4b90-93df-3500baa90151')
-    resp_sync = dataset.ExecuteDatasetSync(df_datasets['id'][0])
+    resp_sync = agent.ExecuteDatasetSync(df_datasets['id'][0])

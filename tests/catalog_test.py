@@ -1,6 +1,7 @@
 import askdata_api_python_client.askdata as askdata
 import askdata_api_python_client.catalog as catalog
 import pandas as pd
+from datetime import datetime
 
 if __name__ == '__main__':
 
@@ -14,7 +15,8 @@ if __name__ == '__main__':
     # get agent
     agent = askdata.Agent(Askdata, 'SDK_TESTER')
 
-    cat = catalog.Catalog(agent)
-    entry_id = list(cat.catalogs[cat.catalogs['title']=='CH_TEST'].loc[:,'id'])[0]
-    cat.PushQuery('pippo', entry_id)
+    df_cat = agent.GetCatalogs()
+    today = datetime.now().strftime('%Y%m%d')
+    entry_id = list(df_cat[df_cat['title']=='CH_TEST_242814'].loc[:,'id'])[0]
+    agent.PushQueryCt(f'pippo_{today}', entry_id, execute=False)
     print('ok')

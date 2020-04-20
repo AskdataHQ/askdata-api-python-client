@@ -2,6 +2,7 @@ import askdata_api_python_client.askdata as askdata
 import askdata_api_python_client.insight as ins
 import json
 import random
+from datetime import datetime
 
 
 if __name__ == '__main__':
@@ -26,28 +27,26 @@ if __name__ == '__main__':
     agentb = askdata.Agent(Askdatab, 'oKGroupama')
 
     # -------   insight ----------------
-    insight = ins.Insight(agent)
-    df_insight = insight.GetRules()
-
-    insightb = ins.Insight(agentb)
-    df_insightb = insightb.GetRules()
+    df_insight = agent.GetRules()
+    df_insightb = agentb.GetRules()
 
     #  ---- test MigrationInsight method --------
-    #migration = insight.MigrationInsight(agentb, df_insightb.loc[:3,:])
+    migration = agent.MigrationInsight(agentb, df_insightb.loc[:5, :])
     # -- Test CreateRule , change code and type or domain for creating different insghtid ----
-
-    df_insight['code'] = f'TEST_CREATION{random.randint(1,500000)}'
+    today = datetime.now().strftime('%Y%m%d')
+    df_insight['code'] = f'TEST_CREATION{today}'
     df_insight2 = df_insight.drop('id', axis=1)
 
     # --- - -----------------  convert into dictionary     -----------------------------------
     insight_record = df_insight.to_dict(orient='records')
     ins1 = insight_record[0]
-    a = insight.CreateRule(ins1)
+    a = agent.CreateRule(ins1)
 
     # -------------------------produce and send insight    ---------------------------------
 
-    list_insight = ["DF426F64-7D7E-4573-8789-E2D6F08ACB7B-MONTHLY_DM-REQ_DIR_1_VAR_TOT_INC"]
+    list_insight = ["DF426F64-7D7E-4573-8789-E2D6F08ACB7B-DAILY_DM-REQ_D1_VAR_TOT_INCASSI"]
 
-    card1 = insight.ExecuteRule('DF426F64-7D7E-4573-8789-E2D6F08ACB7B-MONTHLY_DM-REQ_DIR_1_VAR_TOT_INC')
-    card2 = insight.ExecuteRules(list_insight)
+    card1 = agent.ExecuteRule('DF426F64-7D7E-4573-8789-E2D6F08ACB7B-DAILY_DM-REQ_D1_VAR_TOT_INCASSI')
+    card2 = agent.ExecuteRules(list_insight)
+
 
