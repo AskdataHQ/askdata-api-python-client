@@ -28,3 +28,7 @@ BASE_URL_SECURITY_PROD: 'https://security.askdata.com'
 BASE_URL_SECURITY_QA: 'https://security-qa.askdata.com'
 BASE_URL_SECURITY_DEV: 'https://security-dev.askdata.com'
 
+BASE_URL_ASKDATA_PROD: 'https://api-prod.askdata.com'
+BASE_URL_ASKDATA_QA: 'https://api-qa.askdata.com'
+BASE_URL_ASKDATA_DEV: 'https://api-dev.askdata.com'
+
