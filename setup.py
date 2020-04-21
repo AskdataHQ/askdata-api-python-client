@@ -12,7 +12,7 @@ setup(name='askdata-api-python-client',
       long_description_content_type="text/markdown",
       include_package_data=True,
       install_requires=[
-          'pandas>=0.23.4',
+          'pandas>=0.24.0',
           'numpy>=1.18.2',
           'PyYAML>=5.1',
           'yaml-1.3',
