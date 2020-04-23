@@ -55,8 +55,13 @@ class Channel:
 
     def GetChannels(self):
 
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
         authentication_url = self._base_url_ch + '/channels/'+'?agentId='+self._agentId+'&page=0&limit=100000'
-        r = requests.get(url=authentication_url, headers=self._headers)
+        r = s.get(url=authentication_url, headers=self._headers)
         r.raise_for_status()
         df_channels = pd.DataFrame(r.json())
 
