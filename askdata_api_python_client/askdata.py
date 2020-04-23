@@ -51,43 +51,48 @@ class Askdata(SignUp):
         }
         if self._env == 'dev':
             authentication_url = url_list['BASE_URL_AUTH_DEV'] + '/domain/' + self._domainlogin.lower() + '/oauth/token'
+            authentication_url_userid = url_list['BASE_URL_AUTH_DEV'] + '/me'
         if self._env == 'qa':
             # authentication_url = url_list['BASE_URL_AUTH_QA']  + '/oauth/access_token'
             authentication_url = url_list['BASE_URL_AUTH_QA'] + '/domain/' + self._domainlogin.lower() + '/oauth/token'
+            authentication_url_userid = url_list['BASE_URL_AUTH_QA'] + '/me'
         if self._env == 'prod':
             authentication_url = url_list['BASE_URL_AUTH_PROD'] + '/domain/' + self._domainlogin.lower() + '/oauth/token'
+            authentication_url_userid = url_list['BASE_URL_AUTH_PROD'] + '/me'
 
-        r1 = requests.post(url=authentication_url, data=data, headers=headers)
-        r1.raise_for_status()
-        self._token = r1.json()['access_token']
-        self.r1 = r1
-        #print('Status:' + str(r.status_code))
+        with requests.Session() as s:
 
-        self._headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer" + " " + self._token
-        }
+            r1 = s.post(url=authentication_url, data=data, headers=headers)
+            r1.raise_for_status()
+            self._token = r1.json()['access_token']
+            self.r1 = r1
 
-        if self._env == 'dev':
-            self.base_url_security = url_list['BASE_URL_SECURITY_DEV']
-            authentication_url = url_list['BASE_URL_AGENT_DEV']
+            self._headers = {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer" + " " + self._token
+            }
 
-        if self._env == 'qa':
-            self.base_url_security = url_list['BASE_URL_SECURITY_QA']
-            authentication_url = url_list['BASE_URL_AGENT_QA']
+            r_userid = s.get(url=authentication_url_userid, headers=self._headers)
+            self.userid = r_userid.json()['id']
 
-        if self._env == 'prod':
+            if self._env == 'dev':
+                self.base_url_security = url_list['BASE_URL_SECURITY_DEV']
+                authentication_url = url_list['BASE_URL_AGENT_DEV']
 
-            self.base_url_security = url_list['BASE_URL_SECURITY_PROD']
-            authentication_url = url_list['BASE_URL_AGENT_PROD']
+            if self._env == 'qa':
+                self.base_url_security = url_list['BASE_URL_SECURITY_QA']
+                authentication_url = url_list['BASE_URL_AGENT_QA']
 
-        # request of all agents of the user/token
-        s = requests.Session()
-        s.keep_alive = False
-        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
-        s.mount('https://', HTTPAdapter(max_retries=retries))
-        response = s.get(url=authentication_url, headers=self._headers)
-        response.raise_for_status()
+            if self._env == 'prod':
+
+                self.base_url_security = url_list['BASE_URL_SECURITY_PROD']
+                authentication_url = url_list['BASE_URL_AGENT_PROD']
+
+            # request of all agents of the user/token
+            retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+            s.mount('https://', HTTPAdapter(max_retries=retries))
+            response = s.get(url=authentication_url, headers=self._headers)
+            response.raise_for_status()
         self.r2 = response.json()
 
         self.df_agents = pd.DataFrame(response.json())
@@ -118,6 +123,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
 
         self.username = Askdata.username
         self.password = Askdata.password
+        self.userid = Askdata.userid
         self._domainlogin = Askdata._domainlogin
         self._env = Askdata._env
         self._token = Askdata._token
