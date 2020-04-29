@@ -179,7 +179,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
 
         return r
 
-    def RequestAgent(self, text, payload=''):
+    def ask(self, text, payload=''):
 
         data = {
             "text": text,
