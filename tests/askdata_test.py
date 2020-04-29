@@ -13,7 +13,7 @@ if __name__ == '__main__':
     Askdata = askdata.Askdata(username, password, domain, env)
     today = datetime.now().strftime('%Y%m%d')
     # sigh up
-    Sign = Askdata.SignUpUser(f'test{today}@askdata.com', f'test{today}')
+    Sign = Askdata.signup_user(f'test{today}@askdata.com', f'test{today}')
 
     # get list of Agents
     df_GetAgents = Askdata.df_agents

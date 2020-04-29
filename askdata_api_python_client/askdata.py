@@ -99,8 +99,8 @@ class Askdata(SignUp):
 
 
 
-    def SignUpUser(self, username, password, firstname='-', secondname='-', title='-'):
-        response = super().SignUpUser(username, password, firstname, secondname, title)
+    def signup_user(self, username, password, firstname='-', secondname='-', title='-'):
+        response = super().signup_user(username, password, firstname, secondname, title)
         return response
 
     @property

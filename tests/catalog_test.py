@@ -18,5 +18,5 @@ if __name__ == '__main__':
     df_cat = agent.GetCatalogs()
     today = datetime.now().strftime('%Y%m%d')
     entry_id = list(df_cat[df_cat['title']=='CH_TEST_242814'].loc[:,'id'])[0]
-    agent.PushQueryCt(f'pippo_{today}', entry_id, execute=False)
+    agent.create_query(f'pippo_{today}', entry_id, execute=False)
     print('ok')

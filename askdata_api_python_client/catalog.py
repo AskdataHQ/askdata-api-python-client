@@ -60,7 +60,7 @@ class Catalog:
 
         return df_catalogs
 
-    def PushQueryCt(self,query,entryid,execute=False):
+    def create_query(self, query, entryid, execute=False):
 
         data = {
             "type": "text",
