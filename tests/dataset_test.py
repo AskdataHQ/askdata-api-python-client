@@ -21,8 +21,8 @@ if __name__ == '__main__':
     df_datasets = agent.GetDatasets()
 
     # -------------------------------- Load by dataset ID -------------------------------
-    id_test = agent.GetIdDatasetByName('COPERTURA_BCK')
-    dataset_df = agent.LoadFromDataset(id_test[0])
+    #id_test = agent.GetIdDatasetByName('COPERTURA_BCK')
+    #dataset_df = agent.LoadFromDataset(id_test[0])
     # agent.LoadFromDataset('DF426F64-7D7E-4573-8789-E2D6F08ACB7B-MYSQL-95a9d1f1-8692-48a2-8b2b-f4a296e8fa27')
 
     # -------------------------------- sync by dataset ID -------------------------------
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     df_test = pd.DataFrame([{"id": "pippo", "set": 123, "clm1": "ciao"}, {"id": "pippo1", "set": 423, "clm1": "ciao"},
                             {"id": "pippo2", "set": 1283, "clm1": "ciao"}])
     # ,indexclm=["set"]
-    agent.SaveToDataset(frame=df_test, dataset_name=f'DF_{datetime.datetime.now().strftime("%Y%m%d")}',
+    agent.SaveToDataset(frame=df_test, dataset_name=f'T_DF_{datetime.datetime.now().strftime("%Y%m%d")}',
                         indexclm=["set"])
 
     # ----- Create dataset mysql from  mysql connetion ---------------

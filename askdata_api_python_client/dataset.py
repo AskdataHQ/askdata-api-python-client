@@ -227,8 +227,8 @@ class Dataset():
         the index is a list of column names of the data frame which are setting like indexes for increasing performance.
         Default empty list
         '''
-        dataset_id, settingDataset = self.__CreateDatasetDf(dataset_name)
-        engine, db_tablename = self.__Ask_DBengine(dataset_id,settingDataset)
+        dataset_id, settingsDataset = self.__CreateDatasetDf(dataset_name)
+        engine, db_tablename = self.__Ask_DBengine(dataset_id,settingsDataset)
 
 
         # with "with" we can close the connetion when we exit
@@ -254,12 +254,10 @@ class Dataset():
                 for column_ind in indexclm:
                     sql_index = """CREATE INDEX index_{}_{} ON {}(`{}`);""".format(db_tablename, column_ind,
                                                                                    db_tablename, column_ind)
-                    # Execute the sql - create secondary index
-
+                    # Execute the sql - create index
                     connection.execute(sql_index)
 
-                    # Now list the indexes on the table
-
+                # Now list the indexes on the table
                 sql_show_index = "show index from {}".format(db_tablename)
                 indices_mysql = connection.execute(sql_show_index)
                 for index_mysql in indices_mysql.fetchall():
@@ -272,6 +270,11 @@ class Dataset():
         logging.info('--- ----------- -----')
         logging.info(f'--- Save the Dataframe into Dataset {dataset_name}')
 
+
+        #run discovery dataset
+        self.__discovery_datset(dataset_id,settingsDataset)
+
+        # delete mysql user
         self.__Ask_DelDBengine(dataset_id)
 
 
@@ -438,9 +441,39 @@ class Dataset():
             r2 = s.put(url=authentication_url2, headers=self._headers, json=data2)
             r2.raise_for_status()
 
-        self.ExecuteDatasetSync(datasetId)
+        #self.ExecuteDatasetSync(datasetId)
 
         logging.debug('--- ----------- -----')
         logging.debug(f'--- Create Dataset with id: {datasetId}')
 
         return datasetId, settingDataset
+
+    def __discovery_datset(self, dataset_id,settings):
+        # è sbagliato il data rifarlo
+        data = {"settings":settings}
+
+        # data2 = {
+        #     "label": label,
+        #     "icon": "https://storage.googleapis.com/askdata/datasets/icons/icoDataMySQL.png",
+        #     "settings": {
+        #         "datasourceUrl": f"jdbc:mysql://{host}:{port}/{schema}",
+        #         "host": host,
+        #         "port": port,
+        #         "schema": schema,
+        #         "username": userconn,
+        #         "password": pswconn,
+        #         "table_id": tablename},
+        #     "plan": "NONE",
+        #     "authRequired": False
+        # }
+
+        with requests.Session() as s:
+
+            authentication_url2 = self._base_url_askdata + '/smartbot/agents/' + self._agentId + '/datasets/' + dataset_id
+            r2 = s.put(url=authentication_url2, headers=self._headers, json=data)
+            r2.raise_for_status()
+
+        logging.info('--- ----------- -----')
+        logging.info(f'--- Create Dataset with id: {datasetId}')
+
+        return dataset_id
