@@ -25,3 +25,4 @@ __pycache__
 /tests/utility/*
 /dev/*
 /dev/test_dev/*
+/dev/
