@@ -16,17 +16,17 @@ if __name__ == '__main__':
     # get agent
     agent = askdata.Agent(Askdata, 'SDK_TESTER')
 
-    list_channels = agent.GetChannels()
+    list_channels = agent.load_channels()
     today = datetime.now().strftime('%Y%m%d')
-    Name_ch = f'CH_TEST_{today}'
-    create_channel_id = agent.CreateChannel(Name_ch)
+    Name_ch = 'CH_TEST_{}'.format(today)
+    create_channel_id = agent.create_channel(Name_ch)
     id_channel = list(list_channels[list_channels['name'] == 'CH_TEST']['id'])[0]
-    list_user = agent.GetUsersFromCh(id_channel)
+    list_user = agent.load_users_fromch(id_channel)
     new_user = 'b7da6a4e-f581-4019-9771-bf4853939d11'   #a.battaglia@askdata.com
-    agent.AddUserToCh(create_channel_id, new_user) #ab5a0b80-bc97-4864-b3d4-18ba059a3d23
-    agent.UpdateChannel(create_channel_id, 'PUBLIC',iconFlag=True)
-    agent.UnMuteChannel(create_channel_id)
-    agent.MuteChannel(create_channel_id)
-    agent.DeleteUserFromCh(create_channel_id, new_user)
-    agent.DeleteChannel(create_channel_id)
+    agent.add_user_toch(create_channel_id, new_user) #ab5a0b80-bc97-4864-b3d4-18ba059a3d23
+    agent.update_channel(create_channel_id, 'PUBLIC', iconFlag=True)
+    agent.un_mute_channel(create_channel_id)
+    agent.mute_channel(create_channel_id)
+    agent.delete_user_fromch(create_channel_id, new_user)
+    agent.delete_channel(create_channel_id)
     print('ok')

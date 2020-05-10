@@ -46,18 +46,18 @@ class Insight:
         if env == 'prod':
             self._base_url_insight = url_list['BASE_URL_INSIGHT_PROD']
 
-    def GetRules(self):
+    def load_rules(self):
 
         insight_url = self._base_url_insight + '/' + 'rules' + '/' + '?agentId=' + self._agentId + '&page=0&limit=100000'
         response = requests.get(url=insight_url, headers=self._headers)
         response.raise_for_status()
         r = response.json()
-        #df_rules = pd.DataFrame([dict(zip(['id', 'name', 'type', 'code', 'domain'], [d['id'], d['name'], d['type'], d['code'], d['domain']])) for d in r['data']])
+
         df_rules = pd.DataFrame(r['data'])
 
         return df_rules
 
-    def ExecuteRule(self, id_insight):
+    def execute_rule(self, id_insight):
 
         insight_url = self._base_url_insight + '/' + 'rules' + '/' + id_insight + '/produceAndSend'
         r = requests.post(url=insight_url, headers=self._headers)
@@ -65,7 +65,7 @@ class Insight:
 
         return r
 
-    def ExecuteRules(self, listid_insight):
+    def execute_rules(self, listid_insight):
 
         data = listid_insight
 
@@ -73,10 +73,10 @@ class Insight:
         r = requests.post(url=insight_url, headers=self._headers, json=data)
 
         r.raise_for_status()
-        #print('Success! Request is accepted, status: ' + str(r.status_code))
+
         return
 
-    def CreateRule(self, insight):
+    def create_rule(self, insight):
         # insight is json with specific mandatory fileds ...
         data = insight
 
@@ -90,7 +90,7 @@ class Insight:
         r.raise_for_status()
         return r
 
-    def MigrationInsight(self, agent_source, insights_source_):
+    def migration_insight(self, agent_source, insights_source_):
 
         insights_source = insights_source_.drop(columns=['createdAt', 'createdBy', 'id'])
         insights_source.drop(insights_source[(insights_source["name"] == 'Sample rule') & (
@@ -146,16 +146,18 @@ class Insight:
         insight_records = insights_source.to_dict(orient='records')
         for insight_record in insight_records:
             try:
-                self.CreateRule(insight_record)
+                self.create_rule(insight_record)
                 logging.info(
-                    f'migrate to agenteId {self._agentId} --> ruleId: {str(insight_record["domain"]) + "-" +str(insight_record["type"]) + "-" + str(insight_record["code"])}')
-                logging.info(f'------ ------- --------------')
+                    'migrate to agenteId {} --> ruleId: {}'.
+                        format(self._agentId,
+                               str(insight_record["domain"]) + "-" + str(insight_record["type"]) + "-" + str(insight_record["code"])))
+                logging.info('------ ------- --------------')
             except:
 
-                logging.info(f'--------- ruleId already exist ------------')
-                logging.info(f'------ ------- --------------')
-                insight_record['code'] = insight_record['code'] + '_' + 'D' + f'{datetime.strftime(datetime.now(),"%Y%m%d")}'
+                logging.info('--------- ruleId already exist ------------')
+                logging.info('------ ------- --------------')
+                insight_record['code'] = insight_record['code'] + '_' + 'D' + '{}'.format(datetime.strftime(datetime.now(), "%Y%m%d_%H%M%S"))
 
-                self.CreateRule(insight_record)
-                logging.info(f'migrate with new ruleId: {str(insight_record["domain"]) + "-" + str(insight_record["type"]) + "-" + str(insight_record["code"])}')
+                self.create_rule(insight_record)
+                logging.info('migrate with new ruleId: {}'.format(str(insight_record["domain"]) + "-" + str(insight_record["type"]) + "-" + str(insight_record["code"])))
         return insights_source

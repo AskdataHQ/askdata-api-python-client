@@ -26,7 +26,7 @@ with open(yaml_path, 'r') as file:
 
 class Channel:
 
-    def __init__(self, env, token,_agentId, _domain):
+    def __init__(self, env, token, _agentId, _domain):
 
         data = {
             "agent_id": _agentId
@@ -53,7 +53,7 @@ class Channel:
         r.raise_for_status()
         self.r = r
 
-    def GetChannels(self):
+    def load_channels(self):
 
         s = requests.Session()
         s.keep_alive = False
@@ -67,8 +67,8 @@ class Channel:
 
         return df_channels
 
-    def CreateChannel(self, name, icon='https://s3.eu-central-1.amazonaws.com/innaas.smartfeed/icons/groupama/icone/channel/icon_channel_dm.png',
-                      visibility='PRIVATE'):
+    def create_channel(self, name, icon='https://s3.eu-central-1.amazonaws.com/innaas.smartfeed/icons/groupama/icone/channel/icon_channel_dm.png',
+                       visibility='PRIVATE'):
 
         data = {
             "name": name,
@@ -87,9 +87,9 @@ class Channel:
         r.raise_for_status()
         return r.json()['id']
 
-    def UpdateChannel(self,channel_id,visibility,
-                      icon='https://s3.eu-central-1.amazonaws.com/innaas.smartfeed/icons/groupama/icone/channel/icon_channel_dm.png',
-                      iconFlag = False):
+    def update_channel(self, channel_id, visibility,
+                       icon='https://s3.eu-central-1.amazonaws.com/innaas.smartfeed/icons/groupama/icone/channel/icon_channel_dm.png',
+                       iconFlag = False):
         #visibility is PUBLIC or PRIVATE
         if iconFlag:
             data = {
@@ -111,7 +111,7 @@ class Channel:
         r.raise_for_status()
         return r
 
-    def DeleteChannel(self, channel_id):
+    def delete_channel(self, channel_id):
         authentication_url = self._base_url_ch + '/channels/' + channel_id
         r = requests.delete(url=authentication_url, headers=self._headers)
         try:
@@ -124,7 +124,7 @@ class Channel:
 
         return r
 
-    def GetUsersFromCh(self, channel_id):
+    def load_users_fromch(self, channel_id):
 
         s = requests.Session()
         s.keep_alive = False
@@ -138,7 +138,7 @@ class Channel:
         df_users = pd.DataFrame(r.json())
         return df_users
 
-    def AddUserToCh(self, channel_id, user_id, role="follower", mute="none"):
+    def add_user_toch(self, channel_id, user_id, role="follower", mute="none"):
 
         data = {
             "userId": user_id,
@@ -156,7 +156,7 @@ class Channel:
         r.raise_for_status()
         return r
 
-    def DeleteUserFromCh(self, channel_id, user_id):
+    def delete_user_fromch(self, channel_id, user_id):
         authentication_url = self._base_url_ch + '/channels/' + channel_id + '/users/' + user_id
         r = requests.delete(url=authentication_url, headers=self._headers)
         try:
@@ -169,14 +169,14 @@ class Channel:
             logging.info('User already deleted or not exist')
         return r
 
-    def UnMuteChannel(self, channel_id):
+    def un_mute_channel(self, channel_id):
 
         authentication_url = self._base_url_ch + '/channels/' + channel_id + '/unmute'
         r = requests.put(url=authentication_url, headers=self._headers)
         r.raise_for_status()
         return r
 
-    def MuteChannel(self, channel_id):
+    def mute_channel(self, channel_id):
 
         data = {
 

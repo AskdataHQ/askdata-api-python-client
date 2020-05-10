@@ -45,8 +45,7 @@ class Catalog:
         if env == 'prod':
             self._base_url_cat = url_list['BASE_URL_FEED_PROD']
 
-
-    def GetCatalogs(self, empty=True):
+    def load_catalogs(self, empty=True):
 
         if empty:
             flag = 'true'
