@@ -1,4 +1,4 @@
-import askdata.askdata as askdata
+import askdata.askdata_client as askdata
 import askdata.security as sec
 import json
 import random
@@ -12,7 +12,7 @@ if __name__ == '__main__':
     username = 'flashfiber@askdata.com'
     password = 'flashfiber'
     domain = 'FLASHFIBER'
-    env = 'prod'
+    env = 'qa'
     Askdata = askdata.Askdata(username, password, domain, env)
     # get list of Agents
     # df_GetAgents = Askdata.df_agents

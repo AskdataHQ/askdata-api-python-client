@@ -1,4 +1,4 @@
-import askdata.askdata as askdata
+import askdata.askdata_client as askdata
 import random
 import askdata.channel as channel
 import pandas as pd

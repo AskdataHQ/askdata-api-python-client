@@ -1,4 +1,4 @@
-from askdata.askdata import Askdata, Agent
+from askdata.askdata_client import Askdata, Agent
 import askdata.catalog as catalog
 import pandas as pd
 from datetime import datetime

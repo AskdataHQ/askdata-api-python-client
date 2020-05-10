@@ -1,4 +1,4 @@
-import askdata.askdata as askdata
+import askdata.askdata_client as askdata
 import askdata.insight as ins
 import json
 import random
