@@ -9,7 +9,7 @@ For more information, see [Askdata's website](https://askdata.com).
 Getting up and running with Askdata python client is easy. Install client from [pypi](https://pypi.org/project/...../):
 
 >```sh
->pip install askdata_python_client
+>pip install askdata
 >```
 
 and access tutorials by typing:

@@ -1,7 +1,7 @@
-from askdata_api_python_client.askdata import Askdata,Agent
+from askdata.askdata import Askdata,Agent
 import datetime
 import pandas as pd
-import askdata_api_python_client.dataset as dats
+import askdata.dataset as dats
 import json
 import random
 

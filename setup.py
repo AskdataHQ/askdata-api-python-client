@@ -1,13 +1,13 @@
 from setuptools import setup, find_packages
 
-setup(name='askdata-api-python-client',
-      version='0.2.33',
+setup(name='askdata',
+      version='0.3.34',
       description='A library for creating a client for interacting with Askdata',
       url='https://github.com/AskdataInc/askdata-api-python-client',
       author=['Giuseppe De Maio','Matteo Giacalone'],
       author_email='datascience@askdata.com',
       license='Apache License 2.0',
-      packages=find_packages(exclude=["dev","*.tests", "*.tests.*", "tests.*", "tests","entity.py","security.py"]),
+      packages=find_packages(exclude=["dev","*.tests", "*.tests.*", "tests.*", "tests","entity.py","feed.py"]),
       long_description=open('README.md').read(),
       long_description_content_type="text/markdown",
       include_package_data=True,

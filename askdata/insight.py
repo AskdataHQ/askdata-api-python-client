@@ -16,7 +16,7 @@ g_logger.setLevel(logging.INFO)
 
 root_dir = os.path.abspath(os.path.dirname(__file__))
 # retrieving base url
-yaml_path = os.path.join(root_dir, '../askdata_api_python_client/askdata_config/base_url.yaml')
+yaml_path = os.path.join(root_dir, '../askdata/askdata_config/base_url.yaml')
 with open(yaml_path, 'r') as file:
     # The FullLoader parameter handles the conversion from YAML
     # scalar values to Python the dictionary format

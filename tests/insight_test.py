@@ -1,5 +1,5 @@
-import askdata_api_python_client.askdata as askdata
-import askdata_api_python_client.insight as ins
+import askdata.askdata as askdata
+import askdata.insight as ins
 import json
 import random
 from datetime import datetime

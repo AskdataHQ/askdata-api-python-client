@@ -5,11 +5,11 @@ import pandas as pd
 import numpy as np
 import logging
 import getpass
-from askdata_api_python_client.insight import Insight
-from askdata_api_python_client.channel import Channel
-from askdata_api_python_client.catalog import Catalog
-from askdata_api_python_client.dataset import Dataset
-from askdata_api_python_client.security import SignUp
+from askdata.insight import Insight
+from askdata.channel import Channel
+from askdata.catalog import Catalog
+from askdata.dataset import Dataset
+from askdata.security import SignUp
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import re
@@ -22,7 +22,7 @@ g_logger.setLevel(logging.INFO)
 
 root_dir = os.path.abspath(os.path.dirname(__file__))
 # retrieving base url
-yaml_path = os.path.join(root_dir, '../askdata_api_python_client/askdata_config/base_url.yaml')
+yaml_path = os.path.join(root_dir, '../askdata/askdata_config/base_url.yaml')
 with open(yaml_path, 'r') as file:
     # The FullLoader parameter handles the conversion from YAML
     # scalar values to Python the dictionary format

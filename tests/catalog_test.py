@@ -1,5 +1,5 @@
-from askdata_api_python_client.askdata import Askdata, Agent
-import askdata_api_python_client.catalog as catalog
+from askdata.askdata import Askdata, Agent
+import askdata.catalog as catalog
 import pandas as pd
 from datetime import datetime
 

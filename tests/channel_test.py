@@ -1,6 +1,6 @@
-import askdata_api_python_client.askdata as askdata
+import askdata.askdata as askdata
 import random
-import askdata_api_python_client.channel as channel
+import askdata.channel as channel
 import pandas as pd
 from datetime import datetime
 

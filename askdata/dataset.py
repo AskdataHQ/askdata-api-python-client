@@ -15,7 +15,7 @@ from sqlalchemy.schema import Index
 from threading import Thread
 import re
 from datetime import datetime
-#import askdata_api_python_client.askdata as askdata
+#import askdata.askdata as askdata
 
 _LOG_FORMAT = "[%(filename)s:%(lineno)s - %(funcName)20s() ] - %(asctime)s --> %(message)s"
 g_logger = logging.getLogger()
@@ -24,7 +24,7 @@ g_logger.setLevel(logging.INFO)
 
 root_dir = os.path.abspath(os.path.dirname(__file__))
 # retrieving base url
-yaml_path = os.path.join(root_dir, '../askdata_api_python_client/askdata_config/base_url.yaml')
+yaml_path = os.path.join(root_dir, '../askdata/askdata_config/base_url.yaml')
 with open(yaml_path, 'r') as file:
     # The FullLoader parameter handles the conversion from YAML
     # scalar values to Python the dictionary format
