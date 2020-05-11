@@ -402,7 +402,7 @@ class Dataset():
     def __create_dataset_df(self, label):
 
         data1 = {
-            "domain" : self._domainlogin,
+            "domain" : self._domain,
             "type" : "DATAFRAME",
             "settings" : {},
             "agent" : self._agentId
