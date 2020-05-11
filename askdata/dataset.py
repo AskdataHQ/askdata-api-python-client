@@ -402,10 +402,9 @@ class Dataset():
     def __create_dataset_df(self, label):
 
         data1 = {
-            "domain" : self._domain,
-            "type" : "DATAFRAME",
-            "settings" : {},
-            "agent" : self._agentId
+
+            "type": "DATAFRAME"
+
         }
 
         data2 = {
@@ -417,10 +416,12 @@ class Dataset():
             retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
             s.mount('https://', HTTPAdapter(max_retries=retries))
 
-            authentication_url1 = self._base_url_dataset + '/datasets'
+            # create askdata dataset of type dataframe
+            authentication_url1 = self._base_url_askdata + '/smartbot/agents/' + self._agentId + '/datasets'
             r1 = s.post(url=authentication_url1, headers=self._headers, json=data1)
             r1.raise_for_status()
 
+            # add name and icon to settings
             datasetId = r1.json()['id']
             settingDataset = r1.json()['settings']
 
