@@ -10,8 +10,8 @@ if __name__ == '__main__':
     password = 'g.demaio'
     domainlogin = 'Askdata'
     env = 'prod'
-    askdata = Askdata(username, password, domainlogin, env)
-    #askdata = Askdata(env=env,domainlogin=domainlogin)
+   # askdata = Askdata(username, password, domainlogin, env)
+    askdata = Askdata(env=env,domainlogin=domainlogin)
 
     # get list of Agents
     get_agents = askdata.load_agents()

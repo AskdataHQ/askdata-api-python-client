@@ -37,7 +37,7 @@ class Askdata(SignUp):
 
         if username == '':
             #add control email like
-            username = getpass.getpass(prompt='Askdata Username: ')
+            username = input('Askdata Username: ')
         if password == '':
             password = getpass.getpass(prompt='Askdata Password: ')
 
