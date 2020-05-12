@@ -10,25 +10,25 @@ if __name__ == '__main__':
     username = 'g.demaio@askdata.com'
     password = 'g.demaio'
     domain = 'Askdata'
-    env = 'dev'
+    env = 'prod'
     Askdata = Askdata(username, password, domain, env)
 
     # get agent
-    # agent = askdata.Agent(Askdata, 'SDK_TESTER')
-    agent = Agent(Askdata, 'SDK_TEST')
+    agent = Agent(Askdata, 'SDK_TESTER')
+    #agent = Agent(Askdata, 'SDK_TEST')
 
     # --------------------------------   Dataset  -------------------------------------------
     df_datasets = agent.load_datasets()
 
     # -------------------------------- Load by dataset ID -------------------------------
-    id_test = agent.get_id_dataset_by_name('COPERTURA_BCK')
+    id_test = agent.get_id_dataset_by_name('GROUP')
 
     dataset_df = agent.load_dataset_to_df(id_test[0])
     # agent.LoadFromDataset('DF426F64-7D7E-4573-8789-E2D6F08ACB7B-MYSQL-95a9d1f1-8692-48a2-8b2b-f4a296e8fa27')
 
     # -------------------------------- sync by dataset ID -------------------------------
-    resp_sync = agent.execute_dataset_sync(
-       '0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-17ff8411-5077-4add-b3d0-544f841a352d')
+    resp_sync = agent.execute_dataset_sync(id_test[0])
+    #'0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-17ff8411-5077-4add-b3d0-544f841a352d'
     #resp_sync = agent.ExecuteDatasetSync(df_datasets['id'][0])
 
     # ------ Create New dataset from existing table from your personal DB -------------

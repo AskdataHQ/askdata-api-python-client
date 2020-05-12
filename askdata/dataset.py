@@ -283,8 +283,8 @@ class Dataset():
 
         table_id, schema, id_createdby = self.__get_dataset_connection(dataset_id)
 
-        #check if userid (agent) is also the owner of the dataset
-        if id_createdby != self.userid:
+        #check if userid/username (agent) is also the owner of the
+        if id_createdby not in (self.userid, self.username):
             raise Exception("the user {} haven't privilege for this dataset".format(id_createdby))
 
         # select entities columnId and CODE of the dataset
