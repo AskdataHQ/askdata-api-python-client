@@ -9,7 +9,7 @@ if __name__ == '__main__':
     username = 'g.demaio@askdata.com'
     password = 'g.demaio'
     domainlogin = 'Askdata'
-    env = 'qa'
+    env = 'prod'
     askdata = Askdata(username, password, domainlogin, env)
     #askdata = Askdata(env=env,domainlogin=domainlogin)
 

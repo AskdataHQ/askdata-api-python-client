@@ -90,7 +90,7 @@ class Dataset():
 
         dataset_list = self.load_datasets()
 
-        if exact:
+        if not exact:
             dataset_select_name = dataset_list.name.str.contains(name_ds, flags=re.IGNORECASE, regex=True)
             dataset_choose = dataset_list[dataset_select_name]
         else:
