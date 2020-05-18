@@ -15,7 +15,7 @@ if __name__ == '__main__':
     # get list of Agents
     # df_GetAgents = Askdata.df_agents
     # get agent
-    agent = askdata.Agent(Askdata, 'SDK_TESTER')
+    agent = askdata.Agent(Askdata, agent_name='SDK_TESTER')
 
     # agent b
 
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     domain = 'GROUPAMA'
     env = 'qa'
     Askdatab = askdata.Askdata(username, password, domain, env)
-    agentb = askdata.Agent(Askdatab, 'oKGroupama')
+    agentb = askdata.Agent(Askdatab, agent_name='oKGroupama')
 
     # -------   insight ----------------
     df_insight = agent.load_rules()

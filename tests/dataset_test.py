@@ -14,8 +14,8 @@ if __name__ == '__main__':
     Askdata = Askdata(username, password, domain, env)
 
     # get agent
-    agent = Agent(Askdata, 'SDK_TESTER')
-    #agent = Agent(Askdata, 'SDK_TEST')
+    agent = Agent(Askdata, agent_name='SDK_TESTER')
+    #agent = Agent(Askdata, agent_name='SDK_TEST')
 
     # --------------------------------   Dataset  -------------------------------------------
     #df_datasets = agent.load_datasets()

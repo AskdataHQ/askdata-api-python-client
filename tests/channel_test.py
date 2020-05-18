@@ -14,7 +14,7 @@ if __name__ == '__main__':
     # get list of Agents
     #df_GetAgents = Askdata.df_agents
     # get agent
-    agent = askdata.Agent(Askdata, 'SDK_TESTER')
+    agent = askdata.Agent(Askdata, agent_name='SDK_TESTER')
 
     list_channels = agent.load_channels()
     today = datetime.now().strftime('%Y%m%d')

@@ -133,7 +133,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
     Agent Object
     '''
 
-    def __init__(self, askdata: Askdata, agent_id='', agent_name=''):
+    def __init__(self, askdata: Askdata, agent_name='', agent_id=''):
 
         self.username = askdata.username
         self.userid = askdata.userid

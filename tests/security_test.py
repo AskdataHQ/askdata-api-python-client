@@ -17,8 +17,8 @@ if __name__ == '__main__':
     # get list of Agents
     # df_GetAgents = Askdata.df_agents
     # get agent
-    #agent = askdata.Agent(Askdata, 'SDK_TESTER')
-    agent = askdata.Agent(Askdata, 'FlashFiber')
+    #agent = askdata.Agent(Askdata, agent_name='SDK_TESTER')
+    agent = askdata.Agent(Askdata, agent_name='FlashFiber')
     security = sec.SignUp(Askdata)
 
 

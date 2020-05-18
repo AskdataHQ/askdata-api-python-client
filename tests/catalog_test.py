@@ -13,7 +13,7 @@ if __name__ == '__main__':
     # get list of Agents
     #df_GetAgents = Askdata.df_agents
     # get agent
-    agent = Agent(Askdata, 'SDK_TESTER')
+    agent = Agent(Askdata, agent_name='SDK_TESTER')
 
     df_cat = agent.load_catalogs()
     today = datetime.now().strftime('%Y%m%d')
