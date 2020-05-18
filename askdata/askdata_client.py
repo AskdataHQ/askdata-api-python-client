@@ -33,50 +33,54 @@ class Askdata(SignUp):
     '''
     Authentication Object
     '''
-    def __init__(self, username='', password='', domainlogin='askdata', env='prod'):
-
-        if username == '':
-            #add control email like
-            username = input('Askdata Username: ')
-        if password == '':
-            password = getpass.getpass(prompt='Askdata Password: ')
-
-        self.username = username
-        self.password = password
-        self._domainlogin = domainlogin.upper()
-        self._env = env
-
-        data = {
-            "grant_type": "password",
-            "username": self.username,
-            "password": self.password
-        }
-
-        headers = {
-            "Authorization": "Basic YXNrZGF0YS1zZGs6YXNrZGF0YS1zZGs=",
-            "Content-Type": "application/x-www-form-urlencoded",
-            "cache-control": "no-cache,no-cache"
-        }
-        if self._env == 'dev':
-            self.base_url_security = url_list['BASE_URL_SECURITY_DEV']
-
-        if self._env == 'qa':
-            self.base_url_security = url_list['BASE_URL_SECURITY_QA']
-
-        if self._env == 'prod':
-            self.base_url_security = url_list['BASE_URL_SECURITY_PROD']
-
-        authentication_url = self.base_url_security + '/domain/' + self._domainlogin.lower() + '/oauth/token'
-        authentication_url_userid = self.base_url_security + '/me'
+    def __init__(self, username='', password='', domainlogin='askdata', env='prod', token=''):
 
         with requests.Session() as s:
 
-            #request token for the user
-            r1 = s.post(url=authentication_url, data=data, headers=headers)
-            r1.raise_for_status()
-            self._token = r1.json()['access_token']
-            self.r1 = r1
+            self._token = token
+            self._domainlogin = domainlogin.upper()
+            self._env = env
 
+            if self._env == 'dev':
+                self.base_url_security = url_list['BASE_URL_SECURITY_DEV']
+
+            if self._env == 'qa':
+                self.base_url_security = url_list['BASE_URL_SECURITY_QA']
+
+            if self._env == 'prod':
+                self.base_url_security = url_list['BASE_URL_SECURITY_PROD']
+
+            if token == '':
+
+                if username == '':
+                    #add control email like
+                    username = input('Askdata Username: ')
+                if password == '':
+                    password = getpass.getpass(prompt='Askdata Password: ')
+
+                self.username = username
+
+                data = {
+                    "grant_type": "password",
+                    "username": self.username,
+                    "password": password
+                }
+
+                headers = {
+                    "Authorization": "Basic YXNrZGF0YS1zZGs6YXNrZGF0YS1zZGs=",
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "cache-control": "no-cache,no-cache"
+                }
+
+                authentication_url = self.base_url_security + '/domain/' + self._domainlogin.lower() + '/oauth/token'
+
+                #request token for the user
+                r1 = s.post(url=authentication_url, data=data, headers=headers)
+                r1.raise_for_status()
+                self._token = r1.json()['access_token']
+                self.r1 = r1
+
+            authentication_url_userid = self.base_url_security + '/me'
             self._headers = {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer" + " " + self._token
@@ -84,7 +88,9 @@ class Askdata(SignUp):
 
             #request userId of the user
             r_userid = s.get(url=authentication_url_userid, headers=self._headers)
+            r_userid.raise_for_status()
             self.userid = r_userid.json()['id']
+            self.username =r_userid.json()['userName']
 
     def load_agents(self):
 
@@ -127,15 +133,14 @@ class Agent(Insight, Channel, Catalog, Dataset):
     Agent Object
     '''
 
-    def __init__(self,Askdata,name):
+    def __init__(self, askdata: Askdata, agent_id='', agent_name=''):
 
-        self.username = Askdata.username
-        self.password = Askdata.password
-        self.userid = Askdata.userid
-        self._domainlogin = Askdata._domainlogin
-        self._env = Askdata._env
-        self._token = Askdata._token
-        self.df_agents = Askdata.agents_dataframe()
+        self.username = askdata.username
+        self.userid = askdata.userid
+        self._domainlogin = askdata._domainlogin
+        self._env = askdata._env
+        self._token = askdata._token
+        self.df_agents = askdata.agents_dataframe()
 
         self._headers = {
             "Content-Type": "application/json",
@@ -143,13 +148,18 @@ class Agent(Insight, Channel, Catalog, Dataset):
         }
 
         try:
-            agent = self.df_agents[self.df_agents['name'] == name]
+            if agent_id != '':
+                agent = self.df_agents[self.df_agents['id'] == agent_id]
+            else:
+                agent = self.df_agents[self.df_agents['name'] == agent_name]
+
             self._agentId = agent.iloc[0]['id']
             self._domain = agent.iloc[0]['domain']
             self._language = agent.iloc[0]['language']
+            self._agent_name = agent.iloc[0]['name']
 
         except Exception as ex:
-            raise NameError('Agent name not exsist')
+            raise NameError('Agent name/id not exsist or not insert')
 
         Insight.__init__(self, self._env, self._token)
         Channel.__init__(self, self._env, self._token, self._agentId, self._domain)
