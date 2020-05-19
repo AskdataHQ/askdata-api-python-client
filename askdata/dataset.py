@@ -14,8 +14,11 @@ from sqlalchemy.types import DateTime
 from sqlalchemy.schema import Index
 from threading import Thread
 import re
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from askdata.askdata_client import Agent
+
 from datetime import datetime
-#import askdata.askdata as askdata
 
 _LOG_FORMAT = "[%(filename)s:%(lineno)s - %(funcName)20s() ] - %(asctime)s --> %(message)s"
 g_logger = logging.getLogger()
@@ -75,7 +78,7 @@ class Dataset():
 
         return datasets_df
 
-    def get_id_dataset_by_name(self, name_ds, exact=False):
+    def get_id_dataset_by_name(self, name_ds: str, exact=False):
 
         '''
         Get askdata dataset ids by name
@@ -358,23 +361,27 @@ class Dataset():
     # def delete_dataset(self):
     #     pass
 
-    def create_dataset_byconn(self, label, host, port, schema, userconn, pswconn, tablename,type="MYSQL"):
+    def create_dataset_byconn(self, label: str, settings: dict, type="MYSQL"):
 
         data1 = {
-            "type": type
+            "type": type.upper()
         }
+        if type.upper() == "MYSQL":
+            icon = "https://storage.googleapis.com/askdata/datasets/icons/icoDataMySQL.png"
 
         data2 = {
             "label": label,
-            "icon": "https://storage.googleapis.com/askdata/datasets/icons/icoDataMySQL.png",
+            "icon": icon,
             "settings": {
-                "datasourceUrl": "jdbc:mysql://{}:{}/{}".format(host, port, schema),
-                "host": host,
-                "port": port,
-                "schema": schema,
-                "username": userconn,
-                "password": pswconn,
-                "table_id": tablename},
+                "datasourceUrl": "jdbc:mysql://{}:{}/{}".format(settings['host'], settings['port'], settings['schema']),
+                "host": settings['host'],
+                "port": settings['port'],
+                "schema": settings['schema'],
+                "username": settings['username'],
+                "password": settings['password'],
+                "table_id": settings['table_id'],
+                "enableValues": True,
+                "importValues": False},
             "plan": "NONE",
             "authRequired": False
         }
@@ -433,3 +440,112 @@ class Dataset():
         logging.debug('--- Create Dataset with id: {}'.format(str(datasetId)))
 
         return datasetId, settingDataset
+
+    def migration_dataset(self, agent_source: 'Agent', dataset_id_source: str):
+
+        datasets_document = agent_source.retrive_dataset(dataset_id_source)
+        label = datasets_document['name']
+        settings = datasets_document['settings']
+        type_dataset = datasets_document['type']
+        dataset_id_dest = self.create_dataset_byconn(label=label, settings=settings, type=type_dataset)
+        measures = datasets_document['measures']
+        entitytypes = datasets_document['entityTypes']
+        for entitytype in entitytypes:
+            self.put_entity_dataset(entity_code=entitytype['code'],dataset_id=dataset_id_dest,
+                                    settigs_entity= entitytype, entity_type='entitytype', dataset_type= type_dataset)
+        for measure in measures:
+            self.put_entity_dataset(entity_code=measure['code'],dataset_id=dataset_id_dest,
+                                    settigs_entity= measure, entity_type='measure', dataset_type= type_dataset)
+
+    def retrive_dataset(self, dataset_id: str) -> dict:
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        dataset_url = self._base_url_askdata + '/smartdataset/datasets/' + dataset_id
+        response = s.get(url=dataset_url, headers=self._headers)
+        response.raise_for_status()
+        datasets_document = response.json()
+
+        return datasets_document
+
+    def put_entity_dataset(self, entity_code: str, dataset_id: str, settigs_entity: dict, entity_type: str, dataset_type: str):
+
+        if entity_type.lower() == "entitytype":
+            entity_type = "ENTITY_TYPE"
+
+        if settigs_entity["custom"] == True:
+
+            data_custom =  {"entry": [{"datasetId": dataset_id,
+                                        "code": settigs_entity["code"],
+                                        "enabled": True,
+                                        "importValues": False,
+                                        "mandatory": False,
+                                        "parameterType": entity_type.upper()
+                                        }]}
+
+            s = requests.Session()
+            s.keep_alive = False
+            retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+            s.mount('https://', HTTPAdapter(max_retries=retries))
+
+            dataset_url = self._base_url_askdata + '/smartbot/dataset/type/' + dataset_type + '/id/' + dataset_id \
+                          + '/subset/' + dataset_type + '/entry'
+
+            r_custom = s.post(url=dataset_url, headers=self._headers, json=data_custom)
+            r_custom.raise_for_status()
+
+
+        data = {"entry": [{"datasetId": dataset_id,
+                    "schemaMetaData": {"columnId": settigs_entity["schemaMetaData"]["columnId"],
+                                       "columnName": settigs_entity["schemaMetaData"]["columnName"],
+                                       "dataType": settigs_entity["schemaMetaData"]["dataType"],
+                                       "dataExample": settigs_entity["schemaMetaData"]["dataExample"],
+                                       "internalDataType": settigs_entity["schemaMetaData"]["internalDataType"],
+                                       "indexedWith": settigs_entity["schemaMetaData"]["indexedWith"],
+                                       "join": settigs_entity["schemaMetaData"]["join"],
+                                       "details": settigs_entity["schemaMetaData"]["details"]},
+                    "parameterType": entity_type.upper(),
+                    "code": settigs_entity["code"],
+                    "name": settigs_entity["name"],
+                    "description": settigs_entity["description"],
+                    "synonyms": settigs_entity["synonyms"],
+                    "icon": settigs_entity["icon"],
+                    "sampleQueries": settigs_entity["sampleQueries"],
+                    "importValues": settigs_entity["importValues"],
+                    "mandatory": settigs_entity["mandatory"],
+                    "enabled": settigs_entity["enabled"],
+                    "locked": settigs_entity["locked"],
+                    "advancedConfiguration": settigs_entity["advancedConfiguration"],
+                    #"viewValues": "View",
+                    "custom": settigs_entity["custom"],
+                    "dynamicParameterValues": settigs_entity["dynamicParameterValues"],
+                    "searchable": settigs_entity["searchable"],
+                    "nameTransformer": settigs_entity["nameTransformer"],
+                    "synonymTransformers": settigs_entity["synonymTransformers"],
+                    "valid": settigs_entity["valid"],
+                    "locale": settigs_entity["valid"],
+                    "filter": settigs_entity["locale"],
+                    "customExpression": settigs_entity["customExpression"],
+                    "format": settigs_entity["format"],
+                    "indexed": settigs_entity["indexed"],
+                    "date": settigs_entity["date"],
+                    "customAggregation": settigs_entity["customAggregation"],
+                    "ignoreAggregation": settigs_entity["ignoreAggregation"],
+                    "injections": settigs_entity["injections"],
+                    "defaultInjections": settigs_entity["defaultInjections"],
+                    "geo": settigs_entity["geo"]}
+                          ]}
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        dataset_url = self._base_url_askdata + '/smartbot/dataset/type/' + dataset_type + '/id/' + dataset_id \
+                      + '/subset/' + dataset_type + '/entry/' + entity_code
+
+        response = s.put(url=dataset_url, headers=self._headers, json=data)
+        response.raise_for_status()

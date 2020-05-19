@@ -10,18 +10,23 @@ if __name__ == '__main__':
     username = 'g.demaio@askdata.com'
     password = 'g.demaio'
     domain = 'Askdata'
-    env = 'prod'
-    Askdata = Askdata(username, password, domain, env)
+    env = 'dev'
+    askdata = Askdata(username, password, domain, env)
+
+    # source agent
+    askdata_dest = Askdata(username, password, domain)
+    agent_dest = Agent(askdata_dest, agent_name='SDK_TESTER')
 
     # get agent
-    agent = Agent(Askdata, agent_name='SDK_TESTER')
-    #agent = Agent(Askdata, agent_name='SDK_TEST')
-
+    #agent = Agent(Askdata, agent_name='SDK_TESTER')
+    agent = Agent(askdata, agent_name='SDK_TEST')
     # --------------------------------   Dataset  -------------------------------------------
-    #df_datasets = agent.load_datasets()
-
+    df_datasets = agent.load_datasets()
     # -------------------------------- Load by dataset ID -------------------------------
-    #id_test = agent.get_id_dataset_by_name('COPERTURA')
+    id_test = agent.get_id_dataset_by_name('COPERTURA')
+
+    agent_dest.migration_dataset(agent, id_test[0])
+    retrive_info_copertura_dat = agent.retrive_dataset(id_test[0])
 
     #dataset_df = agent.load_dataset_to_df(id_test[0])
     # agent.LoadFromDataset('DF426F64-7D7E-4573-8789-E2D6F08ACB7B-MYSQL-95a9d1f1-8692-48a2-8b2b-f4a296e8fa27')
