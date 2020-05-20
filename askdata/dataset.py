@@ -451,10 +451,10 @@ class Dataset():
         measures = datasets_document['measures']
         entitytypes = datasets_document['entityTypes']
         for entitytype in entitytypes:
-            self.put_entity_dataset(entity_code=entitytype['code'],dataset_id=dataset_id_dest,
+            self.put_entity_dataset(entity_code=entitytype['code'], dataset_id=dataset_id_dest,
                                     settigs_entity= entitytype, entity_type='entitytype', dataset_type= type_dataset)
         for measure in measures:
-            self.put_entity_dataset(entity_code=measure['code'],dataset_id=dataset_id_dest,
+            self.put_entity_dataset(entity_code=measure['code'], dataset_id=dataset_id_dest,
                                     settigs_entity= measure, entity_type='measure', dataset_type= type_dataset)
 
     def retrive_dataset(self, dataset_id: str) -> dict:
@@ -549,3 +549,68 @@ class Dataset():
 
         response = s.put(url=dataset_url, headers=self._headers, json=data)
         response.raise_for_status()
+
+    def get_value_entity(self, entity_code: str) -> dict:
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_askdata + '/smartmanager/data/' + self._domain + '/entity/' + entity_code
+
+        r = s.get(url=authentication_url, headers=self._headers, verify=False)
+        r.raise_for_status()
+
+        return r.json()
+
+    def __put_value_entity(self, entity_code: str, dataset_id: str, settings_value: dict):
+
+        # settings_value = {"_id":"884EF2BE-5174-4490-9846-0DB7269C538A-CITTA-Genova", "code":"Genova", "name":"Genova",
+        #                   "synonyms":["genova","genova_test","genova_test2","genova_test3","genova_test44"]}
+
+        # la macanza o non di field non mandatory
+
+        domain = self._domain
+        language = self._language
+
+        # filling of the body request for the entity value
+        data = {"_id": settings_value["_id"],
+                "code": settings_value["code"],
+                "datasetSync":[{
+                    "datasetId": dataset_id}],
+                "datasets":[{
+                    "sourceValue":[{"language": language,"value": settings_value["code"]}],
+                    "sourceValueId": settings_value["code"],
+                    "datasetId": dataset_id}],
+                "description": settings_value.get("description", ""),
+                "details": settings_value.get("details", dict()),
+                "domain": domain,
+                "icon": settings_value.get("icon", ""),
+                "localizedName": settings_value.get("localizedName", dict()),
+                "localizedSynonyms": settings_value.get("localizedSynonyms", list()),
+                "name": settings_value.get("name", settings_value["code"]),
+                "sampleQueries": settings_value.get("sampleQueries", list()),
+                "synonyms": settings_value["synonyms"],
+                "type": entity_code}
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_askdata + '/smartmanager/data/' + self._domain + '/entity/' + entity_code
+
+        # put field into exist value
+        r = s.put(url=authentication_url, headers=self._headers, verify=False, json=data)
+        r.raise_for_status()
+
+# il code è il columnValueId cioè il colimValue il campo preso dalla tabella ripulito e poi trimmato
+# la logica usata per ripulirlo è tramite l'uso di queste regex
+# value = value.replaceAll("[\uFEFF-\uFFFF]", "").replaceAll("\\p{C}", "").replaceAll("[\\p{Cntrl}&&[^\r\n\t]]", "");
+# poi trimmato
+
+#code = columValueId.dirtyChars().trim()
+#colomValueId = columValue
+
+# aggiungere il get del dict che in caso di assenza ritorni un valore di default

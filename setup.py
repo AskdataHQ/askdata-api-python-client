@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='askdata',
-      version='0.3.312',
+      version='0.3.313',
       description='A library for creating a client for interacting with Askdata',
       url='https://github.com/AskdataInc/askdata-api-python-client',
       author=['Giuseppe De Maio','Matteo Giacalone'],
