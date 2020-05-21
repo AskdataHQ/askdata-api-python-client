@@ -451,27 +451,50 @@ class Dataset():
         measures = datasets_document['measures']
         entitytypes = datasets_document['entityTypes']
         for entitytype in entitytypes:
-            self.put_entity_dataset(entity_code=entitytype['code'], dataset_id=dataset_id_dest,
+            self.copy_entity_dataset(entity_code=entitytype['code'], dataset_id=dataset_id_dest,
                                     settigs_entity= entitytype, entity_type='entitytype', dataset_type= type_dataset)
         for measure in measures:
-            self.put_entity_dataset(entity_code=measure['code'], dataset_id=dataset_id_dest,
+            self.copy_entity_dataset(entity_code=measure['code'], dataset_id=dataset_id_dest,
                                     settigs_entity= measure, entity_type='measure', dataset_type= type_dataset)
 
-    def retrive_dataset(self, dataset_id: str) -> dict:
+    def retrive_dataset_settings(self, dataset_id: str) -> dict:
 
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        dataset_url = self._base_url_askdata + '/smartdataset/datasets/' + dataset_id
+        dataset_url = self._base_url_askdata + '/smartdataset/datasets/' + dataset_id + 'settings'
+        # devo aggiungere anche le info di get self._base_url_askdata + '/smartdataset/datasets/' + dataset_id
+        # alcuni field li trovo qui e bastqa mentre sinonimi etc li trovo su retrive_dataset_entities
         response = s.get(url=dataset_url, headers=self._headers)
         response.raise_for_status()
-        datasets_document = response.json()
+        settings_dataset = response.json()
 
-        return datasets_document
+        return settings_dataset
 
-    def put_entity_dataset(self, entity_code: str, dataset_id: str, settigs_entity: dict, entity_type: str, dataset_type: str):
+    def retrive_dataset_entities(self, dataset_id: str, dataset_type: str) -> dict:
+
+        page = 0
+        limit = 1000
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        dataset_url = self._base_url_askdata + '/smartbot/dataset/type/' + dataset_type + '/id/' + dataset_id \
+                          + '/subset/' + dataset_type + '?_page=' + str(page) + '&_limit=' + str(limit)
+        response = s.get(url=dataset_url, headers=self._headers)
+        response.raise_for_status()
+        n_entity = response.json()['payload']['totalElements']
+        entities_dataset = response.json()['payload']['data']
+        if int(n_entity) > len(entities_dataset):
+            raise NameError('not all entities are fetching')
+
+
+        return entities_dataset
+
+    def copy_entity_dataset(self, entity_code: str, dataset_id: str, settigs_entity: dict, entity_type: str, dataset_type: str):
 
         if entity_type.lower() == "entitytype":
             entity_type = "ENTITY_TYPE"
@@ -482,6 +505,7 @@ class Dataset():
                                         "code": settigs_entity["code"],
                                         "enabled": True,
                                         "importValues": False,
+                                        "custom": True,
                                         "mandatory": False,
                                         "parameterType": entity_type.upper()
                                         }]}
@@ -497,46 +521,63 @@ class Dataset():
             r_custom = s.post(url=dataset_url, headers=self._headers, json=data_custom)
             r_custom.raise_for_status()
 
+        self.__put_entity_dataset(entity_code, dataset_id, settigs_entity, entity_type, dataset_type)
+
+
+    def __put_entity_dataset(self, entity_code: str, dataset_id: str, settigs_entity: dict, entity_type: str, dataset_type: str):
+
+        """
+        this method put fields in exist entity (measure/entityType)
+        :param entity_code: str
+        :param dataset_id: str
+        :param settigs_entity: dict
+        :param entity_type: str
+        :param dataset_type: str
+        :return: None
+        """
+        if entity_type.lower() == "entitytype":
+            entity_type = "ENTITY_TYPE"
 
         data = {"entry": [{"datasetId": dataset_id,
-                    "schemaMetaData": {"columnId": settigs_entity["schemaMetaData"]["columnId"],
-                                       "columnName": settigs_entity["schemaMetaData"]["columnName"],
-                                       "dataType": settigs_entity["schemaMetaData"]["dataType"],
-                                       "dataExample": settigs_entity["schemaMetaData"]["dataExample"],
-                                       "internalDataType": settigs_entity["schemaMetaData"]["internalDataType"],
-                                       "indexedWith": settigs_entity["schemaMetaData"]["indexedWith"],
-                                       "join": settigs_entity["schemaMetaData"]["join"],
-                                       "details": settigs_entity["schemaMetaData"]["details"]},
-                    "parameterType": entity_type.upper(),
-                    "code": settigs_entity["code"],
-                    "name": settigs_entity["name"],
-                    "description": settigs_entity["description"],
-                    "synonyms": settigs_entity["synonyms"],
-                    "icon": settigs_entity["icon"],
-                    "sampleQueries": settigs_entity["sampleQueries"],
-                    "importValues": settigs_entity["importValues"],
-                    "mandatory": settigs_entity["mandatory"],
-                    "enabled": settigs_entity["enabled"],
-                    "locked": settigs_entity["locked"],
-                    "advancedConfiguration": settigs_entity["advancedConfiguration"],
-                    #"viewValues": "View",
-                    "custom": settigs_entity["custom"],
-                    "dynamicParameterValues": settigs_entity["dynamicParameterValues"],
-                    "searchable": settigs_entity["searchable"],
-                    "nameTransformer": settigs_entity["nameTransformer"],
-                    "synonymTransformers": settigs_entity["synonymTransformers"],
-                    "valid": settigs_entity["valid"],
-                    "locale": settigs_entity["valid"],
-                    "filter": settigs_entity["locale"],
-                    "customExpression": settigs_entity["customExpression"],
-                    "format": settigs_entity["format"],
-                    "indexed": settigs_entity["indexed"],
-                    "date": settigs_entity["date"],
-                    "customAggregation": settigs_entity["customAggregation"],
-                    "ignoreAggregation": settigs_entity["ignoreAggregation"],
-                    "injections": settigs_entity["injections"],
-                    "defaultInjections": settigs_entity["defaultInjections"],
-                    "geo": settigs_entity["geo"]}
+                           "schemaMetaData": {"columnId": settigs_entity["schemaMetaData"]["columnId"],
+                                              "columnName": settigs_entity["schemaMetaData"]["columnName"],
+                                              "dataType": settigs_entity["schemaMetaData"]["dataType"],
+                                              "dataExample": settigs_entity["schemaMetaData"]["dataExample"],
+                                              "internalDataType": settigs_entity["schemaMetaData"]["internalDataType"],
+                                              "indexedWith": settigs_entity["schemaMetaData"].get("indexedWith",None),
+                                              "join": settigs_entity["schemaMetaData"].get("join",None),
+                                              "details": settigs_entity["schemaMetaData"].get("details", dict())},
+                           "parameterType": entity_type.upper(),
+                           "code": settigs_entity["code"],
+                           "name": settigs_entity.get("name", settigs_entity["code"]),
+                           "description": settigs_entity.get("synonyms", ""),
+                           "synonyms": settigs_entity.get("synonyms", list()),
+                           "icon": settigs_entity.get("icon", ""),
+                           "sampleQueries": settigs_entity.get("sampleQueries", list()),
+                           "importValues": settigs_entity.get("importValues", False),
+                           "mandatory": settigs_entity.get("mandatory", False),
+                           "enabled": settigs_entity.get("enabled", True),
+                           "locked": settigs_entity.get("locked", False),
+                           "advancedConfiguration": settigs_entity.get("advancedConfiguration", dict()),
+                           "custom": settigs_entity.get("custom",False),
+                           "dynamicParameterValues": settigs_entity.get("searchable", list()),
+                           "searchable": settigs_entity.get("searchable", False),
+                           "nameTransformer": settigs_entity.get("nameTransformer", None),
+                           "synonymTransformers": settigs_entity.get("synonymTransformers", None),
+
+                           # questi vengono presi dal datasets get self._base_url_askdata + '/smartdataset/datasets/' + dataset_id
+                           "valid": settigs_entity.get("locale", True),
+                           "locale": settigs_entity.get("locale", ""),
+                           "filter": settigs_entity.get("filter", None),
+                           "customExpression": settigs_entity.get("customExpression", None),
+                           "format": settigs_entity.get("format", ""),
+                           "indexed": settigs_entity.get("indexed", False),
+                           "date": settigs_entity.get("date", False),
+                           "customAggregation": settigs_entity.get("customAggregation", ""),
+                           "ignoreAggregation": settigs_entity.get("ignoreAggregation", False),
+                           "injections": settigs_entity.get("injections", list()),
+                           "defaultInjections": settigs_entity.get("defaultInjections", list()),
+                           "geo": settigs_entity.get("geo", dict())}
                           ]}
 
         s = requests.Session()
@@ -614,3 +655,4 @@ class Dataset():
 #colomValueId = columValue
 
 # aggiungere il get del dict che in caso di assenza ritorni un valore di default
+# chiedere a fra perchè la get del dataset mi ritorna un sacco di campi con null
