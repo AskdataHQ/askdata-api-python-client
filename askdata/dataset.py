@@ -102,20 +102,23 @@ class Dataset():
         #return an array
         return dataset_choose.id.values
 
-    def __get_dataset_connection(self, datasetid):
+    # Cancellare dopo aver verificato che load_datset_to_df va ok perchè possiamo riutilizzare __get_dataset_settings_info
+    # per avere le stesse informazione di return
 
-        s = requests.Session()
-        s.keep_alive = False
-        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
-        s.mount('https://', HTTPAdapter(max_retries=retries))
-
-        dataset_url = self._base_url_dataset + '/datasets?agentId=' + self._agentId
-        response = requests.get(url=dataset_url, headers=self._headers)
-        response.raise_for_status()
-        r = response.json()
-        connection_df = pd.DataFrame([row['connection'] for row in r if row['id'] == datasetid])
-        id_createdby = [row['createdBy'] for row in r if row['id'] == datasetid][0]
-        return connection_df.table_id.item(), connection_df.schema.item(), id_createdby
+    # def __get_dataset_connection(self, datasetid):
+    #
+    #     s = requests.Session()
+    #     s.keep_alive = False
+    #     retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+    #     s.mount('https://', HTTPAdapter(max_retries=retries))
+    #
+    #     dataset_url = self._base_url_dataset + '/datasets?agentId=' + self._agentId
+    #     response = requests.get(url=dataset_url, headers=self._headers)
+    #     response.raise_for_status()
+    #     r = response.json()
+    #     connection_df = pd.DataFrame([row['connection'] for row in r if row['id'] == datasetid])
+    #     id_createdby = [row['createdBy'] for row in r if row['id'] == datasetid][0]
+    #     return connection_df.table_id.item(), connection_df.schema.item(), id_createdby
 
     def load_entities_dataset(self, datasetid, select_custom = True):
 
@@ -284,7 +287,13 @@ class Dataset():
         :return: DataFrame
         '''
 
-        table_id, schema, id_createdby = self.__get_dataset_connection(dataset_id)
+        #table_id, schema, id_createdby = self.__get_dataset_connection(dataset_id)
+
+        dataset_info = self.__get_dataset_settings_info(dataset_id, all_info=True)
+
+        table_id = dataset_info["settings"]["table_id"]
+        schema = dataset_info["settings"]["schema"]
+        id_createdby = dataset_info["createdBy"]
 
         #check if userid/username (agent) is also the owner of the
         if id_createdby not in (self.userid, self.username):
@@ -443,35 +452,46 @@ class Dataset():
 
     def migration_dataset(self, agent_source: 'Agent', dataset_id_source: str):
 
-        datasets_document = agent_source.retrive_dataset(dataset_id_source)
-        label = datasets_document['name']
-        settings = datasets_document['settings']
-        type_dataset = datasets_document['type']
+        datasets_setting = agent_source.__get_dataset_settings_info(dataset_id_source, all_info=True)
+        label = datasets_setting['name']
+        settings = datasets_setting['settings']
+        type_dataset = datasets_setting['type']
         dataset_id_dest = self.create_dataset_byconn(label=label, settings=settings, type=type_dataset)
-        measures = datasets_document['measures']
-        entitytypes = datasets_document['entityTypes']
-        for entitytype in entitytypes:
-            self.copy_entity_dataset(entity_code=entitytype['code'], dataset_id=dataset_id_dest,
-                                    settigs_entity= entitytype, entity_type='entitytype', dataset_type= type_dataset)
-        for measure in measures:
-            self.copy_entity_dataset(entity_code=measure['code'], dataset_id=dataset_id_dest,
-                                    settigs_entity= measure, entity_type='measure', dataset_type= type_dataset)
+        dataset_entities_doc_source = agent_source.retrive_dataset_entities(dataset_id=dataset_id_source, dataset_type=type_dataset)
+        # measures = datasets_setting['measures']
+        # entitytypes = datasets_setting['entityTypes']
+        for index, entity in enumerate(dataset_entities_doc_source["data"]):
+            self.copy_entity_dataset(entity_code=entity['code'], dataset_id=dataset_id_dest, settigs_entity=entity,
+                                     dataset_type=type_dataset)
+            if entity["importValues"]:
+                # verfica se questa entity ha importValues=true e legge i value da copiare
 
-    def retrive_dataset_settings(self, dataset_id: str) -> dict:
+                entity_values_settings_source = agent_source.__get_value_entity(entity)
+                self.copy_values_entity_dataset(entity_code=entity['code'], dataset_id=dataset_id_dest,
+                                                values_entity_doc=entity_values_settings_source["data"])
+        # for measure in measures:
+        #     self.copy_entity_dataset(entity_code=measure['code'], dataset_id=dataset_id_dest,
+        #                             settigs_entity= measure, entity_type='measure', dataset_type= type_dataset)
+
+    def __get_dataset_settings_info(self, dataset_id: str, all_info=False) -> dict:
 
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        dataset_url = self._base_url_askdata + '/smartdataset/datasets/' + dataset_id + 'settings'
+        if all_info:
+            dataset_url = self._base_url_askdata + '/smartdataset/datasets/' + dataset_id
+        else:
+            dataset_url = self._base_url_askdata + '/smartdataset/datasets/' + dataset_id + '/settings'
+
         # devo aggiungere anche le info di get self._base_url_askdata + '/smartdataset/datasets/' + dataset_id
         # alcuni field li trovo qui e bastqa mentre sinonimi etc li trovo su retrive_dataset_entities
         response = s.get(url=dataset_url, headers=self._headers)
         response.raise_for_status()
-        settings_dataset = response.json()
+        dataset_document = response.json()
 
-        return settings_dataset
+        return dataset_document
 
     def retrive_dataset_entities(self, dataset_id: str, dataset_type: str) -> dict:
 
@@ -487,27 +507,25 @@ class Dataset():
         response = s.get(url=dataset_url, headers=self._headers)
         response.raise_for_status()
         n_entity = response.json()['payload']['totalElements']
-        entities_dataset = response.json()['payload']['data']
-        if int(n_entity) > len(entities_dataset):
+        entities_dataset = response.json()["payload"]
+        if int(n_entity) > len(entities_dataset["data"]):
             raise NameError('not all entities are fetching')
 
 
         return entities_dataset
 
-    def copy_entity_dataset(self, entity_code: str, dataset_id: str, settigs_entity: dict, entity_type: str, dataset_type: str):
-
-        if entity_type.lower() == "entitytype":
-            entity_type = "ENTITY_TYPE"
+    def copy_entity_dataset(self, entity_code: str, dataset_id: str, settigs_entity: dict, dataset_type: str):
 
         if settigs_entity["custom"] == True:
 
+            # crea una custom prima della put dell'entity
             data_custom =  {"entry": [{"datasetId": dataset_id,
                                         "code": settigs_entity["code"],
                                         "enabled": True,
                                         "importValues": False,
                                         "custom": True,
                                         "mandatory": False,
-                                        "parameterType": entity_type.upper()
+                                        "parameterType": settigs_entity["parameterType"]
                                         }]}
 
             s = requests.Session()
@@ -521,7 +539,17 @@ class Dataset():
             r_custom = s.post(url=dataset_url, headers=self._headers, json=data_custom)
             r_custom.raise_for_status()
 
-        self.__put_entity_dataset(entity_code, dataset_id, settigs_entity, entity_type, dataset_type)
+        # copia tutti i setting della entity con code entity_code nel dataset di destinazione
+        self.__put_entity_dataset(entity_code, dataset_id, settigs_entity, settigs_entity["parameterType"], dataset_type)
+
+    def copy_values_entity_dataset(self, entity_code: str, dataset_id: str, values_entity_doc: list):
+
+
+        # salva i value copiati nel nuovo dataset di destinazione
+        for index, value_entity in enumerate(values_entity_doc["data"]):
+            self.__put_value_entity(entity_code=value_entity["code"], dataset_id= dataset_id,
+                                    settings_value=value_entity)
+
 
 
     def __put_entity_dataset(self, entity_code: str, dataset_id: str, settigs_entity: dict, entity_type: str, dataset_type: str):
@@ -591,7 +619,7 @@ class Dataset():
         response = s.put(url=dataset_url, headers=self._headers, json=data)
         response.raise_for_status()
 
-    def get_value_entity(self, entity_code: str) -> dict:
+    def __get_value_entity(self, entity_code: str) -> dict:
 
         s = requests.Session()
         s.keep_alive = False
@@ -603,7 +631,7 @@ class Dataset():
         r = s.get(url=authentication_url, headers=self._headers, verify=False)
         r.raise_for_status()
 
-        return r.json()
+        return r.json()["payload"]
 
     def __put_value_entity(self, entity_code: str, dataset_id: str, settings_value: dict):
 
