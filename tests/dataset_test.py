@@ -10,7 +10,7 @@ if __name__ == '__main__':
     username = 'g.demaio@askdata.com'
     password = 'g.demaio'
     domain = 'Askdata'
-    env = 'qa'
+    env = 'prod'
     Askdata = Askdata(username, password, domain, env)
 
     # get agent
@@ -21,9 +21,9 @@ if __name__ == '__main__':
     #df_datasets = agent.load_datasets()
 
     # -------------------------------- Load by dataset ID -------------------------------
-    #id_test = agent.get_id_dataset_by_name('COPERTURA')
+    id_test = agent.get_id_dataset_by_name('COPERTURA_BCK')
 
-    #dataset_df = agent.load_dataset_to_df(id_test[0])
+    dataset_df = agent.load_dataset_to_df(id_test[0])
     # agent.LoadFromDataset('DF426F64-7D7E-4573-8789-E2D6F08ACB7B-MYSQL-95a9d1f1-8692-48a2-8b2b-f4a296e8fa27')
 
     # -------------------------------- sync by dataset ID -------------------------------

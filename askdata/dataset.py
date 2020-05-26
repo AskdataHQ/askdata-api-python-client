@@ -297,7 +297,7 @@ class Dataset():
         size = 1000
         authentication_url2 = '{}/smartdataset/v2/datasets/{}/query'.format(self._base_url_askdata, dataset_id)
 
-        query_count = "SELECT COUNT(`{}`) FROM {}.{} WHERE `{}` is not NULL;".format(columnsid[0], schema, table_id,
+        query_count = "SELECT COUNT(`{}`) FROM `{}`.{} WHERE `{}` is not NULL;".format(columnsid[0], schema, table_id,
                                                                                      columnsid[0])
 
         s_count = requests.Session()
@@ -331,7 +331,7 @@ class Dataset():
 
         start = time.time()
 
-        query = "SELECT {} FROM {}.{};".format(fields_query, schema, table_id)
+        query = "SELECT {} FROM `{}`.{};".format(fields_query, schema, table_id)
         j = 0
         processes = []
         with ThreadPoolExecutor(max_workers=n_worker) as executor:
