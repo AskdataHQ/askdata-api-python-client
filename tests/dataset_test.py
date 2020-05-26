@@ -10,7 +10,7 @@ if __name__ == '__main__':
     username = 'g.demaio@askdata.com'
     password = 'g.demaio'
     domain = 'Askdata'
-    env = 'prod'
+    env = 'qa'
     Askdata = Askdata(username, password, domain, env)
 
     # get agent
@@ -35,8 +35,11 @@ if __name__ == '__main__':
     df_test = pd.DataFrame([{"id": "pippo", "set": 123, "clm1": "ciao"}, {"id": "pippo1", "set": 423, "clm1": "ciao"},
                             {"id": "pippo2", "set": 1283, "clm1": "ciao"}])
     # ,indexclm=["set"]
-    agent.save_to_dataset(frame=df_test, dataset_name='T_DF_{}'.format(datetime.datetime.now().strftime("%Y%m%d")),
+    id_df_to_dataset = agent.save_to_dataset(frame=df_test, dataset_name='T_DF_{}'.format(datetime.datetime.now().strftime("%Y%m%d")),
                           indexclm=["set"])
+
+    # ------- delete dataset -------------
+    agent.delete_dataset(id_df_to_dataset)
 
     # ----- Create New dataset from existing table from your personal DB  ,Create dataset mysql from  mysql connetion ---------------
     database_username = 'xxxx'

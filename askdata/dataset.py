@@ -193,7 +193,8 @@ class Dataset():
         logging.debug('-------delete mysqluser for dataset {}------'.format(dataset_id))
 
 
-    def save_to_dataset(self, frame, dataset_name, add_indexdf = False, indexclm = [], if_exists='Replace'):
+    def save_to_dataset(self, frame: pd.DataFrame, dataset_name: str, add_indexdf = False,
+                        indexclm = [], if_exists='Replace') -> str:
 
         # vedere upsert in mysql if_exists['replace','Append','upsert']
         '''
@@ -264,6 +265,8 @@ class Dataset():
 
         # delete mysql user
         self.__ask_del_db_engine(dataset_id)
+
+        return dataset_id
 
 
 
@@ -355,8 +358,20 @@ class Dataset():
         return dataset_df
 
 
-    # def delete_dataset(self):
-    #     pass
+    def delete_dataset(self, dataset_id: str):
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        # delete dataset of agent by ids dataset
+        authentication_url = self._base_url_askdata + '/smartbot/agents/' + self._agentId + '/datasets/' + dataset_id
+        response = s.delete(url=authentication_url, headers=self._headers)
+        response.raise_for_status()
+
+        logging.info('---------------------------')
+        logging.info('-------delete dataset {}------'.format(dataset_id))
 
     def create_dataset_byconn(self, label, host, port, schema, userconn, pswconn, tablename,type="MYSQL"):
 
