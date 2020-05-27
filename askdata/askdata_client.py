@@ -125,8 +125,30 @@ class Askdata(SignUp):
     # ?
     def responce(self):
         return self.r2
+    
+    def create_agent(self, agent_name):
 
+        data = {
+            "name": agent_name,
+            "language" : "en"
+        }
 
+        if self._env == 'dev':
+            self._base_url = url_list['BASE_URL_FEED_DEV']
+        if self._env == 'qa':
+            self._base_url = url_list['BASE_URL_FEED_QA']
+        if self._env == 'prod':
+            self._base_url = url_list['BASE_URL_FEED_PROD']
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+        authentication_url = self._base_url + '/agents'
+        r = s.post(url=authentication_url, headers=self._headers, json=data)
+        r.raise_for_status()
+
+        return r
 
 class Agent(Insight, Channel, Catalog, Dataset):
     '''
@@ -213,7 +235,3 @@ class Agent(Insight, Channel, Catalog, Dataset):
         df = pd.DataFrame(np.array(r[0]['attachment']['body'][0]['details']['rows']), columns=r[0]['attachment']['body'][0]['details']['columns'])
 
         return df
-
-
-
-
