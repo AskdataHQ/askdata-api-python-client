@@ -134,17 +134,17 @@ class Askdata(SignUp):
         }
 
         if self._env == 'dev':
-            self._base_url = url_list['BASE_URL_FEED_DEV']
+            self._base_url = url_list['BASE_URL_ASKDATA_DEV']
         if self._env == 'qa':
-            self._base_url = url_list['BASE_URL_FEED_QA']
+            self._base_url = url_list['BASE_URL_ASKDATA_QA']
         if self._env == 'prod':
-            self._base_url = url_list['BASE_URL_FEED_PROD']
+            self._base_url = url_list['BASE_URL_ASKDATA_PROD']
 
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
-        authentication_url = self._base_url + '/agents'
+        authentication_url = self._base_url + '/smartbot/agents'
         r = s.post(url=authentication_url, headers=self._headers, json=data)
         r.raise_for_status()
 
