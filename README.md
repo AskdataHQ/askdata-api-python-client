@@ -6,7 +6,13 @@
 	<br>
 </h1>
 
-Askdata python client is a friendly Python library that helps developers, data scientists and engineers build and manage agent using Askdata platform. 
+Askdata python client is a friendly Python library that helps developers, data scientists and engineers build and manage agent using Askdata platform.
+
+There are three main use cases for this library:
+
+1) Query an agent using natural language queries
+2) Create a dataset
+3) Connect an agent to a dataset
 
 For more information, see [Askdata's website](https://askdata.com).
 
