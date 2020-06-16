@@ -120,7 +120,7 @@ class Dataset():
     #     id_createdby = [row['createdBy'] for row in r if row['id'] == datasetid][0]
     #     return connection_df.table_id.item(), connection_df.schema.item(), id_createdby
 
-    def load_entities_dataset(self, datasetid, select_custom = True):
+    def load_entities_dataset(self, datasetid, select_custom=True):
 
         df_datasets = self.load_datasets()
         dataset_info = df_datasets[df_datasets['id'] == datasetid]
@@ -306,7 +306,8 @@ class Dataset():
         size = 1000
         authentication_url2 = '{}/smartdataset/v2/datasets/{}/query'.format(self._base_url_askdata, dataset_id)
 
-        query_count = "SELECT COUNT(`{}`) FROM {}.{} WHERE `{}` is not NULL;".format(columnsid[0], schema, table_id,
+        # Check if this query it's correct with null
+        query_count = "SELECT COUNT(`{}`) FROM `{}`.{} WHERE `{}` is not NULL;".format(columnsid[0], schema, table_id,
                                                                                      columnsid[0])
 
         s_count = requests.Session()
@@ -340,7 +341,7 @@ class Dataset():
 
         start = time.time()
 
-        query = "SELECT {} FROM {}.{};".format(fields_query, schema, table_id)
+        query = "SELECT {} FROM `{}`.{};".format(fields_query, schema, table_id)
         j = 0
         processes = []
         with ThreadPoolExecutor(max_workers=n_worker) as executor:
@@ -452,23 +453,26 @@ class Dataset():
 
     def migration_dataset(self, agent_source: 'Agent', dataset_id_source: str):
 
+        # da qui il codice
+
         datasets_setting = agent_source.__get_dataset_settings_info(dataset_id_source, all_info=True)
         label = datasets_setting['name']
         settings = datasets_setting['settings']
         type_dataset = datasets_setting['type']
         dataset_id_dest = self.create_dataset_byconn(label=label, settings=settings, type=type_dataset)
         dataset_entities_doc_source = agent_source.retrive_dataset_entities(dataset_id=dataset_id_source, dataset_type=type_dataset)
+
         # measures = datasets_setting['measures']
         # entitytypes = datasets_setting['entityTypes']
         for index, entity in enumerate(dataset_entities_doc_source["data"]):
-            self.copy_entity_dataset(entity_code=entity['code'], dataset_id=dataset_id_dest, settigs_entity=entity,
+            self.copy_entity_dataset(entity_code=entity['code'], dataset_id=dataset_id_dest, settigs_entity_source=entity,
                                      dataset_type=type_dataset)
             if entity["importValues"]:
                 # verfica se questa entity ha importValues=true e legge i value da copiare
 
-                entity_values_settings_source = agent_source.__get_value_entity(entity)
+                entity_values_settings_source = agent_source.__get_value_entity(entity["code"])
                 self.copy_values_entity_dataset(entity_code=entity['code'], dataset_id=dataset_id_dest,
-                                                values_entity_doc=entity_values_settings_source["data"])
+                                                values_entity_list_source=entity_values_settings_source["data"])
         # for measure in measures:
         #     self.copy_entity_dataset(entity_code=measure['code'], dataset_id=dataset_id_dest,
         #                             settigs_entity= measure, entity_type='measure', dataset_type= type_dataset)
@@ -514,18 +518,18 @@ class Dataset():
 
         return entities_dataset
 
-    def copy_entity_dataset(self, entity_code: str, dataset_id: str, settigs_entity: dict, dataset_type: str):
+    def copy_entity_dataset(self, entity_code: str, dataset_id: str, settigs_entity_source: dict, dataset_type: str):
 
-        if settigs_entity["custom"] == True:
+        if settigs_entity_source["custom"] == True:
 
             # crea una custom prima della put dell'entity
-            data_custom =  {"entry": [{"datasetId": dataset_id,
-                                        "code": settigs_entity["code"],
+            data_custom = {"entry": [{"datasetId": dataset_id,
+                                        "code": settigs_entity_source["code"],
                                         "enabled": True,
                                         "importValues": False,
                                         "custom": True,
                                         "mandatory": False,
-                                        "parameterType": settigs_entity["parameterType"]
+                                        "parameterType": settigs_entity_source["parameterType"]
                                         }]}
 
             s = requests.Session()
@@ -536,18 +540,63 @@ class Dataset():
             dataset_url = self._base_url_askdata + '/smartbot/dataset/type/' + dataset_type + '/id/' + dataset_id \
                           + '/subset/' + dataset_type + '/entry'
 
-            r_custom = s.post(url=dataset_url, headers=self._headers, json=data_custom)
-            r_custom.raise_for_status()
+            response = s.post(url=dataset_url, headers=self._headers, json=data_custom)
+            response.raise_for_status()
 
-        # copia tutti i setting della entity con code entity_code nel dataset di destinazione
-        self.__put_entity_dataset(entity_code, dataset_id, settigs_entity, settigs_entity["parameterType"], dataset_type)
+        settigs_entities_dest = self.retrive_dataset_entities(dataset_id=dataset_id, dataset_type=dataset_type)
 
-    def copy_values_entity_dataset(self, entity_code: str, dataset_id: str, values_entity_doc: list):
+        for index, settigs_entity_dest in enumerate(settigs_entities_dest['data']):
+                if settigs_entity_dest["code"] == entity_code:
+
+                    settigs_entity = {
+                    'schemaMetaData': settigs_entity_dest["schemaMetaData"],
+                    'parameterType': settigs_entity_dest["parameterType"],
+                    'code': settigs_entity_dest["code"],
+                    'name': settigs_entity_source.get("name",settigs_entity_dest["code"]),
+                    'description': settigs_entity_source.get("description", ""),
+                    'synonyms': settigs_entity_source.get("synonyms", list()),
+                    'icon': settigs_entity_source.get("icon", ""),
+                    'sampleQueries': settigs_entity_source.get("sampleQueries", list()),
+                    'importValues': settigs_entity_source.get("importValues", False),
+                    'mandatory': settigs_entity_source.get("mandatory", False),
+                    'enabled': settigs_entity_source.get("enabled", True),
+                    'advancedConfiguration': settigs_entity_source.get("advancedConfiguration", dict()),
+                    'custom': settigs_entity_source.get("custom",False),
+                    'dynamicParameterValues': settigs_entity_source.get("dynamicParameterValues", list()),
+                    'searchable': settigs_entity_source.get("searchable", False),
+                    'nameTransformer': settigs_entity_source.get("nameTransformer", None),
+                    'synonymTransformers': settigs_entity_source.get("synonymTransformers", None)}
 
 
-        # salva i value copiati nel nuovo dataset di destinazione
-        for index, value_entity in enumerate(values_entity_doc["data"]):
-            self.__put_value_entity(entity_code=value_entity["code"], dataset_id= dataset_id,
+                    # copia tutti i setting della entity con code entity_code nel dataset di destinazione
+                    self.__put_entity_dataset(entity_code, dataset_id, settigs_entity,
+                                              settigs_entity["parameterType"], dataset_type)
+
+    def copy_values_entity_dataset(self, entity_code: str, dataset_id: str, values_entity_list_source: list):
+
+        values_entity_list_source_dest = self.__get_value_entity(entity_code=entity_code)
+        # salva i value copiati nel nuovo dataset di destinazione  to do: oder both values_entity_list_source_dest and values_entity_list_source and improve performce
+        for index, value_entity_source in enumerate(values_entity_list_source):
+
+            for index, value_entity_dest in enumerate(values_entity_list_source_dest['data']):
+                if value_entity_dest["code"] == value_entity_source["code"]:
+
+                    value_entity = {"_id": value_entity_dest["_id"],
+                            "code": value_entity_dest["code"],
+                            "datasetSync": value_entity_dest.get("datasetSync", list()),
+                            "datasets": value_entity_dest["datasets"],
+                            "description": value_entity_source.get("description", ""),
+                            "details": value_entity_source.get("details", dict()),
+                            "domain": self._domain,
+                            "icon": value_entity_source.get("icon", ""),
+                            "localizedName": value_entity_source.get("localizedName", dict()),
+                            "localizedSynonyms": value_entity_source.get("localizedSynonyms", list()),
+                            "name": value_entity_source.get("name", value_entity_dest["code"]),
+                            "sampleQueries": value_entity_source.get("sampleQueries", list()),
+                            "synonyms": value_entity_source["synonyms"],
+                            "type": entity_code}
+
+                    self.__put_value_entity(entity_code=entity_code, dataset_id=dataset_id,
                                     settings_value=value_entity)
 
 
@@ -560,53 +609,78 @@ class Dataset():
         :param dataset_id: str
         :param settigs_entity: dict
         :param entity_type: str
+            "ENTITY_TYPE" or "MEASURE"
         :param dataset_type: str
         :return: None
         """
-        if entity_type.lower() == "entitytype":
-            entity_type = "ENTITY_TYPE"
 
-        data = {"entry": [{"datasetId": dataset_id,
-                           "schemaMetaData": {"columnId": settigs_entity["schemaMetaData"]["columnId"],
-                                              "columnName": settigs_entity["schemaMetaData"]["columnName"],
-                                              "dataType": settigs_entity["schemaMetaData"]["dataType"],
-                                              "dataExample": settigs_entity["schemaMetaData"]["dataExample"],
-                                              "internalDataType": settigs_entity["schemaMetaData"]["internalDataType"],
-                                              "indexedWith": settigs_entity["schemaMetaData"].get("indexedWith",None),
-                                              "join": settigs_entity["schemaMetaData"].get("join",None),
-                                              "details": settigs_entity["schemaMetaData"].get("details", dict())},
-                           "parameterType": entity_type.upper(),
-                           "code": settigs_entity["code"],
-                           "name": settigs_entity.get("name", settigs_entity["code"]),
-                           "description": settigs_entity.get("synonyms", ""),
-                           "synonyms": settigs_entity.get("synonyms", list()),
-                           "icon": settigs_entity.get("icon", ""),
-                           "sampleQueries": settigs_entity.get("sampleQueries", list()),
-                           "importValues": settigs_entity.get("importValues", False),
-                           "mandatory": settigs_entity.get("mandatory", False),
-                           "enabled": settigs_entity.get("enabled", True),
-                           "locked": settigs_entity.get("locked", False),
-                           "advancedConfiguration": settigs_entity.get("advancedConfiguration", dict()),
-                           "custom": settigs_entity.get("custom",False),
-                           "dynamicParameterValues": settigs_entity.get("searchable", list()),
-                           "searchable": settigs_entity.get("searchable", False),
-                           "nameTransformer": settigs_entity.get("nameTransformer", None),
-                           "synonymTransformers": settigs_entity.get("synonymTransformers", None),
+        # data = {"entry": [{"datasetId": dataset_id,
+        #                    "schemaMetaData": {"columnId": settigs_entity["schemaMetaData"]["columnId"],
+        #                                       "columnName": settigs_entity["schemaMetaData"]["columnName"],
+        #                                       "dataType": settigs_entity["schemaMetaData"]["dataType"],
+        #                                       "dataExample": settigs_entity["schemaMetaData"]["dataExample"],
+        #                                       "internalDataType": settigs_entity["schemaMetaData"]["internalDataType"],
+        #                                       "indexedWith": settigs_entity["schemaMetaData"].get("indexedWith",None),
+        #                                       "join": settigs_entity["schemaMetaData"].get("join",None),
+        #                                       "details": settigs_entity["schemaMetaData"].get("details", dict())},
+        #                    "parameterType": entity_type.upper(),
+        #                    "code": settigs_entity["code"],
+        #                    "name": settigs_entity.get("name", settigs_entity["code"]),
+        #                    "description": settigs_entity.get("description", ""),
+        #                    "synonyms": settigs_entity.get("synonyms", list()),
+        #                    "icon": settigs_entity.get("icon", ""),
+        #                    "sampleQueries": settigs_entity.get("sampleQueries", list()),
+        #                    "importValues": settigs_entity.get("importValues", False),
+        #                    "mandatory": settigs_entity.get("mandatory", False),
+        #                    "enabled": settigs_entity.get("enabled", True),
+        #                    #"locked": settigs_entity.get("locked", False),
+        #                    "advancedConfiguration": settigs_entity.get("advancedConfiguration", dict()),
+        #                    "custom": settigs_entity.get("custom",False),
+        #                    "dynamicParameterValues": settigs_entity.get("searchable", list()),
+        #                    "searchable": settigs_entity.get("searchable", False),
+        #                    "nameTransformer": settigs_entity.get("nameTransformer", None),
+        #                    "synonymTransformers": settigs_entity.get("synonymTransformers", None)
 
                            # questi vengono presi dal datasets get self._base_url_askdata + '/smartdataset/datasets/' + dataset_id
-                           "valid": settigs_entity.get("locale", True),
-                           "locale": settigs_entity.get("locale", ""),
-                           "filter": settigs_entity.get("filter", None),
-                           "customExpression": settigs_entity.get("customExpression", None),
-                           "format": settigs_entity.get("format", ""),
-                           "indexed": settigs_entity.get("indexed", False),
-                           "date": settigs_entity.get("date", False),
-                           "customAggregation": settigs_entity.get("customAggregation", ""),
-                           "ignoreAggregation": settigs_entity.get("ignoreAggregation", False),
-                           "injections": settigs_entity.get("injections", list()),
-                           "defaultInjections": settigs_entity.get("defaultInjections", list()),
-                           "geo": settigs_entity.get("geo", dict())}
-                          ]}
+                           # "valid": settigs_entity.get("locale", True),
+                           # "locale": settigs_entity.get("locale", ""),
+                           # "filter": settigs_entity.get("filter", None),
+                           # "customExpression": settigs_entity.get("customExpression", None),
+                           # "format": settigs_entity.get("format", ""),
+                           # "indexed": settigs_entity.get("indexed", False),
+                           # "date": settigs_entity.get("date", False),
+                           # "customAggregation": settigs_entity.get("customAggregation", ""),
+                           # "ignoreAggregation": settigs_entity.get("ignoreAggregation", False),
+                           # "injections": settigs_entity.get("injections", list()),
+                           # "defaultInjections": settigs_entity.get("defaultInjections", list()),
+                           # "geo": settigs_entity.get("geo", dict())
+                          #}]}
+
+        data = {'entry': [{'datasetId': dataset_id,
+                    'schemaMetaData': {'columnId': settigs_entity["schemaMetaData"]["columnId"],
+                                       'columnName': settigs_entity["schemaMetaData"]["columnName"],
+                                       'dataType': settigs_entity["schemaMetaData"]["dataType"],
+                                       'dataExample': settigs_entity["schemaMetaData"]["dataExample"],
+                                       'internalDataType': settigs_entity["schemaMetaData"]["internalDataType"],
+                                       'indexedWith': settigs_entity["schemaMetaData"].get("indexedWith",None),
+                                       'join': settigs_entity["schemaMetaData"].get("join",None),
+                                       'details': settigs_entity["schemaMetaData"].get("details", dict())},
+                    'parameterType': entity_type.upper(),
+                    'code': settigs_entity["code"],
+                    'name': settigs_entity.get("name", settigs_entity["code"]),
+                    'description': settigs_entity.get("description", ""),
+                    'synonyms': settigs_entity.get("synonyms", list()),
+                    'icon': settigs_entity.get("icon", ""),
+                    'sampleQueries': settigs_entity.get("sampleQueries", list()),
+                    'importValues': settigs_entity.get("importValues", False),
+                    'mandatory': settigs_entity.get("mandatory", False),
+                    'enabled': settigs_entity.get("enabled", True),
+                    'advancedConfiguration': settigs_entity.get("advancedConfiguration", dict()),
+                    'custom': settigs_entity.get("custom",False),
+                    'dynamicParameterValues': settigs_entity.get("dynamicParameterValues", list()),
+                    'searchable': settigs_entity.get("searchable", False),
+                    'nameTransformer': settigs_entity.get("nameTransformer", None),
+                    'synonymTransformers': settigs_entity.get("synonymTransformers", None)}]}
 
         s = requests.Session()
         s.keep_alive = False
@@ -627,8 +701,7 @@ class Dataset():
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
         authentication_url = self._base_url_askdata + '/smartmanager/data/' + self._domain + '/entity/' + entity_code
-
-        r = s.get(url=authentication_url, headers=self._headers, verify=False)
+        r = s.get(url=authentication_url, headers=self._headers, verify=True)
         r.raise_for_status()
 
         return r.json()["payload"]
@@ -646,12 +719,8 @@ class Dataset():
         # filling of the body request for the entity value
         data = {"_id": settings_value["_id"],
                 "code": settings_value["code"],
-                "datasetSync":[{
-                    "datasetId": dataset_id}],
-                "datasets":[{
-                    "sourceValue":[{"language": language,"value": settings_value["code"]}],
-                    "sourceValueId": settings_value["code"],
-                    "datasetId": dataset_id}],
+                "datasetSync": settings_value.get("datasetSync", list()),
+                "datasets": settings_value["datasets"],
                 "description": settings_value.get("description", ""),
                 "details": settings_value.get("details", dict()),
                 "domain": domain,
@@ -663,6 +732,22 @@ class Dataset():
                 "synonyms": settings_value["synonyms"],
                 "type": entity_code}
 
+        # [{
+        #     "sourceValue": [{"language": language, "value": settings_value["code"]}],
+        #     "sourceValueId": settings_value["code"],
+        #     "datasetId": dataset_id}]
+
+        # data = {'_id': '0a82e596-b6e9-45d7-ba0e-ec75b974b752-CITTA-Pescara', 'code': 'Pescara', 'datasetSync': [
+        #     {'datasetId': '0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-17ff8411-5077-4add-b3d0-544f841a352d'},
+        #     {'datasetId': '0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-8fb5566c-bc89-40c2-bd9d-a4d1733c61b6'}],
+        #  'datasets': [{'sourceValue': [{'language': 'en', 'value': 'Pescara'}], 'sourceValueId': 'Pescara',
+        #                'datasetId': '0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-17ff8411-5077-4add-b3d0-544f841a352d'},
+        #               {'sourceValue': [{'language': 'en', 'value': 'Pescara'}], 'sourceValueId': 'Pescara',
+        #                'datasetId': '0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-8fb5566c-bc89-40c2-bd9d-a4d1733c61b6'}],
+        #  'description': '', 'details': {}, 'domain': '0a82e596-b6e9-45d7-ba0e-ec75b974b752', 'icon': '',
+        #  'localizedName': {}, 'localizedSynonyms': [], 'name': 'Pescara', 'sampleQueries': [],
+        #  'synonyms': ['pescara', 'pescara_test'], 'type': 'CITTA'}
+
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
@@ -671,7 +756,7 @@ class Dataset():
         authentication_url = self._base_url_askdata + '/smartmanager/data/' + self._domain + '/entity/' + entity_code
 
         # put field into exist value
-        r = s.put(url=authentication_url, headers=self._headers, verify=False, json=data)
+        r = s.put(url=authentication_url, headers=self._headers, verify=True, json=data)
         r.raise_for_status()
 
 # il code è il columnValueId cioè il colimValue il campo preso dalla tabella ripulito e poi trimmato
