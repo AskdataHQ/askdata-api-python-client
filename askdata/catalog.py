@@ -40,26 +40,34 @@ class Catalog:
 
         if env == 'dev':
             self._base_url_cat = url_list['BASE_URL_FEED_DEV']
+            self._base_url_askdata = url_list['BASE_URL_ASKDATA_DEV']
         if env == 'qa':
             self._base_url_cat = url_list['BASE_URL_FEED_QA']
+            self._base_url_askdata = url_list['BASE_URL_ASKDATA_QA']
         if env == 'prod':
             self._base_url_cat = url_list['BASE_URL_FEED_PROD']
+            self._base_url_askdata = url_list['BASE_URL_ASKDATA_PROD']
 
-    def load_catalogs(self, empty=True):
+    def load_catalogs(self, empty=True) -> pd.DataFrame:
+        """
+        Get all bookmarks of the agent
 
+        :param empty: empty = True is for including all bookmarks (catalog) also empty
+        :return: DataFrame
+        """
         if empty:
             flag = 'true'
         else:
             flag = 'false'
-        # empty = True is for including all bookmarks (catalog) also empty
-        authentication_url = self._base_url_cat + '/' + self._domain + '/discovery?emptyIncluded=' + flag
+
+        authentication_url = self._base_url_askdata + '/smartfeed/' + self._domain + '/discovery?emptyIncluded=' + flag
         r = requests.get(url=authentication_url, headers=self._headers)
         r.raise_for_status()
         df_catalogs = pd.DataFrame(r.json()['discovery'])
 
         return df_catalogs
 
-    def create_query(self, query, entryid, execute=False):
+    def create_query(self, query:str, entryid:str, execute=False)-> str:
 
         data = {
             "type": "text",
@@ -78,11 +86,37 @@ class Catalog:
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self._base_url_cat + '/agents/' + self._agentId + '/discovery-entry/' + entryid + '/queries?execute=' + flag_ex
+        authentication_url = self._base_url_askdata + '/smartfeed/agents/' + self._agentId + '/discovery-entry/' + entryid + '/queries?execute=' + flag_ex
         r = s.post(url=authentication_url, headers=self._headers, json=data)
         r.raise_for_status()
 
-        return r
+        logging.info('create query: "{}" in catalog: {}'.format(str(r.json()['payload']), entryid))
 
-    # def DeleteQuery(self):
-    #     pass
+        return r.json()['id']
+
+    def get_query_from_catalog(self,entryid: str) -> list:
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_askdata + '/smartfeed/agents/' + self._agentId + '/discovery-entry/' + entryid + '/queries'
+        r = s.get(url=authentication_url, headers=self._headers)
+        r.raise_for_status()
+
+        return r.json()
+
+    def delete_query(self, entryid: str, queryid: str):
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_askdata + '/smartfeed/agents/' + self._agentId + '/discovery-entry/' + entryid + '/queries/' + queryid
+        r = s.delete(url=authentication_url, headers=self._headers)
+        r.raise_for_status()
+
+        logging.info('deleted query: {} from catalog: {}'.format(queryid, entryid))
+        return r

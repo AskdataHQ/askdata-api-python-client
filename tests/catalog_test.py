@@ -8,7 +8,7 @@ if __name__ == '__main__':
     username = 'g.demaio@askdata.com'
     password = 'g.demaio'
     domain = 'askdata'
-    env = 'qa'
+    env = 'prod'
     Askdata = Askdata(username, password, domain, env)
     # get list of Agents
     #df_GetAgents = Askdata.df_agents
@@ -17,6 +17,9 @@ if __name__ == '__main__':
 
     df_cat = agent.load_catalogs()
     today = datetime.now().strftime('%Y%m%d')
-    entry_id = list(df_cat[df_cat['title']=='CH_TEST_242814'].loc[:,'id'])[0]
-    agent.create_query(f'pippo_{today}', entry_id, execute=False)
+    entry_id = df_cat.id.values[1]
+    list_query = agent.get_query_from_catalog(entry_id)
+    id_query = agent.create_query(f'pippo_{today}', entry_id, execute=False)
+    agent.delete_query(entry_id, id_query)
+
     print('ok')
