@@ -17,9 +17,11 @@ if __name__ == '__main__':
 
     df_cat = agent.load_catalogs()
     today = datetime.now().strftime('%Y%m%d')
-    entry_id = df_cat.id.values[1]
+    entry_id_ = df_cat.id.values[1]
+    entry_id = agent.create_catalog(name=today+'_catalog')
     list_query = agent.get_query_from_catalog(entry_id)
     id_query = agent.create_query(f'pippo_{today}', entry_id, execute=False)
     agent.delete_query(entry_id, id_query)
+    agent.delete_catalog(entry_id)
 
     print('ok')

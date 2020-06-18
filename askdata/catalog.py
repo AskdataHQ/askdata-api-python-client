@@ -48,6 +48,26 @@ class Catalog:
             self._base_url_cat = url_list['BASE_URL_FEED_PROD']
             self._base_url_askdata = url_list['BASE_URL_ASKDATA_PROD']
 
+    def create_catalog(self, name: str, icon="https://storage.googleapis.com/askdata/interactions/icoInteractionDiscovery.png" ):
+
+        data = {"type": "CUSTOM",
+                   "name": name,
+                   "icon": icon,
+                   "lang": self._language}
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_askdata + '/smartfeed/agents/' + self._agentId + '/discovery-entry'
+        r = s.post(url=authentication_url, headers=self._headers, json=data)
+        r.raise_for_status()
+
+        logging.info('create catalog: {} -----> with Id {}'.format(str(r.json()['title']), str(r.json()['id'])))
+
+        return r.json()['id']
+
     def load_catalogs(self, empty=True) -> pd.DataFrame:
         """
         Get all bookmarks of the agent
@@ -106,6 +126,20 @@ class Catalog:
         r.raise_for_status()
 
         return r.json()
+
+    def delete_catalog(self,entryid):
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_askdata + '/smartfeed/agents/' + self._agentId + '/discovery-entry/' + entryid
+        r = s.delete(url=authentication_url, headers=self._headers)
+        r.raise_for_status()
+
+        logging.info('deleted catalog: {}'.format(entryid))
+        return r
 
     def delete_query(self, entryid: str, queryid: str):
 
