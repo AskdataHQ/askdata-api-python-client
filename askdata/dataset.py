@@ -14,8 +14,11 @@ from sqlalchemy.types import DateTime
 from sqlalchemy.schema import Index
 from threading import Thread
 import re
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from askdata.askdata_client import Agent
+
 from datetime import datetime
-#import askdata.askdata as askdata
 
 _LOG_FORMAT = "[%(filename)s:%(lineno)s - %(funcName)20s() ] - %(asctime)s --> %(message)s"
 g_logger = logging.getLogger()
@@ -75,7 +78,7 @@ class Dataset():
 
         return datasets_df
 
-    def get_id_dataset_by_name(self, name_ds, exact=False):
+    def get_id_dataset_by_name(self, name_ds: str, exact=False):
 
         '''
         Get askdata dataset ids by name
@@ -99,22 +102,25 @@ class Dataset():
         #return an array
         return dataset_choose.id.values
 
-    def __get_dataset_connection(self, datasetid):
+    # Cancellare dopo aver verificato che load_datset_to_df va ok perchè possiamo riutilizzare __get_dataset_settings_info
+    # per avere le stesse informazione di return
 
-        s = requests.Session()
-        s.keep_alive = False
-        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
-        s.mount('https://', HTTPAdapter(max_retries=retries))
+    # def __get_dataset_connection(self, datasetid):
+    #
+    #     s = requests.Session()
+    #     s.keep_alive = False
+    #     retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+    #     s.mount('https://', HTTPAdapter(max_retries=retries))
+    #
+    #     dataset_url = self._base_url_dataset + '/datasets?agentId=' + self._agentId
+    #     response = requests.get(url=dataset_url, headers=self._headers)
+    #     response.raise_for_status()
+    #     r = response.json()
+    #     connection_df = pd.DataFrame([row['connection'] for row in r if row['id'] == datasetid])
+    #     id_createdby = [row['createdBy'] for row in r if row['id'] == datasetid][0]
+    #     return connection_df.table_id.item(), connection_df.schema.item(), id_createdby
 
-        dataset_url = self._base_url_dataset + '/datasets?agentId=' + self._agentId
-        response = requests.get(url=dataset_url, headers=self._headers)
-        response.raise_for_status()
-        r = response.json()
-        connection_df = pd.DataFrame([row['connection'] for row in r if row['id'] == datasetid])
-        id_createdby = [row['createdBy'] for row in r if row['id'] == datasetid][0]
-        return connection_df.table_id.item(), connection_df.schema.item(), id_createdby
-
-    def load_entities_dataset(self, datasetid, select_custom = True):
+    def load_entities_dataset(self, datasetid, select_custom=True):
 
         df_datasets = self.load_datasets()
         dataset_info = df_datasets[df_datasets['id'] == datasetid]
@@ -284,7 +290,13 @@ class Dataset():
         :return: DataFrame
         '''
 
-        table_id, schema, id_createdby = self.__get_dataset_connection(dataset_id)
+        #table_id, schema, id_createdby = self.__get_dataset_connection(dataset_id)
+
+        dataset_info = self.__get_dataset_settings_info(dataset_id, all_info=True)
+
+        table_id = dataset_info["settings"]["table_id"]
+        schema = dataset_info["settings"]["schema"]
+        id_createdby = dataset_info["createdBy"]
 
         #check if userid/username (agent) is also the owner of the
         if id_createdby not in (self.userid, self.username):
@@ -297,6 +309,7 @@ class Dataset():
         size = 1000
         authentication_url2 = '{}/smartdataset/v2/datasets/{}/query'.format(self._base_url_askdata, dataset_id)
 
+        # Check if this query it's correct with null
         query_count = "SELECT COUNT(`{}`) FROM `{}`.{} WHERE `{}` is not NULL;".format(columnsid[0], schema, table_id,
                                                                                      columnsid[0])
 
@@ -373,23 +386,29 @@ class Dataset():
         logging.info('---------------------------')
         logging.info('-------delete dataset {}------'.format(dataset_id))
 
-    def create_dataset_byconn(self, label, host, port, schema, userconn, pswconn, tablename,type="MYSQL"):
+    def create_dataset_byconn(self, label: str, settings: dict, type="MYSQL"):
+
+        # to do : create data2 for different dataset sql server, big query etc
 
         data1 = {
-            "type": type
+            "type": type.upper()
         }
+        if type.upper() == "MYSQL":
+            icon = "https://storage.googleapis.com/askdata/datasets/icons/icoDataMySQL.png"
 
         data2 = {
             "label": label,
-            "icon": "https://storage.googleapis.com/askdata/datasets/icons/icoDataMySQL.png",
+            "icon": icon,
             "settings": {
-                "datasourceUrl": "jdbc:mysql://{}:{}/{}".format(host, port, schema),
-                "host": host,
-                "port": port,
-                "schema": schema,
-                "username": userconn,
-                "password": pswconn,
-                "table_id": tablename},
+                "datasourceUrl": "jdbc:mysql://{}:{}/{}".format(settings['host'], settings['port'], settings['schema']),
+                "host": settings['host'],
+                "port": settings['port'],
+                "schema": settings['schema'],
+                "username": settings['username'],
+                "password": settings['password'],
+                "table_id": settings['table_id'],
+                "enableValues": True,
+                "importValues": False},
             "plan": "NONE",
             "authRequired": False
         }
@@ -448,3 +467,296 @@ class Dataset():
         logging.debug('--- Create Dataset with id: {}'.format(str(datasetId)))
 
         return datasetId, settingDataset
+
+    def migration_dataset(self, agent_source: 'Agent', dataset_id_source: str):
+        """
+        migration_dataset create a copy of the specifics dataset in a different agent by datasetId and
+        the agent of destination. Only for Dateset of tyoe Mysql
+
+        :param agent_source: Agent
+        :param dataset_id_source: str
+        :return:
+        """
+
+        # retrive settings source dataset
+
+        datasets_setting = agent_source.__get_dataset_settings_info(dataset_id_source, all_info=True)
+        label = datasets_setting['name']
+        settings = datasets_setting['settings']
+        type_dataset = datasets_setting['type']
+
+        # create connection destination dataset (only for mysql to do: for the other)
+        dataset_id_dest = self.create_dataset_byconn(label=label, settings=settings, type=type_dataset)
+        logging.info('Dataset {} copied in the agent'.format(label))
+
+        # retrive all settings of the entities (source dataset)
+        dataset_entities_doc_source = agent_source.retrive_dataset_entities(dataset_id=dataset_id_source, dataset_type=type_dataset)
+
+        for index, entity in enumerate(dataset_entities_doc_source["data"]):
+            self.copy_entity_dataset(entity_code=entity['code'], dataset_id_dest=dataset_id_dest, settigs_entity_source=entity,
+                                     dataset_type=type_dataset)
+
+            logging.info('Entity {} copied in the dataset {}'.format(entity['code'], label))
+
+            # checks whether this entity has import Values = true and reads the values to copy
+            if entity["importValues"]:
+                # retrive the setting's values of specific entity code
+                entity_values_settings_source = agent_source.__get_value_entity(entity["code"])
+                # copy values in the new dataset
+                self.copy_values_entity_dataset(entity_code=entity['code'], dataset_id_dest=dataset_id_dest,
+                                                entity_values_settings_source_list=entity_values_settings_source["data"])
+
+                logging.info('Values copied in entity {} in the dataset {}'.format(entity['code'], label))
+
+
+    def __get_dataset_settings_info(self, dataset_id: str, all_info=False) -> dict:
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        if all_info:
+            dataset_url = self._base_url_askdata + '/smartdataset/datasets/' + dataset_id
+        else:
+            dataset_url = self._base_url_askdata + '/smartdataset/datasets/' + dataset_id + '/settings'
+
+        # devo aggiungere anche le info di get self._base_url_askdata + '/smartdataset/datasets/' + dataset_id
+        # alcuni field li trovo qui e bastqa mentre sinonimi etc li trovo su retrive_dataset_entities
+        response = s.get(url=dataset_url, headers=self._headers)
+        response.raise_for_status()
+        dataset_document = response.json()
+
+        return dataset_document
+
+    def retrive_dataset_entities(self, dataset_id: str, dataset_type: str) -> dict:
+
+        """
+        return a dict with all settings of the datatset's entities
+        :param dataset_id: str
+        :param dataset_type: str
+        :return: dict
+        """
+
+        page = 0
+        limit = 1000
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        dataset_url = self._base_url_askdata + '/smartbot/dataset/type/' + dataset_type + '/id/' + dataset_id \
+                          + '/subset/' + dataset_type + '?_page=' + str(page) + '&_limit=' + str(limit)
+        response = s.get(url=dataset_url, headers=self._headers)
+        response.raise_for_status()
+        n_entity = response.json()['payload']['totalElements']
+        entities_dataset = response.json()["payload"]
+        if int(n_entity) > len(entities_dataset["data"]):
+            raise NameError('not all entities are fetching')
+
+
+        return entities_dataset
+
+    def copy_entity_dataset(self, entity_code: str, dataset_id_dest: str, settigs_entity_source: dict, dataset_type: str):
+
+        if settigs_entity_source["custom"] == True:
+
+            # create a custom before it put the entity
+            data_custom = {"entry": [{"datasetId": dataset_id_dest,
+                                        "code": settigs_entity_source["code"],
+                                        "enabled": True,
+                                        "importValues": False,
+                                        "custom": True,
+                                        "mandatory": False,
+                                        "parameterType": settigs_entity_source["parameterType"]
+                                        }]}
+
+            s = requests.Session()
+            s.keep_alive = False
+            retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+            s.mount('https://', HTTPAdapter(max_retries=retries))
+
+            dataset_url = self._base_url_askdata + '/smartbot/dataset/type/' + dataset_type + '/id/' + dataset_id_dest \
+                          + '/subset/' + dataset_type + '/entry'
+
+            response = s.post(url=dataset_url, headers=self._headers, json=data_custom)
+            response.raise_for_status()
+
+        # retrive setting of destination entity
+        settigs_entities_dest = self.retrive_dataset_entities(dataset_id=dataset_id_dest, dataset_type=dataset_type)
+
+        # insert settings of source entity in destination entity
+        for index, settigs_entity_dest in enumerate(settigs_entities_dest['data']):
+                if settigs_entity_dest["code"] == entity_code:
+
+                    settigs_entity = {
+                    'schemaMetaData': settigs_entity_dest["schemaMetaData"],
+                    'parameterType': settigs_entity_dest["parameterType"],
+                    'code': settigs_entity_dest["code"],
+                    'name': settigs_entity_source.get("name",settigs_entity_dest["code"]),
+                    'description': settigs_entity_source.get("description", ""),
+                    'synonyms': settigs_entity_source.get("synonyms", list()),
+                    'icon': settigs_entity_source.get("icon", ""),
+                    'sampleQueries': settigs_entity_source.get("sampleQueries", list()),
+                    'importValues': settigs_entity_source.get("importValues", False),
+                    'mandatory': settigs_entity_source.get("mandatory", False),
+                    'enabled': settigs_entity_source.get("enabled", True),
+                    'advancedConfiguration': settigs_entity_source.get("advancedConfiguration", dict()),
+                    'custom': settigs_entity_source.get("custom",False),
+                    'dynamicParameterValues': settigs_entity_source.get("dynamicParameterValues", list()),
+                    'searchable': settigs_entity_source.get("searchable", False),
+                    'nameTransformer': settigs_entity_source.get("nameTransformer", None),
+                    'synonymTransformers': settigs_entity_source.get("synonymTransformers", None)}
+
+
+                    # copy all the settings of the entity with the same entity_code in the destination dataset
+                    self.__put_entity_dataset(entity_code, dataset_id_dest, settigs_entity,
+                                              settigs_entity["parameterType"], dataset_type)
+
+    def copy_values_entity_dataset(self, entity_code: str, dataset_id_dest: str, entity_values_settings_source_list: list):
+
+        # retrive the setting's values of specific entity code
+        entity_values_settings_dest = self.__get_value_entity(entity_code=entity_code)
+
+        # save the copied values in the new destination dataset
+        # to do : oder both entity_values_settings_dest and values_entity_list_source and improve performance
+
+        for index, value_entity_source in enumerate(entity_values_settings_source_list):
+
+            for index, value_entity_dest in enumerate(entity_values_settings_dest['data']):
+                if value_entity_dest["code"] == value_entity_source["code"]:
+
+                    value_entity = {"_id": value_entity_dest["_id"],
+                            "code": value_entity_dest["code"],
+                            "datasetSync": value_entity_dest.get("datasetSync", list()),
+                            "datasets": value_entity_dest["datasets"],
+                            "description": value_entity_source.get("description", ""),
+                            "details": value_entity_source.get("details", dict()),
+                            "domain": self._domain,
+                            "icon": value_entity_source.get("icon", ""),
+                            "localizedName": value_entity_source.get("localizedName", dict()),
+                            "localizedSynonyms": value_entity_source.get("localizedSynonyms", list()),
+                            "name": value_entity_source.get("name", value_entity_dest["code"]),
+                            "sampleQueries": value_entity_source.get("sampleQueries", list()),
+                            "synonyms": value_entity_source["synonyms"],
+                            "type": entity_code}
+
+                    # insert settings in the value entity
+                    self.__put_value_entity(entity_code=entity_code, dataset_id=dataset_id_dest,
+                                            settings_value=value_entity)
+
+
+
+    def __put_entity_dataset(self, entity_code: str, dataset_id: str, settigs_entity: dict, entity_type: str, dataset_type: str):
+
+        """
+        this method put settings fields in exist entity (measure/entityType) of specific dataset
+        :param entity_code: str, code of entity
+        :param dataset_id: str
+        :param settigs_entity: dict, all settings of the entity
+        :param entity_type: str
+           "ENTITY_TYPE" or "MEASURE"
+        :param dataset_type: str
+        :return: None
+        """
+
+        # filling of the body request for the entity
+        data = {'entry': [{'datasetId': dataset_id,
+                    'schemaMetaData': {'columnId': settigs_entity["schemaMetaData"]["columnId"],
+                                       'columnName': settigs_entity["schemaMetaData"]["columnName"],
+                                       'dataType': settigs_entity["schemaMetaData"]["dataType"],
+                                       'dataExample': settigs_entity["schemaMetaData"]["dataExample"],
+                                       'internalDataType': settigs_entity["schemaMetaData"]["internalDataType"],
+                                       'indexedWith': settigs_entity["schemaMetaData"].get("indexedWith",None),
+                                       'join': settigs_entity["schemaMetaData"].get("join",None),
+                                       'details': settigs_entity["schemaMetaData"].get("details", dict())},
+                    'parameterType': entity_type.upper(),
+                    'code': settigs_entity["code"],
+                    'name': settigs_entity.get("name", settigs_entity["code"]),
+                    'description': settigs_entity.get("description", ""),
+                    'synonyms': settigs_entity.get("synonyms", list()),
+                    'icon': settigs_entity.get("icon", ""),
+                    'sampleQueries': settigs_entity.get("sampleQueries", list()),
+                    'importValues': settigs_entity.get("importValues", False),
+                    'mandatory': settigs_entity.get("mandatory", False),
+                    'enabled': settigs_entity.get("enabled", True),
+                    'advancedConfiguration': settigs_entity.get("advancedConfiguration", dict()),
+                    'custom': settigs_entity.get("custom",False),
+                    'dynamicParameterValues': settigs_entity.get("dynamicParameterValues", list()),
+                    'searchable': settigs_entity.get("searchable", False),
+                    'nameTransformer': settigs_entity.get("nameTransformer", None),
+                    'synonymTransformers': settigs_entity.get("synonymTransformers", None)}]}
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        dataset_url = self._base_url_askdata + '/smartbot/dataset/type/' + dataset_type + '/id/' + dataset_id \
+                      + '/subset/' + dataset_type + '/entry/' + entity_code
+
+        # put field into exist value
+        response = s.put(url=dataset_url, headers=self._headers, json=data)
+        response.raise_for_status()
+
+    def __get_value_entity(self, entity_code: str) -> dict:
+        """
+        return a dict with all the values of the spicific entity_code
+        :param entity_code: str , code of entity
+        :return: dict
+        """
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_askdata + '/smartmanager/data/' + self._domain + '/entity/' + entity_code
+        r = s.get(url=authentication_url, headers=self._headers, verify=True)
+        r.raise_for_status()
+
+        return r.json()["payload"]
+
+    def __put_value_entity(self, entity_code: str, dataset_id: str, settings_value: dict):
+        """
+        insert settings_value in the value entity of the dataset
+
+        :param entity_code: str, code of entity
+        :param dataset_id:  str, id of dataset
+        :param settings_value: dict , setting of the value of the specific entity
+        :return: None
+        """
+
+        domain = self._domain
+        language = self._language
+
+        # filling of the body request for the entity value
+
+        #the code is the columnValueId that is the columValue the field taken from the table cleaned up and then trimmed
+        #the logic used to clean it up is through the use of these regexes:
+        # value = value.replaceAll("[\uFEFF-\uFFFF]", "").replaceAll("\\p{C}", "").replaceAll("[\\p{Cntrl}&&[^\r\n\t]]", ""); then trim
+
+        data = {"_id": settings_value["_id"],
+                "code": settings_value["code"],
+                "datasetSync": settings_value.get("datasetSync", list()),
+                "datasets": settings_value["datasets"],
+                "description": settings_value.get("description", ""),
+                "details": settings_value.get("details", dict()),
+                "domain": domain,
+                "icon": settings_value.get("icon", ""),
+                "localizedName": settings_value.get("localizedName", dict()),
+                "localizedSynonyms": settings_value.get("localizedSynonyms", list()),
+                "name": settings_value.get("name", settings_value["code"]),
+                "sampleQueries": settings_value.get("sampleQueries", list()),
+                "synonyms": settings_value["synonyms"],
+                "type": entity_code}
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_askdata + '/smartmanager/data/' + self._domain + '/entity/' + entity_code
+
+        # put field into exist value
+        r = s.put(url=authentication_url, headers=self._headers, verify=True, json=data)
+        r.raise_for_status()

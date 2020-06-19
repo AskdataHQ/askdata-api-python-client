@@ -27,27 +27,27 @@ with open(yaml_path, 'r') as file:
 # inglobata in Askdata come metodo
 class SignUp:
 
-    def __init__(self, askdata):
+    def __init__(self, Askdata):
 
-        self.username = askdata.username
-        self._token = askdata._token
-        self._env = askdata._env
-        self._domainlogin = askdata._domainlogin.upper()
+        self.username = Askdata.username
+        self._token = Askdata._token
+        self._env = Askdata._env
+        self._domainlogin = Askdata._domainlogin.upper()
 
         self._headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer" + " " + self._token
         }
 
-        if self.env == 'dev':
+        if self._env == 'dev':
             self.base_url_security = url_list['BASE_URL_SECURITY_DEV']
-        if self.env == 'qa':
+        if self._env == 'qa':
             self.base_url_security = url_list['BASE_URL_SECURITY_QA']
-        if self.env == 'prod':
+        if self._env == 'prod':
             self.base_url_security = url_list['BASE_URL_SECURITY_PROD']
 
 
-    def signup_user(self, username, password, firstname='-', secondname='-', title='-'):
+    def signup_user(self, username: str, password: str, firstname='-', secondname='-', title='-') -> dict:
 
         data = {
             "username": username,
