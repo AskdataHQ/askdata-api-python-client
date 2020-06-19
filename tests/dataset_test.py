@@ -24,18 +24,19 @@ if __name__ == '__main__':
     # --------------------------------   Dataset  -------------------------------------------
     df_datasets = agent.load_datasets()
     # -------------------------------- Load by dataset ID -------------------------------
-    id_test = agent.get_id_dataset_by_name('ORDINATIVI_PER_ROE')
+    id_test = agent.get_id_dataset_by_name('Cod Ordini')
 
     #data = '{"_id":"0a82e596-b6e9-45d7-ba0e-ec75b974b752-CITTA-Verona","_class":"com.innaas.cloud.smartentity.persistence.model.Entity","code":"Verona","datasetSync":[{"datasetId":"0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-17ff8411-5077-4add-b3d0-544f841a352d"}],"datasets":[{"sourceValue":[{"language":"en","value":"Verona"}],"sourceValueId":"Verona","datasetId":"0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-17ff8411-5077-4add-b3d0-544f841a352d"},{"sourceValue":[{"language":"en","value":"Verona"}],"sourceValueId":"Verona","datasetId":"0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-e29489d3-a387-45f0-b96a-74633c4b6c49"}],"description":"","details":{},"domain":"0a82e596-b6e9-45d7-ba0e-ec75b974b752","icon":"","localizedName":{},"localizedSynonyms":[],"name":"Verona","sampleQueries":[],"synonyms":["verona"],"type":"CITTA"}'
     #data_dict = json.loads(data)
     #agent_dest.put_value_entity(entity_code='CITTA',dataset_id='0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-e29489d3-a387-45f0-b96a-74633c4b6c49')
+
     agent_dest.migration_dataset(agent, id_test[0])
 
 
     #retrive_info_copertura_dat = agent.retrive_dataset(id_test[0])
 
-    #dataset_df = agent.load_dataset_to_df(id_test[0])
-    agent.LoadFromDataset('DF426F64-7D7E-4573-8789-E2D6F08ACB7B-MYSQL-95a9d1f1-8692-48a2-8b2b-f4a296e8fa27')
+    dataset_df = agent.load_dataset_to_df(id_test[0])
+    #dataset_df = agent.load_dataset_to_df('DF426F64-7D7E-4573-8789-E2D6F08ACB7B-MYSQL-95a9d1f1-8692-48a2-8b2b-f4a296e8fa27')
 
     # -------------------------------- sync by dataset ID -------------------------------
     resp_sync = agent.execute_dataset_sync(id_test[0])

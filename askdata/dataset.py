@@ -154,7 +154,7 @@ class Dataset():
 
     def execute_dataset_sync(self, dataset_id):
 
-        dataset_url = self._base_url_dataset + '/datasets/' + dataset_id + '/sync'
+        dataset_url = self._base_url_askdata + '/smartdataset/datasets/' + dataset_id + '/sync'
         r = requests.post(url=dataset_url, headers=self._headers)
         r.raise_for_status()
         return r
@@ -280,7 +280,7 @@ class Dataset():
     # to do
     #     pass
 
-    def load_dataset_to_df(self, dataset_id):
+    def load_dataset_to_df(self, dataset_id: str)-> pd.DataFrame:
 
         '''
         read askdata dataset by datasetId and return data frame
@@ -292,6 +292,7 @@ class Dataset():
 
         #table_id, schema, id_createdby = self.__get_dataset_connection(dataset_id)
 
+        logging.info('retrive info dataset - {}'.format(dataset_id))
         dataset_info = self.__get_dataset_settings_info(dataset_id, all_info=True)
 
         table_id = dataset_info["settings"]["table_id"]
@@ -310,7 +311,7 @@ class Dataset():
         authentication_url2 = '{}/smartdataset/v2/datasets/{}/query'.format(self._base_url_askdata, dataset_id)
 
         # Check if this query it's correct with null
-        query_count = "SELECT COUNT(`{}`) FROM `{}`.{} WHERE `{}` is not NULL;".format(columnsid[0], schema, table_id,
+        query_count = "SELECT COUNT(`{}`) FROM `{}`.`{}` WHERE `{}` is not NULL;".format(columnsid[0], schema, table_id,
                                                                                      columnsid[0])
 
         s_count = requests.Session()
@@ -325,13 +326,16 @@ class Dataset():
         r_count = s_count.post(url=authentication_url2, headers=self._headers, json=data_count)
         r_count.raise_for_status()
         count = int(r_count.json()['data'][0]['cells'][0]['value'])
+        logging.info('number of row of dataset {}({}) - {}'.format(str(dataset_info["name"]), dataset_id, str(count)))
         n_worker = int(count/1000)+1
+        logging.debug('number of worker - {}'.format(str(n_worker)))
 
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries, pool_connections=200, pool_maxsize=200))
 
+        # management thread
         def load_datatset_post(session,data,authentication_url2,indice):
 
             logging.debug('Thread_{} : starting update'.format(str(indice)))
@@ -344,9 +348,11 @@ class Dataset():
 
         start = time.time()
 
-        query = "SELECT {} FROM `{}`.{};".format(fields_query, schema, table_id)
+        query = "SELECT {} FROM `{}`.`{}`;".format(fields_query, schema, table_id)
         j = 0
         processes = []
+
+        logging.info('---- Start Loading dataframe  ----- ')
         with ThreadPoolExecutor(max_workers=n_worker) as executor:
             for start_row in range(n_worker):
                 data = {"userId": self.userid,
@@ -356,17 +362,21 @@ class Dataset():
                 j+=1
 
         dataset_df = pd.DataFrame()
-        i=0
+        i = 0
+        k = 1
         for task in as_completed(processes):
             dataset_temp =pd.DataFrame([[clm['value'] for clm in row['cells']] for row in task.result()['data']],columns=entitie_code)
             #dataset_df = dataset_df.append(task.result(), ignore_index=True, sort=False)
             dataset_df = dataset_df.append(dataset_temp, ignore_index=True, sort=False)
             logging.debug('dataframe {}'.format(str(i)))
             i += 1
+            if ((i)/len(processes))*100 > (k*10):
+                logging.info('---- Add data to dataframe  ----- {} %'.format(str(((i+1)/len(processes))*100)))
+                k += 1
 
         logging.debug('Time taken: {}'.format(time.time() - start))
         logging.info('---------- -----------------------')
-        logging.info('----Load Dataset to DataFrame ------')
+        logging.info('----Load Dataset {} to DataFrame ------'.format(str(dataset_info["name"])))
 
         return dataset_df
 
