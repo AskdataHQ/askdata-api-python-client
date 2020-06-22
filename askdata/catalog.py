@@ -5,6 +5,9 @@ import pandas as pd
 import logging
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from askdata.askdata_client import Agent
 import numpy as np
 import json as json
 import uuid
@@ -154,3 +157,10 @@ class Catalog:
 
         logging.info('deleted query: {} from catalog: {}'.format(queryid, entryid))
         return r
+
+    @staticmethod
+    def delete_all_queries_catalog(agent: 'Agent', entry_id: str):
+        queries_list = agent.get_query_from_catalog(entry_id)
+        for query in queries_list:
+            agent.delete_query(entryid=entry_id, queryid=query['id'])
+        logging.info('All queries deleted from catalog with entry_id : {}'.format(entry_id))
