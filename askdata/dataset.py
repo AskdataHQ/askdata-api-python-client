@@ -73,8 +73,15 @@ class Dataset():
         r = response.json()
         r_df = pd.DataFrame(r)
 
-        datasets_df = r_df.loc[:, ['id', 'domain', 'type', 'code', 'name', 'description', 'createdBy', 'isActive',
-                                   'accessType', 'icon', 'version', 'syncCount', 'visible', 'public', 'createdAt']]
+        try:
+            if r_df.empty:
+                raise Exception('No datasets in the agent {}'.format(self._agentId))
+            else:
+                datasets_df = r_df.loc[:, ['id', 'domain', 'type', 'code', 'name', 'description', 'createdBy', 'isActive',
+                                     'accessType', 'icon', 'version', 'syncCount', 'visible', 'public', 'createdAt']]
+        except Exception as e:
+            datasets_df = r_df
+            logging.info(e)
 
         return datasets_df
 

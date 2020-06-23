@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     # source agent
     askdata_dest = Askdata(username, password, domain)
-    agent_dest = Agent(askdata_dest, agent_name='SDK_TESTER')
+    agent_dest = Agent(askdata_dest, agent_name='SDK_TESTER2')
 
     # get agent
     #agent = Agent(askdata, agent_name='SDK_TEST')
