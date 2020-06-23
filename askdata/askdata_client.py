@@ -155,7 +155,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
     Agent Object
     '''
 
-    def __init__(self, askdata: Askdata, agent_name='', agent_id=''):
+    def __init__(self, askdata: Askdata, slug='', agent_name='', agent_id=''):
 
         self.username = askdata.username
         self.userid = askdata.userid
@@ -168,9 +168,11 @@ class Agent(Insight, Channel, Catalog, Dataset):
             "Content-Type": "application/json",
             "Authorization": "Bearer" + " " + self._token
         }
-
+        # TODO: check if slag is lower case or it's like we see in web app
         try:
-            if agent_id != '':
+            if slug != '':
+                agent = self.df_agents[self.df_agents['slug'] == slug.lower()]
+            elif agent_id != '':
                 agent = self.df_agents[self.df_agents['id'] == agent_id]
             else:
                 agent = self.df_agents[self.df_agents['name'] == agent_name]
@@ -181,7 +183,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
             self._agent_name = agent.iloc[0]['name']
 
         except Exception as ex:
-            raise NameError('Agent name/id not exsist or not insert')
+            raise NameError('Agent slug/name/id not exsist or not insert')
 
         Insight.__init__(self, self._env, self._token)
         Channel.__init__(self, self._env, self._token, self._agentId, self._domain)

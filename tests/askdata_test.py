@@ -22,7 +22,8 @@ if __name__ == '__main__':
     #sign = askdata.signup_user(f'test{today}@askdata.com', f'test{today}')
 
     # get agent
-    #agent = Agent(askdata, agent_name='SDK_TESTER')
+    agent = Agent(askdata, 'SDK_TEST')
+    agent = Agent(askdata, agent_name='SDK_TESTER')
     agent = Agent(askdata, agent_id='2ed8390e-b542-4f62-82b8-c8f1b620ef15')
     #agent = Agent(askdata, agent_name='SDK_TEST')
 
