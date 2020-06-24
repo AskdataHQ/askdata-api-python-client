@@ -60,7 +60,7 @@ class Dataset():
             self._base_url_dataset = url_list['BASE_URL_DATASET_PROD']
             self._base_url_askdata = url_list['BASE_URL_ASKDATA_PROD']
 
-    def load_datasets(self):
+    def list_datasets(self):
 
         s = requests.Session()
         s.keep_alive = False
@@ -98,7 +98,7 @@ class Dataset():
         :return: Array
                 '''
 
-        dataset_list = self.load_datasets()
+        dataset_list = self.list_datasets()
 
         if not exact:
             dataset_select_name = dataset_list.name.str.contains(name_ds, flags=re.IGNORECASE, regex=True)
@@ -129,7 +129,7 @@ class Dataset():
 
     def load_entities_dataset(self, datasetid, select_custom=True):
 
-        df_datasets = self.load_datasets()
+        df_datasets = self.list_datasets()
         dataset_info = df_datasets[df_datasets['id'] == datasetid]
         with requests.Session() as s:
 

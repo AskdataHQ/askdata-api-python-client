@@ -22,7 +22,7 @@ if __name__ == '__main__':
     agent = Agent(askdata, agent_name='SDK_TESTER')
 
     # --------------------------------   Dataset  -------------------------------------------
-    df_datasets = agent.load_datasets()
+    df_datasets = agent.list_datasets()
     # -------------------------------- Load by dataset ID -------------------------------
     id_test = agent.get_id_dataset_by_name('Cod Ordini')
 
