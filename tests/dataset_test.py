@@ -13,6 +13,8 @@ if __name__ == '__main__':
     env = 'dev'
     askdata = Askdata(username, password, domain, env)
 
+    #askdata.agent('sdk_test')
+
     # source agent
     askdata_dest = Askdata(username, password, domain)
     agent_dest = Agent(askdata_dest, agent_name='SDK_TESTER2')
@@ -23,12 +25,14 @@ if __name__ == '__main__':
 
     # --------------------------------   Dataset  -------------------------------------------
     df_datasets = agent.list_datasets()
-    dataset_slug = agent.dataset('mysql')
-    key_settings = agent.get_setting('schema')
-    key_settings = agent.get_settings()
-    agent.set_setting({"label" : "prova set"})
+
+    # --------------------------------  method chaining ----------------------------------
+    #dataset_slug = agent.dataset('mysql')
+    key_setting = askdata.agent('SDK_TEST').dataset('mysql').get_setting('schema')
+    key_settings = askdata.agent('SDK_TEST').dataset('mysql').get_settings()
+    askdata.agent('SDK_TEST').dataset('mysql').set_setting({"label" : "prova_set2"})
     # -------------------------------- Load by dataset ID -------------------------------
-    id_test = agent.get_id_dataset_by_name('Cod Ordini')
+    id_test = agent.get_id_dataset_by_name('MYSQL_TEST')
 
     #data = '{"_id":"0a82e596-b6e9-45d7-ba0e-ec75b974b752-CITTA-Verona","_class":"com.innaas.cloud.smartentity.persistence.model.Entity","code":"Verona","datasetSync":[{"datasetId":"0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-17ff8411-5077-4add-b3d0-544f841a352d"}],"datasets":[{"sourceValue":[{"language":"en","value":"Verona"}],"sourceValueId":"Verona","datasetId":"0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-17ff8411-5077-4add-b3d0-544f841a352d"},{"sourceValue":[{"language":"en","value":"Verona"}],"sourceValueId":"Verona","datasetId":"0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-e29489d3-a387-45f0-b96a-74633c4b6c49"}],"description":"","details":{},"domain":"0a82e596-b6e9-45d7-ba0e-ec75b974b752","icon":"","localizedName":{},"localizedSynonyms":[],"name":"Verona","sampleQueries":[],"synonyms":["verona"],"type":"CITTA"}'
     #data_dict = json.loads(data)

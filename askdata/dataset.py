@@ -119,11 +119,14 @@ class Dataset():
         else:
             dataset_choose = dataset_list[dataset_list['name'] == name_ds]
 
+
+        if dataset_choose.empty:
+            raise Exception('No datasets {} in the agent'.format(name_ds))
+
         #return an array
         return dataset_choose.id.values
 
-    # Cancellare dopo aver verificato che load_datset_to_df va ok perchè possiamo riutilizzare __get_dataset_settings_info
-    # per avere le stesse informazione di return
+    # TODO: Cancellare dopo aver verificato che load_datset_to_df va ok perchè possiamo riutilizzare __get_dataset_settings_info per avere le stesse informazione di return
 
     # def __get_dataset_connection(self, datasetid):
     #
@@ -400,8 +403,7 @@ class Dataset():
 
         return dataset_df
 
-
-    def delete_dataset(self, dataset_id: str):
+    def _delete_dataset(self, dataset_id: str):
 
         s = requests.Session()
         s.keep_alive = False

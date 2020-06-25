@@ -12,6 +12,9 @@ from askdata.dataset import Dataset
 from askdata.security import SignUp
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from askdata.askdata_client import Askdata
 import re
 from datetime import datetime
 
@@ -29,133 +32,13 @@ with open(yaml_path, 'r') as file:
     url_list = yaml.load(file, Loader=yaml.FullLoader)
 
 
-class Askdata(SignUp):
-    '''
-    Authentication Object
-    '''
-    def __init__(self, username='', password='', domainlogin='askdata', env='prod', token=''):
-
-        with requests.Session() as s:
-
-            self._token = token
-            self._domainlogin = domainlogin.upper()
-            self._env = env
-
-            if self._env == 'dev':
-                self.base_url_security = url_list['BASE_URL_SECURITY_DEV']
-
-            if self._env == 'qa':
-                self.base_url_security = url_list['BASE_URL_SECURITY_QA']
-
-            if self._env == 'prod':
-                self.base_url_security = url_list['BASE_URL_SECURITY_PROD']
-
-            if token == '':
-
-                if username == '':
-                    #add control email like
-                    username = input('Askdata Username: ')
-                if password == '':
-                    password = getpass.getpass(prompt='Askdata Password: ')
-
-                self.username = username
-
-                data = {
-                    "grant_type": "password",
-                    "username": self.username,
-                    "password": password
-                }
-
-                headers = {
-                    "Authorization": "Basic YXNrZGF0YS1zZGs6YXNrZGF0YS1zZGs=",
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "cache-control": "no-cache,no-cache"
-                }
-
-                authentication_url = self.base_url_security + '/domain/' + self._domainlogin.lower() + '/oauth/token'
-
-                #request token for the user
-                r1 = s.post(url=authentication_url, data=data, headers=headers)
-                r1.raise_for_status()
-                self._token = r1.json()['access_token']
-                self.r1 = r1
-
-            authentication_url_userid = self.base_url_security + '/me'
-            self._headers = {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer" + " " + self._token
-            }
-
-            #request userId of the user
-            r_userid = s.get(url=authentication_url_userid, headers=self._headers)
-            r_userid.raise_for_status()
-            self.userid = r_userid.json()['id']
-            self.username =r_userid.json()['userName']
-
-    def load_agents(self):
-
-        if self._env == 'dev':
-            authentication_url = url_list['BASE_URL_AGENT_DEV']
-
-        if self._env == 'qa':
-            authentication_url = url_list['BASE_URL_AGENT_QA']
-
-        if self._env == 'prod':
-            authentication_url = url_list['BASE_URL_AGENT_PROD']
-
-        s = requests.Session()
-        s.keep_alive = False
-        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
-        s.mount('https://', HTTPAdapter(max_retries=retries))
-
-        # request of all agents of the user/token
-        response = s.get(url=authentication_url, headers=self._headers)
-        response.raise_for_status()
-
-        return response.json()
-
-    def agents_dataframe(self):
-        return pd.DataFrame(self.load_agents())
-
-    def signup_user(self, username, password, firstname='-', secondname='-', title='-'):
-        response = super().signup_user(username, password, firstname, secondname, title)
-        return response
-
-    @property
-    # ?
-    def responce(self):
-        return self.r2
-    
-    def create_agent(self, agent_name):
-
-        data = {
-            "name": agent_name,
-            "language" : "en"
-        }
-
-        if self._env == 'dev':
-            self._base_url = url_list['BASE_URL_ASKDATA_DEV']
-        if self._env == 'qa':
-            self._base_url = url_list['BASE_URL_ASKDATA_QA']
-        if self._env == 'prod':
-            self._base_url = url_list['BASE_URL_ASKDATA_PROD']
-
-        s = requests.Session()
-        s.keep_alive = False
-        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
-        s.mount('https://', HTTPAdapter(max_retries=retries))
-        authentication_url = self._base_url + '/smartbot/agents'
-        r = s.post(url=authentication_url, headers=self._headers, json=data)
-        r.raise_for_status()
-
-        return r
 
 class Agent(Insight, Channel, Catalog, Dataset):
     '''
     Agent Object
     '''
 
-    def __init__(self, askdata: Askdata, slug='', agent_name='', agent_id=''):
+    def __init__(self, askdata: 'Askdata', slug='', agent_name='', agent_id=''):
 
         self.username = askdata.username
         self.userid = askdata.userid
@@ -246,3 +129,144 @@ class Agent(Insight, Channel, Catalog, Dataset):
         """
         self._get_info_dataset_by_slug(slug)
         return self
+
+    def delete_dataset(self, slug='', dataset_id=''):
+
+        if slug != '':
+            self._get_info_dataset_by_slug(slug)
+            self._delete_dataset(self.dataset_id)
+            logging.info("---- dataset '{}' deleted ----- ".format(slug))
+        elif dataset_id != '' and slug == '':
+            self._delete_dataset(self.dataset_id)
+            logging.info("---- dataset '{}' deleted ----- ".format(dataset_id))
+        else:
+            raise Exception('takes 2 positional arguments "slug, datset_id" but 0 were given')
+
+
+
+class Askdata(SignUp, Agent):
+    '''
+    Authentication Object
+    '''
+
+    def __init__(self, username='', password='', domainlogin='askdata', env='prod', token=''):
+
+        with requests.Session() as s:
+
+            self._token = token
+            self._domainlogin = domainlogin.upper()
+            self._env = env
+
+            if self._env == 'dev':
+                self.base_url_security = url_list['BASE_URL_SECURITY_DEV']
+
+            if self._env == 'qa':
+                self.base_url_security = url_list['BASE_URL_SECURITY_QA']
+
+            if self._env == 'prod':
+                self.base_url_security = url_list['BASE_URL_SECURITY_PROD']
+
+            if token == '':
+
+                if username == '':
+                    # add control email like
+                    username = input('Askdata Username: ')
+                if password == '':
+                    password = getpass.getpass(prompt='Askdata Password: ')
+
+                self.username = username
+
+                data = {
+                    "grant_type": "password",
+                    "username": self.username,
+                    "password": password
+                }
+
+                headers = {
+                    "Authorization": "Basic YXNrZGF0YS1zZGs6YXNrZGF0YS1zZGs=",
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "cache-control": "no-cache,no-cache"
+                }
+
+                authentication_url = self.base_url_security + '/domain/' + self._domainlogin.lower() + '/oauth/token'
+
+                # request token for the user
+                r1 = s.post(url=authentication_url, data=data, headers=headers)
+                r1.raise_for_status()
+                self._token = r1.json()['access_token']
+                self.r1 = r1
+
+            authentication_url_userid = self.base_url_security + '/me'
+            self._headers = {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer" + " " + self._token
+            }
+
+            # request userId of the user
+            r_userid = s.get(url=authentication_url_userid, headers=self._headers)
+            r_userid.raise_for_status()
+            self.userid = r_userid.json()['id']
+            self.username = r_userid.json()['userName']
+
+
+    def agent(self, slug):
+        Agent.__init__(self, self, slug=slug)
+        return self
+
+    def load_agents(self):
+
+        if self._env == 'dev':
+            authentication_url = url_list['BASE_URL_AGENT_DEV']
+
+        if self._env == 'qa':
+            authentication_url = url_list['BASE_URL_AGENT_QA']
+
+        if self._env == 'prod':
+            authentication_url = url_list['BASE_URL_AGENT_PROD']
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        # request of all agents of the user/token
+        response = s.get(url=authentication_url, headers=self._headers)
+        response.raise_for_status()
+
+        return response.json()
+
+    def agents_dataframe(self):
+        return pd.DataFrame(self.load_agents())
+
+    def signup_user(self, username, password, firstname='-', secondname='-', title='-'):
+        response = super().signup_user(username, password, firstname, secondname, title)
+        return response
+
+    @property
+    # ?
+    def responce(self):
+        return self.r2
+
+    def create_agent(self, agent_name):
+
+        data = {
+            "name": agent_name,
+            "language": "en"
+        }
+
+        if self._env == 'dev':
+            self._base_url = url_list['BASE_URL_ASKDATA_DEV']
+        if self._env == 'qa':
+            self._base_url = url_list['BASE_URL_ASKDATA_QA']
+        if self._env == 'prod':
+            self._base_url = url_list['BASE_URL_ASKDATA_PROD']
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+        authentication_url = self._base_url + '/smartbot/agents'
+        r = s.post(url=authentication_url, headers=self._headers, json=data)
+        r.raise_for_status()
+
+        return r
