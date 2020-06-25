@@ -476,7 +476,7 @@ class Dataset():
 
         data2 = {
             "label": label,
-            #"icon": "https://storage.googleapis.com/askdata/datasets/icons/icoDataPandas.png"
+            "icon": "https://storage.googleapis.com/askdata/datasets/icons/icoDataPandas.png"
         }
 
         with requests.Session() as s:
