@@ -168,7 +168,6 @@ class Agent(Insight, Channel, Catalog, Dataset):
             "Content-Type": "application/json",
             "Authorization": "Bearer" + " " + self._token
         }
-        # TODO: check if slag is lower case or it's like we see in web app
         try:
             if slug != '':
                 agent = self.df_agents[self.df_agents['slug'] == slug.lower()]
@@ -237,3 +236,13 @@ class Agent(Insight, Channel, Catalog, Dataset):
         df = pd.DataFrame(np.array(r[0]['attachment']['body'][0]['details']['rows']), columns=r[0]['attachment']['body'][0]['details']['columns'])
 
         return df
+
+    def dataset(self, slug):
+        """
+        set in the agent object the properties of specific dataset
+
+        :param slug: str, identification of the dataset
+        :return: None
+        """
+        self._get_info_dataset_by_slug(slug)
+        return self

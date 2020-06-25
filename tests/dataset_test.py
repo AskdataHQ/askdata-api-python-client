@@ -10,7 +10,7 @@ if __name__ == '__main__':
     username = 'g.demaio@askdata.com'
     password = 'g.demaio'
     domain = 'Askdata'
-    env = 'qa'
+    env = 'dev'
     askdata = Askdata(username, password, domain, env)
 
     # source agent
@@ -18,11 +18,15 @@ if __name__ == '__main__':
     agent_dest = Agent(askdata_dest, agent_name='SDK_TESTER2')
 
     # get agent
-    #agent = Agent(askdata, agent_name='SDK_TEST')
-    agent = Agent(askdata, agent_name='SDK_TESTER')
+    agent = Agent(askdata, agent_name='SDK_TEST')
+    #agent = Agent(askdata, agent_name='SDK_TESTER')
 
     # --------------------------------   Dataset  -------------------------------------------
     df_datasets = agent.list_datasets()
+    dataset_slug = agent.dataset('mysql')
+    key_settings = agent.get_setting('schema')
+    key_settings = agent.get_settings()
+    agent.set_setting({"label" : "prova set"})
     # -------------------------------- Load by dataset ID -------------------------------
     id_test = agent.get_id_dataset_by_name('Cod Ordini')
 

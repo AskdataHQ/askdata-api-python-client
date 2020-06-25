@@ -60,6 +60,19 @@ class Dataset():
             self._base_url_dataset = url_list['BASE_URL_DATASET_PROD']
             self._base_url_askdata = url_list['BASE_URL_ASKDATA_PROD']
 
+    def _get_info_dataset_by_slug(self, slug: str):
+
+        list_datasets = self.list_datasets()
+        dataset = list_datasets[list_datasets['slug'] == slug]
+        self.dataset_type = dataset.iloc[0]['type']
+        self.dataset_id = dataset.iloc[0]['id']
+        self.dataset_code = dataset.iloc[0]['code']
+        self.dataset_code = dataset.iloc[0]['name']
+        self.dataset_slug = dataset.iloc[0]['slug']
+        self.dataset_icon = dataset.iloc[0]['icon']
+        self.dataset_createdby = dataset.iloc[0]['createdBy']
+
+
     def list_datasets(self):
 
         s = requests.Session()
@@ -77,7 +90,7 @@ class Dataset():
             if r_df.empty:
                 raise Exception('No datasets in the agent {}'.format(self._agentId))
             else:
-                datasets_df = r_df.loc[:, ['id', 'domain', 'type', 'code', 'name', 'description', 'createdBy', 'isActive',
+                datasets_df = r_df.loc[:, ['id', 'domain', 'type', 'code', 'name', 'slug', 'description', 'createdBy', 'isActive',
                                      'accessType', 'icon', 'version', 'syncCount', 'visible', 'public', 'createdAt']]
         except Exception as e:
             datasets_df = r_df
@@ -209,7 +222,7 @@ class Dataset():
     def save_to_dataset(self, frame: pd.DataFrame, dataset_name: str, add_indexdf = False,
                         indexclm = [], if_exists='Replace') -> str:
 
-        # vedere upsert in mysql if_exists['replace','Append','upsert']
+        # TODO: see upsert in mysql if_exists['replace','Append','upsert']
         '''
         Save the data frame in askdata dataset of the specific agent
 
@@ -405,7 +418,8 @@ class Dataset():
 
     def create_dataset_byconn(self, label: str, settings: dict, type="MYSQL"):
 
-        # to do : create data2 for different dataset sql server, big query etc
+        # TODO : create data2 for different dataset sql server, big query etc useful for dataset_migration
+        # TODO: check create_dataset_byconn and __create_dataset_df because they are similar
 
         data1 = {
             "type": type.upper()
@@ -460,7 +474,7 @@ class Dataset():
 
         data2 = {
             "label": label,
-            "icon": "https://storage.googleapis.com/askdata/datasets/icons/icoDataPandas.png"
+            #"icon": "https://storage.googleapis.com/askdata/datasets/icons/icoDataPandas.png"
         }
 
         with requests.Session() as s:
@@ -484,6 +498,46 @@ class Dataset():
         logging.debug('--- Create Dataset with id: {}'.format(str(datasetId)))
 
         return datasetId, settingDataset
+
+    def __put_settings_dataset(self,dataset_id: str, all_settings: dict):
+        """
+        put value of the dataset's settings
+
+        :param dataset_id: str, id of th dataset
+        :param all_settings: dict, dictionary of the settings in the layout useful to the api
+            ex:
+            {
+                "label": 'label',
+                "icon": 'https://....',
+                "settings":{
+                    "datasourceUrl": "jdbc:mysql://.....,
+                    "host": 'host',
+                    "port": 'port',
+                    "schema": 'schema',
+                    "username": 'username',
+                    "password": 'password',
+                    "table_id": 'table_id'
+                    or
+                    "notebook_file" : "workflow/.....",
+                    "view_id" : "3",
+                    "analytics_id" : "2"
+                    ..... }
+                "plan":"",
+                "authRequired": False
+                }
+
+        :return: responce of the put request
+        """
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url2 = self._base_url_askdata + '/smartbot/agents/' + self._agentId + '/datasets/' + dataset_id
+        r = s.put(url=authentication_url2, headers=self._headers, json=all_settings)
+        r.raise_for_status()
+        return r
 
     def migration_dataset(self, agent_source: 'Agent', dataset_id_source: str):
         """
@@ -543,6 +597,22 @@ class Dataset():
         response = s.get(url=dataset_url, headers=self._headers)
         response.raise_for_status()
         dataset_document = response.json()
+
+        return dataset_document
+
+    def _get_settings(self) -> dict:
+        """
+        return setting's dataset, this method is valid only object dataset instantiated with slug
+        parmater
+
+        :return: dict, dict with all the settings
+        """
+
+        # devo fare un controllo nel caso in cui non istanziato il dataset con lo slug
+        if hasattr(self, 'dataset_id'):
+            dataset_document = self.__get_dataset_settings_info(dataset_id=self.dataset_id)
+        else:
+            raise Exception("dataset object didn't instantiate with slug parameter")
 
         return dataset_document
 
@@ -777,3 +847,99 @@ class Dataset():
         # put field into exist value
         r = s.put(url=authentication_url, headers=self._headers, verify=True, json=data)
         r.raise_for_status()
+
+    def get_setting(self, key: str) -> str:
+        """
+        return from setting's dataset a specific key, this method is valid only object dataset instantiated with slug
+        parmater
+
+        :param key: str, key of setting of the dataset
+        :return: str, value of key
+        """
+        dataset_document = self._get_settings()
+        for key_dataset_document, value in dataset_document.items():
+            if isinstance(value, dict):
+                for key_nested, value_nested in value.items():
+                    if key_nested==key:
+                        return value_nested
+            elif key_dataset_document == key:
+                return value
+
+    def get_settings(self) -> dict:
+        """
+        return setting's dataset, this method is valid only object dataset instantiated with slug
+        parmater
+
+        :return: dict, dict of the all settings of the dataset
+        """
+        #get dataset's settings
+        dataset_document = self._get_settings()
+
+        # explain all settings in dict with one level
+        #settings = dataset_document['settings']
+
+        dataset_document_temp = dataset_document.copy()
+        for key_dataset_document, value in dataset_document_temp.items():
+            if isinstance(value, dict):
+                for key_nested, value_nested in value.items():
+                    for key_ext  in dataset_document_temp.items():
+                        # check if exist a setting with same name
+                        if key_nested == key_ext and key_ext != key_dataset_document:
+                            dataset_document[key_dataset_document+'.'+key_nested] = \
+                                dataset_document_temp[key_dataset_document][key_nested]
+                        elif key_nested != key_ext and key_ext != key_dataset_document:
+                            dataset_document[key_nested] = dataset_document_temp[key_dataset_document][key_nested]
+                del dataset_document[key_dataset_document]
+
+
+        return dataset_document
+
+    def set_setting(self, key_value: dict):
+        """
+        set value in specific setting's key of the dataset , this method is valid only object dataset instantiated with slug
+        parmater
+
+        :param key_value: dict, key:value of the dataset's setting
+
+            {
+                "label": 'label',
+                "icon": 'https://....',
+                "datasourceUrl": "jdbc:mysql://.....,
+                "host": 'host',
+                "port": 'port',
+                "schema": 'schema',
+                "username": 'username',
+                "password": 'password',
+                "table_id": 'table_id'
+                "notebook_file" : "workflow/.....",
+                "view_id" : "3",
+                "analytics_id" : "2"
+                .....
+                }
+        :return: responce of put request
+        """
+
+        #get dataset's settings there is check for dataset instantiated with slug
+        dataset_document = self._get_settings()
+
+        # replace value of key:value that matching in dataset_document
+        for key_to_set, value_to_set in key_value.items():
+
+            #check if there is a filed of the dict con settings., "setting.schema" means that schema
+            # is nested in the field settings
+
+            if len(key_to_set.split('settings.')) > 1:
+                key_to_set = key_to_set.split('settings.')[1]
+
+            #check if the key_valiue exists in dataset_document and replaced
+            for key_dataset_document, value in dataset_document.items():
+                if isinstance(value, dict):
+                    for key_nested, value_nested in value.items():
+                        if key_nested == key_to_set:
+                            dataset_document[key_nested] = value_to_set
+                elif key_dataset_document == key_to_set:
+                    dataset_document[key_dataset_document] = value_to_set
+        # put dataset_document
+        self.__put_settings_dataset(dataset_id=self.dataset_id,all_settings=dataset_document)
+
+        logging.info('---- settings updated ----')
