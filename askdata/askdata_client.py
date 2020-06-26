@@ -134,7 +134,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
 
         if slug != '':
             self._get_info_dataset_by_slug(slug)
-            self._delete_dataset(self.dataset_id)
+            self._delete_dataset(self._dataset_id)
             logging.info("---- dataset '{}' deleted ----- ".format(slug))
         elif dataset_id != '' and slug == '':
             self._delete_dataset(dataset_id)
@@ -209,7 +209,7 @@ class Askdata(SignUp, Agent):
             self.username = r_userid.json()['userName']
 
 
-    def agent(self, slug):
+    def agent(self, slug: str):
         Agent.__init__(self, self, slug=slug)
         return self
 

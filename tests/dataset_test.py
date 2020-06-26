@@ -28,9 +28,9 @@ if __name__ == '__main__':
 
     # --------------------------------  method chaining ----------------------------------
     #dataset_slug = agent.dataset('mysql')
-    # key_setting = askdata.agent('SDK_TEST').dataset('mysql').get_setting('schema')
-    # key_settings = askdata.agent('SDK_TEST').dataset('mysql').get_settings()
-    # askdata.agent('SDK_TEST').dataset('mysql').set_setting({"label" : "prova_set2"})
+    key_setting = askdata.agent('SDK_TEST').dataset('mysql_test').get_setting('slug')
+    key_settings = askdata.agent('SDK_TEST').dataset('mysql_test').get_settings()
+    askdata.agent('SDK_TEST').dataset('mysql_test').set_setting({"slug" : "mysql"})
     # -------------------------------- Load by dataset ID -------------------------------
     id_test = agent.get_id_dataset_by_name('MYSQL_TEST')
 
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     #retrive_info_copertura_dat = agent.retrive_dataset(id_test[0])
 
-    #dataset_df = agent.load_dataset_to_df(id_test[0])
+    dataset_df = agent.load_dataset(id_test[0])
     #dataset_df = agent.load_dataset_to_df('DF426F64-7D7E-4573-8789-E2D6F08ACB7B-MYSQL-95a9d1f1-8692-48a2-8b2b-f4a296e8fa27')
 
     # -------------------------------- sync by dataset ID -------------------------------

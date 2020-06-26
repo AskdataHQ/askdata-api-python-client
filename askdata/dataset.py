@@ -17,6 +17,7 @@ import re
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from askdata.askdata_client import Agent
+import sys
 
 from datetime import datetime
 
@@ -64,13 +65,13 @@ class Dataset():
 
         list_datasets = self.list_datasets()
         dataset = list_datasets[list_datasets['slug'] == slug]
-        self.dataset_type = dataset.iloc[0]['type']
-        self.dataset_id = dataset.iloc[0]['id']
-        self.dataset_code = dataset.iloc[0]['code']
-        self.dataset_code = dataset.iloc[0]['name']
-        self.dataset_slug = dataset.iloc[0]['slug']
-        self.dataset_icon = dataset.iloc[0]['icon']
-        self.dataset_createdby = dataset.iloc[0]['createdBy']
+        self._dataset_type = dataset.iloc[0]['type']
+        self._dataset_id = dataset.iloc[0]['id']
+        self._dataset_code = dataset.iloc[0]['code']
+        self._dataset_name = dataset.iloc[0]['name']
+        self._dataset_slug = dataset.iloc[0]['slug']
+        self._dataset_icon = dataset.iloc[0]['icon']
+        self._dataset_createdby = dataset.iloc[0]['createdBy']
 
 
     def list_datasets(self):
@@ -303,7 +304,7 @@ class Dataset():
     # to do
     #     pass
 
-    def load_dataset_to_df(self, dataset_id: str)-> pd.DataFrame:
+    def load_dataset(self, dataset_id='')-> pd.DataFrame:
 
         '''
         read askdata dataset by datasetId and return data frame
@@ -313,10 +314,23 @@ class Dataset():
         :return: DataFrame
         '''
 
+        if dataset_id == '' and hasattr(self, '_dataset_id'):
+            dataset_id = self._dataset_id
+        elif dataset_id != '':
+            pass
+        else:
+            raise Exception("takes 2 positional arguments but 1 was given or object dataset didn't instantiate with slug "
+                            "parmater with method dataset(slug)")
+
         #table_id, schema, id_createdby = self.__get_dataset_connection(dataset_id)
 
         logging.info('retrive info dataset - {}'.format(dataset_id))
         dataset_info = self.__get_dataset_settings_info(dataset_id, all_info=True)
+
+        #TODO: develop support for any dataset type
+
+        if dataset_info["type"] != 'MYSQL':
+            raise Exception('dataset {} not support for loading in dataframe'.format(str(dataset_info["type"])))
 
         table_id = dataset_info["settings"]["table_id"]
         schema = dataset_info["settings"]["schema"]
@@ -394,7 +408,7 @@ class Dataset():
             logging.debug('dataframe {}'.format(str(i)))
             i += 1
             if ((i)/len(processes))*100 > (k*10):
-                logging.info('---- Add data to dataframe  ----- {} %'.format(str(((i+1)/len(processes))*100)))
+                logging.info('---- Add data to dataframe  ----- {} %'.format(str(round((i)/len(processes)*100,0))))
                 k += 1
 
         logging.debug('Time taken: {}'.format(time.time() - start))
@@ -536,9 +550,15 @@ class Dataset():
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url2 = self._base_url_askdata + '/smartbot/agents/' + self._agentId + '/datasets/' + dataset_id
+        #authentication_url2 = self._base_url_askdata + '/smartbot/agents/' + self._agentId + '/datasets/' + dataset_id
+
+        authentication_url2 = self._base_url_askdata + '/smartdataset/datasets/' + dataset_id + '/settings'
         r = s.put(url=authentication_url2, headers=self._headers, json=all_settings)
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except sys.exc_info()[0] as e:
+            logging.info('{}'.format(str(r.json()['message'])))
+            raise Exception(e)
         return r
 
     def migration_dataset(self, agent_source: 'Agent', dataset_id_source: str):
@@ -610,9 +630,9 @@ class Dataset():
         :return: dict, dict with all the settings
         """
 
-        # devo fare un controllo nel caso in cui non istanziato il dataset con lo slug
-        if hasattr(self, 'dataset_id'):
-            dataset_document = self.__get_dataset_settings_info(dataset_id=self.dataset_id)
+        # check for dataset didn't instantiated with the slug
+        if hasattr(self, '_dataset_id'):
+            dataset_document = self.__get_dataset_settings_info(dataset_id=self._dataset_id)
         else:
             raise Exception("dataset object didn't instantiate with slug parameter")
 
@@ -942,6 +962,6 @@ class Dataset():
                 elif key_dataset_document == key_to_set:
                     dataset_document[key_dataset_document] = value_to_set
         # put dataset_document
-        self.__put_settings_dataset(dataset_id=self.dataset_id,all_settings=dataset_document)
+        self.__put_settings_dataset(dataset_id=self._dataset_id, all_settings=dataset_document)
 
         logging.info('---- settings updated ----')
