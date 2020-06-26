@@ -143,8 +143,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
             raise Exception('takes 2 positional arguments "slug, datset_id" but 0 were given')
 
 
-
-class Askdata(SignUp, Agent):
+class Askdata(SignUp):
     '''
     Authentication Object
     '''
@@ -208,10 +207,9 @@ class Askdata(SignUp, Agent):
             self.userid = r_userid.json()['id']
             self.username = r_userid.json()['userName']
 
-
-    def agent(self, slug: str):
-        Agent.__init__(self, self, slug=slug)
-        return self
+    def agent(self, slug: str) -> 'Agent':
+        #Agent.__init__(self, self, slug=slug)
+        return Agent(self, slug=slug)
 
     def load_agents(self):
 

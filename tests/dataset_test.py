@@ -1,4 +1,4 @@
-from askdata.askdata_client import Askdata,Agent
+from askdata import Askdata, Agent
 import datetime
 import pandas as pd
 import askdata.dataset as dats

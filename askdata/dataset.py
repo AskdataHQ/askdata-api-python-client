@@ -288,9 +288,7 @@ class Dataset():
         logging.info('--- Save the Dataframe into Dataset {}'.format(dataset_name))
 
 
-        #run discovery dataset
-        #self.__discovery_datset(dataset_id,settingsDataset)
-        # -----------------------------------
+        #run sync dataset
         self.execute_dataset_sync(dataset_id)
 
         # delete mysql user
