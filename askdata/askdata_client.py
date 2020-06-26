@@ -137,7 +137,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
             self._delete_dataset(self.dataset_id)
             logging.info("---- dataset '{}' deleted ----- ".format(slug))
         elif dataset_id != '' and slug == '':
-            self._delete_dataset(self.dataset_id)
+            self._delete_dataset(dataset_id)
             logging.info("---- dataset '{}' deleted ----- ".format(dataset_id))
         else:
             raise Exception('takes 2 positional arguments "slug, datset_id" but 0 were given')
