@@ -327,7 +327,7 @@ class Dataset():
 
         #TODO: develop support for any dataset type
 
-        if dataset_info["type"] != 'MYSQL':
+        if dataset_info["type"] != 'MYSQL' or dataset_info["type"] != 'DATAFRAME':
             raise Exception('dataset {} not support for loading in dataframe'.format(str(dataset_info["type"])))
 
         table_id = dataset_info["settings"]["table_id"]
@@ -370,6 +370,7 @@ class Dataset():
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries, pool_connections=200, pool_maxsize=200))
 
+        #TODO: new Managemet thread because connection pool is full when there are many thred maybe
         # management thread
         def load_datatset_post(session,data,authentication_url2,indice):
 
