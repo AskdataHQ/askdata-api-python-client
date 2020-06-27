@@ -327,7 +327,7 @@ class Dataset():
 
         #TODO: develop support for any dataset type
 
-        if dataset_info["type"] != 'MYSQL' or dataset_info["type"] != 'DATAFRAME':
+        if dataset_info["type"] != 'MYSQL' and dataset_info["type"] != 'DATAFRAME':
             raise Exception('dataset {} not support for loading in dataframe'.format(str(dataset_info["type"])))
 
         table_id = dataset_info["settings"]["table_id"]
