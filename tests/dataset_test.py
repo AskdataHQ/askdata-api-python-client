@@ -30,9 +30,9 @@ if __name__ == '__main__':
     #dataset_slug = agent.dataset('mysql')
     key_setting = askdata.agent('SDK_TEST').dataset('mysql_test').get_setting('slug')
     key_settings = askdata.agent('SDK_TEST').dataset('mysql_test').get_settings()
-    askdata.agent('SDK_TEST').dataset('mysql_test').set_setting({"slug" : "mysql"})
+    #askdata.agent('SDK_TEST').dataset('mysql_test').set_setting({"slug" : "mysql"})
     # -------------------------------- Load by dataset ID -------------------------------
-    id_test = agent.get_id_dataset_by_name('MYSQL_TEST')
+    id_test = agent.get_id_dataset_by_name('TEST_UPDATE')
 
     #data = '{"_id":"0a82e596-b6e9-45d7-ba0e-ec75b974b752-CITTA-Verona","_class":"com.innaas.cloud.smartentity.persistence.model.Entity","code":"Verona","datasetSync":[{"datasetId":"0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-17ff8411-5077-4add-b3d0-544f841a352d"}],"datasets":[{"sourceValue":[{"language":"en","value":"Verona"}],"sourceValueId":"Verona","datasetId":"0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-17ff8411-5077-4add-b3d0-544f841a352d"},{"sourceValue":[{"language":"en","value":"Verona"}],"sourceValueId":"Verona","datasetId":"0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-e29489d3-a387-45f0-b96a-74633c4b6c49"}],"description":"","details":{},"domain":"0a82e596-b6e9-45d7-ba0e-ec75b974b752","icon":"","localizedName":{},"localizedSynonyms":[],"name":"Verona","sampleQueries":[],"synonyms":["verona"],"type":"CITTA"}'
     #data_dict = json.loads(data)
@@ -50,6 +50,14 @@ if __name__ == '__main__':
     resp_sync = agent.execute_dataset_sync(id_test[0])
     #'0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-17ff8411-5077-4add-b3d0-544f841a352d'
     #resp_sync = agent.ExecuteDatasetSync(df_datasets['id'][0])
+
+    # ---------- update dataset ---------------------
+    id_test = agent.get_id_dataset_by_name('TEST_UPDATE')
+
+    df_test_update = pd.DataFrame([{"id": "pippo", "set": 123, "clm1": "sisi"}, {"id": "pippo1", "set": 423, "clm1": "sisi"},
+                            {"id": "pippo2", "set": 1283, "clm1": "sisi"}])
+
+    agent.dataset('dataframe').update_dataset(df_test_update, type_update='append')
 
     # ------ Create New dataset from dataframe -------------
     df_test = pd.DataFrame([{"id": "pippo", "set": 123, "clm1": "ciao"}, {"id": "pippo1", "set": 423, "clm1": "ciao"},

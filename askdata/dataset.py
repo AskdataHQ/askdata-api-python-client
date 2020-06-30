@@ -11,6 +11,9 @@ from urllib3.util.retry import Retry
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from sqlalchemy.types import VARCHAR
 from sqlalchemy.types import DateTime
+from sqlalchemy import MetaData,Column, Table
+from sqlalchemy.orm import sessionmaker, mapper
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import Index
 from threading import Thread
 import re
@@ -183,7 +186,7 @@ class Dataset():
         r.raise_for_status()
         return r
 
-    def __ask_db_engine(self, dataset_id, setting):
+    def __ask_db_engine(self, dataset_id: str, setting: dict):
         # request credential
 
         s = requests.Session()
@@ -224,9 +227,10 @@ class Dataset():
 
 
     def save_to_dataset(self, frame: pd.DataFrame, dataset_name: str, add_indexdf = False,
-                        indexclm = [], if_exists='Replace') -> str:
+                        indexclm = [], unique_key=[]) -> str:
 
         # TODO: see upsert in mysql if_exists['replace','Append','upsert']
+        # TODO: insert unique_key
         '''
         Save the data frame in askdata dataset of the specific agent
 
@@ -964,3 +968,55 @@ class Dataset():
         self.__put_settings_dataset(dataset_id=self._dataset_id, all_settings=dataset_document)
 
         logging.info('---- settings updated ----')
+
+    def update_dataset(self, dataframe: pd.DataFrame, dataset_slug:str ='', type_update:str='replace'):
+        """
+        update records stored in a dataset DataFrame.
+
+        :param type_update: str, {‘replace’, ‘append’}, default ‘replace’
+
+
+            replace: Drop the table before inserting new values.
+            append: Insert new values to the existing table.
+        :param unique_key: str, default ''
+            Primary key selected necessary for updating if type_update is 'update'
+        :return:
+        """
+
+        if dataset_slug != '':
+            self._get_info_dataset_by_slug(dataset_slug)
+            logging.debug("---- get info for dataset with slug '{}' ----- ".format(dataset_slug))
+
+        elif hasattr(self,'_dataset_slug') != '' and dataset_slug == '':
+            pass
+            logging.debug("---- get info for dataset with slug '{}' ----- ".format(str(self._dataset_slug)))
+        else:
+            raise Exception("takes 4 positional arguments and but dataset_slug weren't given or dataset didn't"
+                            " instantiate with slug")
+
+        #check type of dataset
+        if self._dataset_type != 'MYSQL' and self._dataset_type != 'DATAFRAME':
+            raise Exception('update is active only dataset of type DataFrame')
+
+        dataset_document = self.__get_dataset_settings_info(dataset_id=self._dataset_id)
+        engine, db_tablename = self.__ask_db_engine(dataset_id=self._dataset_id, setting=dataset_document['settings'])
+
+        with engine.connect() as connection:
+            if type_update == 'replace':
+                sql_truncate = """Truncate TABLE `{}`;""".format(db_tablename)
+                connection.execute(sql_truncate)
+
+                dataframe.to_sql(con=connection, name=db_tablename, if_exists='append', chunksize=1000, method='multi',
+                                 index=False)
+
+                self.__ask_del_db_engine(dataset_id=self._dataset_id)
+
+            if type_update == 'append':
+
+                dataframe.to_sql(con=connection, name=db_tablename, if_exists='append', chunksize=1000, method='multi',
+                                 index=False)
+
+                self.__ask_del_db_engine(dataset_id=self._dataset_id)
+
+
+            #TODO test 'replace' develop append and update and set primary key in save_to_dataset
