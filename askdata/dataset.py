@@ -1020,12 +1020,16 @@ class Dataset():
 
                 self.__ask_del_db_engine(dataset_id=self._dataset_id)
 
+                logging.info('----  update dataset with id : ---'.format(self._dataset_id))
+
             if type_update == 'append':
 
                 dataframe.to_sql(con=connection, name=db_tablename, if_exists='append', chunksize=1000, method='multi',
                                  index=False)
 
                 self.__ask_del_db_engine(dataset_id=self._dataset_id)
+
+                logging.info('----  update dataset with id : ---'.format(self._dataset_id))
 
 
             #TODO test 'replace' develop append and update and set primary key in save_to_dataset
