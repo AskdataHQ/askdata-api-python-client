@@ -183,11 +183,9 @@ class Dataset():
 
         if dataset_id != '':
             pass
-            logging.debug("---- get info for dataset with slug '{}' ----- ".format(dataset_id))
-
         elif hasattr(self, '_dataset_slug') != '' and dataset_id == '':
             dataset_id = self._dataset_id
-            logging.debug("---- get info for dataset with slug '{}' ----- ".format(str(self._dataset_id)))
+            logging.debug("---- sync dataset with id '{}' ----- ".format(str(self._dataset_id)))
         else:
             raise Exception("takes 2 positional arguments but dataset_id weren't given or dataset didn't"
                             " instantiate with slug")
