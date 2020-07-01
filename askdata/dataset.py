@@ -179,7 +179,18 @@ class Dataset():
 
         return entitie_code, columnsid
 
-    def execute_dataset_sync(self, dataset_id):
+    def execute_dataset_sync(self, dataset_id=''):
+
+        if dataset_id != '':
+            pass
+            logging.debug("---- get info for dataset with slug '{}' ----- ".format(dataset_id))
+
+        elif hasattr(self, '_dataset_slug') != '' and dataset_id == '':
+            dataset_id = self._dataset_id
+            logging.debug("---- get info for dataset with slug '{}' ----- ".format(str(self._dataset_id)))
+        else:
+            raise Exception("takes 2 positional arguments but dataset_id weren't given or dataset didn't"
+                            " instantiate with slug")
 
         dataset_url = self._base_url_askdata + '/smartdataset/datasets/' + dataset_id + '/sync'
         r = requests.post(url=dataset_url, headers=self._headers)
