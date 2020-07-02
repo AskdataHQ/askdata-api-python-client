@@ -246,8 +246,8 @@ class Dataset():
         logging.debug('-------delete mysqluser for dataset {}------'.format(dataset_id))
 
 
-    def save_to_dataset(self, frame: pd.DataFrame, dataset_name: str, add_indexdf = False,
-                        indexclm = [], unique_key=[]) -> str:
+    def create_dataset(self, frame: pd.DataFrame, dataset_name: str, add_indexdf = False,
+                       indexclm = [], unique_key=[]) -> str:
 
         # TODO: see upsert in mysql if_exists['replace','Append','upsert']
         # TODO: insert unique_key

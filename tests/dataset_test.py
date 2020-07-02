@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     # --------------------------------  method chaining ----------------------------------
     #dataset_slug = agent.dataset('mysql')
-    id_dat = askdata.agent('sdk_test').get_dataset_slug_from_id(df_datasets.loc[0,0])
+    id_dat = askdata.agent('sdk_test').get_dataset_slug_from_id(df_datasets.iloc[0,0])
     key_setting = askdata.agent('SDK_TEST').dataset('mysql_test').get_setting('slug')
     key_settings = askdata.agent('SDK_TEST').dataset('mysql_test').get_settings()
     #askdata.agent('SDK_TEST').dataset('mysql_test').set_setting({"slug" : "mysql"})
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     #data_dict = json.loads(data)
     #agent_dest.put_value_entity(entity_code='CITTA',dataset_id='0a82e596-b6e9-45d7-ba0e-ec75b974b752-MYSQL-e29489d3-a387-45f0-b96a-74633c4b6c49')
 
-    #agent_dest.migration_dataset(agent, id_test[0])
+    agent_dest.migration_dataset(agent, id_test[0])
 
 
     #retrive_info_copertura_dat = agent.retrive_dataset(id_test[0])
@@ -55,17 +55,17 @@ if __name__ == '__main__':
     # ---------- update dataset ---------------------
     id_test = agent.get_id_dataset_by_name('TEST_UPDATE')
 
-    #df_test_update = pd.DataFrame([{"id": "pippo", "set": 123, "clm1": "sisi"}, {"id": "pippo1", "set": 423, "clm1": "sisi"},
-    #                        {"id": "pippo2", "set": 1283, "clm1": "sisi"}])
+    df_test_update = pd.DataFrame([{"id": "pippo", "set": 123, "clm1": "sisi"}, {"id": "pippo1", "set": 423, "clm1": "sisi"},
+                            {"id": "pippo2", "set": 1283, "clm1": "sisi"}])
 
-    #agent.dataset('dataframe').update_dataset(df_test_update, type_update='append')
+    agent.dataset('dataframe').update_dataset(df_test_update, type_update='append')
 
     # ------ Create New dataset from dataframe -------------
     df_test = pd.DataFrame([{"id": "pippo", "set": 123, "clm1": "ciao"}, {"id": "pippo1", "set": 423, "clm1": "ciao"},
                             {"id": "pippo2", "set": 1283, "clm1": "ciao"}])
     # ,indexclm=["set"]
-    slug_df_to_dataset = agent.save_to_dataset(frame=df_test, dataset_name='T_DF_{}'.format(datetime.datetime.now().strftime("%Y%m%d")),
-                          indexclm=["set"])
+    slug_df_to_dataset = agent.create_dataset(frame=df_test, dataset_name='T_DF_{}'.format(datetime.datetime.now().strftime("%Y%m%d")),
+                                              indexclm=["set"])
 
     # ------- delete dataset -------------
     agent.delete_dataset(slug=slug_df_to_dataset)
