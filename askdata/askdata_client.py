@@ -142,6 +142,22 @@ class Agent(Insight, Channel, Catalog, Dataset):
         else:
             raise Exception('takes 2 positional arguments "slug, datset_id" but 0 were given')
 
+    def get_dataset_slug_from_id(self, dataset_id:str)->str:
+        """
+        get dataset slug by the dataset id instantiated with slug
+        :param dataset_id: str
+        :return: slug: str
+        """
+
+        list_dataset = self.list_datasets()
+
+        if list_dataset[list_dataset['id'] == dataset_id].empty:
+            raise Exception('The dataset with id: {} not exist'.format(dataset_id))
+        else:
+            slug = list_dataset[list_dataset['id'] == dataset_id].loc[:, 'slug'].item()
+
+        return slug
+
 
 class Askdata(SignUp):
     '''

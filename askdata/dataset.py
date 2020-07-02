@@ -130,6 +130,17 @@ class Dataset():
         #return an array
         return dataset_choose.id.values
 
+    def get_dataset_id(self)->str:
+        """
+            get dataset id from the dataset instantiated with slug
+        :return: dataset_id: str
+        """
+        if hasattr(self,'_dataset_id'):
+            return self._dataset_id
+
+        else:
+            raise Exception("dataset didn't instantiate with slug")
+
     # TODO: Cancellare dopo aver verificato che load_datset_to_df va ok perchè possiamo riutilizzare __get_dataset_settings_info per avere le stesse informazione di return
 
     # def __get_dataset_connection(self, datasetid):
@@ -307,7 +318,11 @@ class Dataset():
         # delete mysql user
         self.__ask_del_db_engine(dataset_id)
 
-        return dataset_id
+        # find list dataset
+        list_dataset = self.list_datasets()
+        slug = list_dataset[list_dataset['id'] == dataset_id].loc[:,'slug'].item()
+
+        return slug
 
 
 
@@ -1022,7 +1037,7 @@ class Dataset():
 
                 logging.info('----  update dataset with id : ---'.format(self._dataset_id))
 
-            if type_update == 'append':
+            elif type_update == 'append':
 
                 dataframe.to_sql(con=connection, name=db_tablename, if_exists='append', chunksize=1000, method='multi',
                                  index=False)
@@ -1031,5 +1046,6 @@ class Dataset():
 
                 logging.info('----  update dataset with id : ---'.format(self._dataset_id))
 
-
+            #elif type_update == 'upsert':
+            #    pass
             #TODO test 'replace' develop append and update and set primary key in save_to_dataset
