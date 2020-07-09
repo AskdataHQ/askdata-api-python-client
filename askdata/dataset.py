@@ -782,6 +782,8 @@ class Dataset():
                                             settings_value=value_entity)
 
 
+    # def __put_onefield_entity_dataset(self):
+    #     pass
 
     def __put_entity_dataset(self, entity_code: str, dataset_id: str, settigs_entity: dict, entity_type: str, dataset_type: str):
 
