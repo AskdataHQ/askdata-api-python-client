@@ -615,7 +615,7 @@ class Dataset():
         logging.info('Dataset {} copied in the agent'.format(label))
 
         # retrive all settings of the entities (source dataset)
-        dataset_entities_doc_source = agent_source.retrive_dataset_entities(dataset_id=dataset_id_source, dataset_type=type_dataset)
+        dataset_entities_doc_source = agent_source.__retrive_dataset_entities(dataset_id=dataset_id_source, dataset_type=type_dataset)
 
         for index, entity in enumerate(dataset_entities_doc_source["data"]):
             self.copy_entity_dataset(entity_code=entity['code'], dataset_id_dest=dataset_id_dest, settigs_entity_source=entity,
@@ -670,7 +670,7 @@ class Dataset():
 
         return dataset_document
 
-    def retrive_dataset_entities(self, dataset_id: str, dataset_type: str) -> dict:
+    def __retrive_dataset_entities(self, dataset_id: str, dataset_type: str) -> dict:
 
         """
         return a dict with all settings of the datatset's entities
@@ -724,7 +724,7 @@ class Dataset():
             response.raise_for_status()
 
         # retrive setting of destination entity
-        settigs_entities_dest = self.retrive_dataset_entities(dataset_id=dataset_id_dest, dataset_type=dataset_type)
+        settigs_entities_dest = self.__retrive_dataset_entities(dataset_id=dataset_id_dest, dataset_type=dataset_type)
 
         # insert settings of source entity in destination entity
         for index, settigs_entity_dest in enumerate(settigs_entities_dest['data']):
@@ -786,9 +786,66 @@ class Dataset():
                     self.__put_value_entity(entity_code=entity_code, dataset_id=dataset_id_dest,
                                             settings_value=value_entity)
 
+    # TODO: TEST
+    def get_columns_code(self)->list:
+        """
+        return the list of column of specific dataset instantiated with slug
+        :return: list
+        """
+        # mettere un eccezione che fa il controllo se esiste la propietà self._dataset_id
+        if hasattr(self, '_dataset_id'):
+            s = requests.Session()
+            s.keep_alive = False
+            retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+            s.mount('https://', HTTPAdapter(max_retries=retries))
+
+            authentication_url = self._base_url_askdata + '/smartdataset/datasets/' + self._dataset_id + '/datasetParameters/codes/list'
+            response = s.get(url=authentication_url, headers=self._headers)
+            response.raise_for_status()
+            # bisogna estarre solo una lista dei valori e non una lista di dict
+            column_list = [d['id'] for d in response.json()]
+            return column_list
+
+        else:
+            raise Exception("dataset didn't instantiate with slug")
+
+
     #TODO: put_onefield_entity
     # def __put_onefield_entity_dataset(self):
     #     pass
+    def set_synonym(self,column_code: str,synonyms: list, replace=False):
+        column_code_settings = self.__retrive_entity(entity_code=column_code, dataset_id=self._dataset_id,
+                                                     dataset_type=self._dataset_type)
+        if replace:
+            column_code_settings['synonyms'] = synonyms
+        else:
+            column_code_settings['synonyms'].extend(synonyms)
+            column_code_settings['synonyms'] = list(set(column_code_settings['synonyms']))
+
+        self.__put_entity_dataset(entity_code=column_code_settings['code'], dataset_id=self._dataset_id,
+                                  settigs_entity=column_code_settings,
+                                  entity_type=column_code_settings['parameterType'],dataset_type=self._dataset_type)
+
+
+    def __retrive_entity(self,entity_code: str, dataset_id: str, dataset_type: str)-> dict:
+        """
+        retrive the entity settings for a specific entity_code and dataset
+
+        :param entity_code: str
+        :param dataset_id_dest: str
+        :param dataset_type: str
+        :return: dict
+        """
+        # retrive setting of destination entity
+        settigs_entities_dest = self.__retrive_dataset_entities(dataset_id=dataset_id, dataset_type=dataset_type)
+
+        # insert settings of source entity in destination entity
+        for index, settigs_entity_dest in enumerate(settigs_entities_dest['data']):
+            if settigs_entity_dest["code"] == entity_code:
+                entity_settings = settigs_entity_dest
+                break
+
+        return entity_settings
 
     def __put_entity_dataset(self, entity_code: str, dataset_id: str, settigs_entity: dict, entity_type: str, dataset_type: str):
 

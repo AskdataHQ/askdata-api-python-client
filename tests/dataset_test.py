@@ -29,6 +29,9 @@ if __name__ == '__main__':
     # --------------------------------  method chaining ----------------------------------
     #dataset_slug = agent.dataset('mysql')
     id_dat = askdata.agent('sdk_test').get_dataset_slug_from_id(df_datasets.iloc[0,0])
+    colums_list = askdata.agent('SDK_TEST').dataset('mysql_test').get_columns_code()
+    askdata.agent('SDK_TEST').dataset('mysql_test').set_synonym('ID',['test','test1'])
+
     key_setting = askdata.agent('SDK_TEST').dataset('mysql_test').get_setting('slug')
     key_settings = askdata.agent('SDK_TEST').dataset('mysql_test').get_settings()
     #askdata.agent('SDK_TEST').dataset('mysql_test').set_setting({"slug" : "mysql"})
