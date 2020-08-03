@@ -755,6 +755,14 @@ class Dataset():
                                               settigs_entity["parameterType"], dataset_type)
 
     def copy_values_entity_dataset(self, entity_code: str, dataset_id_dest: str, entity_values_settings_source_list: list):
+        """
+        copy a list of settings of values in a new the entity_code of the destination dataset id
+
+        :param entity_code: str, entity_code of the destination dataset
+        :param dataset_id_dest: str, id dataset of the destination dataset
+        :param entity_values_settings_source_list: list, list of dict of the settings values
+        :return: None
+        """
 
         # retrive the setting's values of specific entity code
         entity_values_settings_dest = self.__get_value_entity(entity_code=entity_code)
@@ -786,13 +794,13 @@ class Dataset():
                     self.__put_value_entity(entity_code=entity_code, dataset_id=dataset_id_dest,
                                             settings_value=value_entity)
 
-    # TODO: TEST
+
     def get_columns_code(self)->list:
         """
         return the list of column of specific dataset instantiated with slug
         :return: list
         """
-        # mettere un eccezione che fa il controllo se esiste la propietà self._dataset_id
+
         if hasattr(self, '_dataset_id'):
             s = requests.Session()
             s.keep_alive = False
@@ -802,7 +810,7 @@ class Dataset():
             authentication_url = self._base_url_askdata + '/smartdataset/datasets/' + self._dataset_id + '/datasetParameters/codes/list'
             response = s.get(url=authentication_url, headers=self._headers)
             response.raise_for_status()
-            # bisogna estarre solo una lista dei valori e non una lista di dict
+
             column_list = [d['id'] for d in response.json()]
             return column_list
 
@@ -810,10 +818,17 @@ class Dataset():
             raise Exception("dataset didn't instantiate with slug")
 
 
-    #TODO: put_onefield_entity
-    # def __put_onefield_entity_dataset(self):
-    #     pass
+
     def set_synonym(self,column_code: str,synonyms: list, replace=False):
+        """
+        set the synonym of column_code of specific dataset instantiated with slug
+
+        :param column_code: str, code of the entity
+        :param synonyms: list of string
+        :param replace: bool, the default is False if the Replace value is False, synonyms are added to existing
+                        synonyms otherwise they are replaced
+        :return: None
+        """
         column_code_settings = self.__retrive_entity(entity_code=column_code, dataset_id=self._dataset_id,
                                                      dataset_type=self._dataset_type)
         if replace:
@@ -825,6 +840,20 @@ class Dataset():
         self.__put_entity_dataset(entity_code=column_code_settings['code'], dataset_id=self._dataset_id,
                                   settigs_entity=column_code_settings,
                                   entity_type=column_code_settings['parameterType'],dataset_type=self._dataset_type)
+
+    def get_synonym(self,column_code: str) -> list:
+        """
+        get the synonym of column_code of specific dataset instantiated with slug
+
+        :param column_code: str
+        :return: list, list of the synonym
+        """
+
+        column_code_settings = self.__retrive_entity(entity_code=column_code, dataset_id=self._dataset_id,
+                                                     dataset_type=self._dataset_type)
+        return column_code_settings['synonyms']
+
+
 
 
     def __retrive_entity(self,entity_code: str, dataset_id: str, dataset_type: str)-> dict:
