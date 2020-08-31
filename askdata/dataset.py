@@ -841,6 +841,7 @@ class Dataset():
                                   settigs_entity=column_code_settings,
                                   entity_type=column_code_settings['parameterType'],dataset_type=self._dataset_type)
 
+
     def get_synonym(self,column_code: str) -> list:
         """
         get the synonym of column_code of specific dataset instantiated with slug
@@ -851,10 +852,82 @@ class Dataset():
 
         column_code_settings = self.__retrive_entity(entity_code=column_code, dataset_id=self._dataset_id,
                                                      dataset_type=self._dataset_type)
-        return column_code_settings['synonyms']
+        return column_code_settings.get('synonyms',[])
+
+    def del_synonym(self,column_code: str, syn: list) :
+        """
+        delete the synonym of column_code of specific dataset instantiated with slug
+
+        :param column_code: str value of entity
+        :param syn: str value of synonym to delete
+        :return: list, list of the synonym
+        """
+        synonyms = self.get_synonym(column_code)
+
+        # check if synonyms is empty
+        if len(synonyms) > 0:
+            for syn_el in syn:
+                synonyms.remove(syn_el)
+
+        self.set_synonym(column_code=column_code, synonyms=synonyms, replace=True)
+
+    def set_injections(self,column_code: str,injections: list, replace=False):
+        """
+        set the colun code to injection of specific dataset instantiated with slug
+
+        :param column_code: str, code of the entity
+        :param injections: list of column_code to injection
+        :param replace: bool, the default is False if the Replace value is False, injections are added to existing
+                        injections otherwise they are replaced
+        :return: None
+        """
+        column_code_settings = self.__retrive_entity(entity_code=column_code, dataset_id=self._dataset_id,
+                                                     dataset_type=self._dataset_type)
+        if replace:
+            column_code_settings['advancedConfiguration']['injections'] = injections
+        else:
+            if column_code_settings['advancedConfiguration'].get('injections') != None:
+
+                column_code_settings['advancedConfiguration']['injections'].extend(injections)
+                column_code_settings['advancedConfiguration']['injections'] = \
+                    list(set(column_code_settings['advancedConfiguration']['injections']))
+
+            else:
+                column_code_settings['advancedConfiguration'].setdefault('injections', injections)
 
 
+        self.__put_entity_dataset(entity_code=column_code_settings['code'], dataset_id=self._dataset_id,
+                                  settigs_entity=column_code_settings,
+                                  entity_type=column_code_settings['parameterType'],dataset_type=self._dataset_type)
 
+    def get_injections(self, column_code: str) -> list:
+            """
+            get the injections of column_code of specific dataset instantiated with slug
+
+            :param column_code: str
+            :return: list, list of the injections
+            """
+
+            column_code_settings = self.__retrive_entity(entity_code=column_code, dataset_id=self._dataset_id,
+                                                         dataset_type=self._dataset_type)
+            return column_code_settings['advancedConfiguration'].get('injections',[])
+
+    def del_injections(self,column_code: str, injection_list: list) :
+        """
+        delete the injections of column_code of specific dataset instantiated with slug
+
+        :param column_code: str value of entity
+        :param injection: str value of synonym to delete
+        :return: list, list of the synonym
+        """
+        injections = self.get_injections(column_code)
+
+        # check for injection list empty
+        if len(injections)>0:
+            for injection in injection_list:
+                injections.remove(injection)
+
+        self.set_injections(column_code=column_code, injections=injections, replace=True)
 
     def __retrive_entity(self,entity_code: str, dataset_id: str, dataset_type: str)-> dict:
         """

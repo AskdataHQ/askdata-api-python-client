@@ -13,7 +13,7 @@ if __name__ == '__main__':
     env = 'dev'
     askdata = Askdata(username, password, domain, env)
 
-    #askdata.agent('sdk_test')
+    # askdata.agent('sdk_test')
 
     # source agent
     askdata_dest = Askdata(username, password, domain)
@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
     # get agent
     agent = Agent(askdata, agent_name='SDK_TEST')
-    #agent = Agent(askdata, agent_name='SDK_TESTER')
+    # agent = Agent(askdata, agent_name='SDK_TESTER')
 
     # --------------------------------   Dataset  -------------------------------------------
     df_datasets = agent.list_datasets()
@@ -30,10 +30,18 @@ if __name__ == '__main__':
     #dataset_slug = agent.dataset('mysql')
     id_dat = askdata.agent('sdk_test').get_dataset_slug_from_id(df_datasets.iloc[0,0])
     colums_list = askdata.agent('SDK_TEST').dataset('mysql_test').get_columns_code()
-    askdata.agent('SDK_TEST').dataset('mysql_test').set_synonym('ID',['test','test1'])
+    synonyms = askdata.agent('SDK_TEST').dataset('mysql_test').get_synonym('ID')
+
+    askdata.agent('SDK_TEST').dataset('mysql_test').set_synonym('ID', ['test','test1'])
+    askdata.agent('SDK_TEST').dataset('mysql_test').del_synonym('ID', ['test1'])
 
     key_setting = askdata.agent('SDK_TEST').dataset('mysql_test').get_setting('slug')
     key_settings = askdata.agent('SDK_TEST').dataset('mysql_test').get_settings()
+
+
+    injections = askdata.agent('SDK_TEST').dataset('copertura_bck').get_injections(column_code='WOL')
+    askdata.agent('SDK_TEST').dataset('copertura_bck').set_injections(column_code='WOL',injections=['CTO'])
+    askdata.agent('SDK_TEST').dataset('copertura_bck').del_injections(column_code='WOL',injection_list=['CTO'])
     #askdata.agent('SDK_TEST').dataset('mysql_test').set_setting({"slug" : "mysql"})
     # -------------------------------- Load by dataset ID -------------------------------
     id_test = agent.get_id_dataset_by_name('TEST_UPDATE')
