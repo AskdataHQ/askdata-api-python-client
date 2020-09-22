@@ -2,6 +2,7 @@ import requests
 import yaml
 import os
 import pandas as pd
+from pandas import DataFrame
 import numpy as np
 import logging
 from requests.adapters import HTTPAdapter
@@ -90,7 +91,7 @@ class Insight:
         r.raise_for_status()
         return r
 
-    def migration_insight(self, agent_source, insights_source_):
+    def migration_insight(self, agent_source, insights_source_: DataFrame):
 
         insights_source = insights_source_.drop(columns=['createdAt', 'createdBy', 'id'])
         insights_source.drop(insights_source[(insights_source["name"] == 'Sample rule') & (
