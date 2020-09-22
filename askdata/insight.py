@@ -91,7 +91,7 @@ class Insight:
         r.raise_for_status()
         return r
 
-    def migration_insight(self, agent_source, insights_source_: DataFrame):
+    def migration_insight(self, agent_source, insights_source_: DataFrame) -> DataFrame:
 
         insights_source = insights_source_.drop(columns=['createdAt', 'createdBy', 'id'])
         insights_source.drop(insights_source[(insights_source["name"] == 'Sample rule') & (
