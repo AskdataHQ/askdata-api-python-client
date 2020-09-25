@@ -753,6 +753,7 @@ class Dataset():
                     # copy all the settings of the entity with the same entity_code in the destination dataset
                     self.__put_entity_dataset(entity_code, dataset_id_dest, settigs_entity,
                                               settigs_entity["parameterType"], dataset_type)
+                    break
 
     def copy_values_entity_dataset(self, entity_code: str, dataset_id_dest: str, entity_values_settings_source_list: list):
         """
@@ -793,7 +794,7 @@ class Dataset():
                     # insert settings in the value entity
                     self.__put_value_entity(entity_code=entity_code, dataset_id=dataset_id_dest,
                                             settings_value=value_entity)
-
+                    break
 
     def get_columns_code(self)->list:
         """
