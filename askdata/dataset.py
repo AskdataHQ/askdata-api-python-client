@@ -274,7 +274,7 @@ class Dataset():
         Default empty list
         '''
         dataset_id = self.get_id_dataset_by_name(dataset_name)
-        if(dataset_id!=None):
+        if(dataset_id!=[]):
             logging.info("DATASET ID {}".format(dataset_id))
         else:
             logging.info("DATASET ID {}")
