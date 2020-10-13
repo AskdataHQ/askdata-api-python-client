@@ -251,6 +251,11 @@ class Dataset():
         logging.debug('-------delete mysqluser for dataset {}------'.format(dataset_id))
 
 
+    def test(self):
+        logging.info('---------------------------')
+        print("hola")
+
+
     def create_dataset(self, frame: pd.DataFrame, dataset_name: str, add_indexdf = False,
                        indexclm = [], unique_key=[]) -> str:
 
@@ -326,7 +331,7 @@ class Dataset():
         list_dataset = self.list_datasets()
         slug = list_dataset[list_dataset['id'] == dataset_id].loc[:,'slug'].item()
 
-        return "slug"
+        return slug
 
 
 
