@@ -251,10 +251,6 @@ class Dataset():
         logging.debug('-------delete mysqluser for dataset {}------'.format(dataset_id))
 
 
-    def test(self):
-        logging.info('---------------------------')
-        print("hola")
-
 
     def create_dataset(self, frame: pd.DataFrame, dataset_name: str, add_indexdf = False,
                        indexclm = [], unique_key=[]) -> str:
@@ -278,7 +274,7 @@ class Dataset():
         Default empty list
         '''
         dataset_id = self.get_id_dataset_by_name(dataset_name)
-        logging.info("DATASET ID ", dataset_id)
+        logging.info("DATASET ID {}".format(dataset_id))
         dataset_id, settings_dataset = self.__create_dataset_df(dataset_name)
         engine, db_tablename = self.__ask_db_engine(dataset_id, settings_dataset)
 
