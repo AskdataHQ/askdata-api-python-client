@@ -312,9 +312,6 @@ class Dataset():
                     logging.info('--- ----------- -----')
                     logging.info('--- add index: {}'.format(index_mysql[2]))
 
-
-
-
         logging.info('--- ----------- -----')
         logging.info('--- Save the Dataframe into Dataset {}'.format(dataset_name))
 
