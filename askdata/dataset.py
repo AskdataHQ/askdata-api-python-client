@@ -326,7 +326,7 @@ class Dataset():
         list_dataset = self.list_datasets()
         slug = list_dataset[list_dataset['id'] == dataset_id].loc[:,'slug'].item()
 
-        return slug
+        return "slug"
 
 
 
