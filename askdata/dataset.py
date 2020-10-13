@@ -277,6 +277,7 @@ class Dataset():
         if(dataset_id!=[]):
             logging.info("DATASET ID {}".format(dataset_id))
             settings_dataset = self.__get_dataset_settings_info(dataset_id[0], True)
+            logging.info("DATASET SETTINGS {}".format(settings_dataset))
         else:
             logging.info("DATASET ID {}")
             dataset_id, settings_dataset = self.__create_dataset_df(dataset_name)

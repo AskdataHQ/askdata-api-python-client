@@ -71,7 +71,6 @@ class Agent(Insight, Channel, Catalog, Dataset):
         Channel.__init__(self, self._env, self._token, self._agentId, self._domain)
         Catalog.__init__(self, self._env, self._token)
         Dataset.__init__(self, self._env, self._token)
-        logging.info("agent created")
 
     def __str__(self):
         return '{}'.format(self._agentId)
