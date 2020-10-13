@@ -223,7 +223,7 @@ class Askdata(SignUp):
             self.userid = r_userid.json()['id']
             self.username = r_userid.json()['userName']
 
-    def agent(self, slug: str, agent_id="") -> 'Agent':
+    def agent(self, slug="", agent_id="") -> 'Agent':
         #Agent.__init__(self, self, slug=slug)
         return Agent(self, slug=slug, agent_id=agent_id)
 

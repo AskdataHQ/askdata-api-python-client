@@ -252,7 +252,7 @@ class Dataset():
 
 
 
-    def create_dataset(self, frame: pd.DataFrame, dataset_name: str, add_indexdf = False,
+    def create_or_update_dataset(self, frame: pd.DataFrame, dataset_name: str, add_indexdf = False,
                        indexclm = [], unique_key=[]) -> str:
 
         # TODO: see upsert in mysql if_exists['replace','Append','upsert']
@@ -275,11 +275,8 @@ class Dataset():
         '''
         dataset_id = self.get_id_dataset_by_name(dataset_name)[0]
         if(dataset_id!=[]):
-            logging.info("DATASET ID {}".format(dataset_id))
             settings_dataset = self.__get_dataset_settings_info(dataset_id, True)["settings"]
-            logging.info("DATASET SETTINGS {}".format(settings_dataset))
         else:
-            logging.info("DATASET ID {}")
             dataset_id, settings_dataset = self.__create_dataset_df(dataset_name)
 
         engine, db_tablename = self.__ask_db_engine(dataset_id, settings_dataset)
