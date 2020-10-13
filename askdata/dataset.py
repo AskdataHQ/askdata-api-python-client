@@ -272,6 +272,8 @@ class Dataset():
         the index is a list of column names of the data frame which are setting like indexes for increasing performance.
         Default empty list
         '''
+        dataset_id = self.get_id_dataset_by_name(dataset_name)
+        logging.info("DATASET ID ", dataset_id)
         dataset_id, settings_dataset = self.__create_dataset_df(dataset_name)
         engine, db_tablename = self.__ask_db_engine(dataset_id, settings_dataset)
 
