@@ -333,6 +333,81 @@ class Dataset():
         return slug
 
 
+    def create_dataset(self, frame: pd.DataFrame, dataset_name: str, add_indexdf = False,
+                       indexclm = [], unique_key=[]) -> str:
+
+        # TODO: see upsert in mysql if_exists['replace','Append','upsert']
+        # TODO: insert unique_key
+        '''
+        Save the data frame in askdata dataset of the specific agent
+
+        Parameters
+        ----------
+        frame : DataFrame
+        Input dataframe+
+        index: list of string
+
+        name : string
+        name of the dataset Askdata
+
+        index: list
+        the index is a list of column names of the data frame which are setting like indexes for increasing performance.
+        Default empty list
+        '''
+
+        dataset_id, settings_dataset = self.__create_dataset_df(dataset_name)
+        engine, db_tablename = self.__ask_db_engine(dataset_id, settings_dataset)
+
+        # with "with" we can close the connetion when we exit
+        with engine.connect() as connection:
+
+            # to check type of column of the Dataframa for creating a correct and performing table structure
+
+            dtype_table = dict()
+            for clm in frame.select_dtypes(include=np.object).columns:
+                maxLen = frame[clm].str.len().max()
+                dtype_table[clm] = VARCHAR(length=maxLen + 10)
+            for clm in frame.select_dtypes(include=[np.datetime64]).columns:
+                dtype_table[clm] = DateTime()
+
+            if not indexclm:
+                frame.to_sql(con=connection, name=db_tablename, if_exists='replace', chunksize=1000, index=add_indexdf,
+                             index_label='INDEX_DF',
+                             method='multi',dtype=dtype_table)
+            else:
+                frame.to_sql(con=connection, name=db_tablename, if_exists='replace', chunksize=1000,
+                             method='multi',index=add_indexdf, index_label='INDEX_DF', dtype=dtype_table)
+
+                # SQL Statement to create a secondary index
+                for column_ind in indexclm:
+                    sql_index = """CREATE INDEX index_{}_{} ON {}(`{}`);""".format(db_tablename, column_ind,
+                                                                                   db_tablename, column_ind)
+                    # Execute the sql - create index
+                    connection.execute(sql_index)
+
+                # Now list the indexes on the table
+                sql_show_index = "show index from {}".format(db_tablename)
+                indices_mysql = connection.execute(sql_show_index)
+                for index_mysql in indices_mysql.fetchall():
+                    logging.info('--- ----------- -----')
+                    logging.info('--- add index: {}'.format(index_mysql[2]))
+
+        logging.info('--- ----------- -----')
+        logging.info('--- Save the Dataframe into Dataset {}'.format(dataset_name))
+
+
+        #run sync dataset
+        self.execute_dataset_sync(dataset_id)
+
+        # delete mysql user
+        self.__ask_del_db_engine(dataset_id)
+
+        # find list dataset
+        list_dataset = self.list_datasets()
+        slug = list_dataset[list_dataset['id'] == dataset_id].loc[:,'slug'].item()
+
+        return slug
+
 
     # def update_dataset(self, frame, tablename, if_exists='rename'):
     # to do
