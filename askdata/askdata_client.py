@@ -59,7 +59,8 @@ class Agent(Insight, Channel, Catalog, Dataset):
                 agent = self.df_agents[self.df_agents['id'] == agent_id]
             else:
                 agent = self.df_agents[self.df_agents['name'] == agent_name]
-            logging.debug("AGENT {}".format(agent))
+
+            logging.info("AGENT {}".format(agent))
             self._agentId = agent.iloc[0]['id']
             self._domain = agent.iloc[0]['domain']
             self._language = agent.iloc[0]['language']
