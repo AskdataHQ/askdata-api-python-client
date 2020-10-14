@@ -274,6 +274,7 @@ class Dataset():
         Default empty list
         '''
         dataset_id = self.get_id_dataset_by_name(dataset_name)[0]
+        logging.info("DATASET ID {}".format(dataset_id))
         if(dataset_id!=[]):
             settings_dataset = self.__get_dataset_settings_info(dataset_id, True)["settings"]
         else:
