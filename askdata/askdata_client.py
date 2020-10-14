@@ -51,7 +51,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
             "Content-Type": "application/json",
             "Authorization": "Bearer" + " " + self._token
         }
-        logging.info("ID AGENTS {}".format(self.df_agents['id']))
+        logging.info("ID AGENTS {}".format(self.df_agents))
         try:
             if slug != '':
                 agent = self.df_agents[self.df_agents['slug'] == slug.lower()]
@@ -59,7 +59,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
                 agent = self.df_agents[self.df_agents['id'] == agent_id]
             else:
                 agent = self.df_agents[self.df_agents['name'] == agent_name]
-
+            logging.debug("ID AGENTS {}".format(agent))
             self._agentId = agent.iloc[0]['id']
             self._domain = agent.iloc[0]['domain']
             self._language = agent.iloc[0]['language']
