@@ -51,6 +51,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
             "Content-Type": "application/json",
             "Authorization": "Bearer" + " " + self._token
         }
+        logging.info("ID AGENTS {}".format(self.df_agents['id']))
         try:
             if slug != '':
                 agent = self.df_agents[self.df_agents['slug'] == slug.lower()]
