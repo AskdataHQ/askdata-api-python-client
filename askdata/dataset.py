@@ -274,14 +274,14 @@ class Dataset():
         Default empty list
         '''
         dataset_id = self.get_id_dataset_by_name(dataset_name)[0]
-        logging.info("DATASET ID {}".format(dataset_id))
+
         if(dataset_id!=[]):
             settings_dataset = self.__get_dataset_settings_info(dataset_id, True)["settings"]
         else:
             dataset_id, settings_dataset = self.__create_dataset_df(dataset_name)
 
         engine, db_tablename = self.__ask_db_engine(dataset_id, settings_dataset)
-
+        logging.info("ENGINE {}".format(engine))
 
         # with "with" we can close the connetion when we exit
         with engine.connect() as connection:
