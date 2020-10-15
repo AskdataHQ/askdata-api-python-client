@@ -253,7 +253,7 @@ class Dataset():
 
 
 
-    def create_or_update_dataset(self, frame: pd.DataFrame, dataset_name: str, add_indexdf = False,
+    def create_or_update_dataset(self, frame: pd.DataFrame, dataset_id:str, dataset_name="",  add_indexdf = False,
                        indexclm = [], unique_key=[]) -> str:
 
         # TODO: see upsert in mysql if_exists['replace','Append','upsert']
@@ -274,12 +274,9 @@ class Dataset():
         the index is a list of column names of the data frame which are setting like indexes for increasing performance.
         Default empty list
         '''
-        dataset_id = self.get_id_dataset_by_name(dataset_name)[0]
+        #dataset_id = self.get_id_dataset_by_name(dataset_name)[0]
 
-        if(dataset_id!=[]):
-            settings_dataset = self.__get_dataset_settings_info(dataset_id, True)["settings"]
-        else:
-            dataset_id, settings_dataset = self.__create_dataset_df(dataset_name)
+        settings_dataset = self.__get_dataset_settings_info(dataset_id, True)["settings"]
 
         engine, db_tablename = self.__ask_db_engine(dataset_id, settings_dataset)
         logging.info("ENGINE {}".format(engine))
