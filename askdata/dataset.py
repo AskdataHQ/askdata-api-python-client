@@ -220,11 +220,12 @@ class Dataset():
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
         authentication_url = self._base_url_askdata + '/smartdataset/datasets/' + dataset_id + '/onetimecredentials'
-
+        logging.info("AUTH URL {}".format(authentication_url))
         response = s.get(url=authentication_url, headers=self._headers)
         response.raise_for_status()
         r = response.json()
         logging.info("RESPONSE {}".format(r))
+
         host = setting['datasourceUrl'].split('/')[2].split(':')[0]
         port = setting['datasourceUrl'].split('/')[2].split(':')[1]
 
