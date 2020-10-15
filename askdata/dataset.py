@@ -224,7 +224,7 @@ class Dataset():
         response = s.get(url=authentication_url, headers=self._headers)
         response.raise_for_status()
         r = response.json()
-        logging.info(r)
+        logging.info("RESPONSE", r)
         host = setting['datasourceUrl'].split('/')[2].split(':')[0]
         port = setting['datasourceUrl'].split('/')[2].split(':')[1]
 
