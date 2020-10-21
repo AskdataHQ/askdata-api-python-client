@@ -277,7 +277,7 @@ class Dataset():
         #dataset_id = self.get_id_dataset_by_name(dataset_name)[0]
 
         settings_dataset = self.__get_dataset_settings_info(dataset_id, True)["settings"]
-
+        logging.info("SETTINGS DATASET {}".format(settings_dataset))
         engine, db_tablename = self.__ask_db_engine(dataset_id, settings_dataset)
         logging.info("ENGINE {}\n TABLENAME {}".format(engine, db_tablename))
 
