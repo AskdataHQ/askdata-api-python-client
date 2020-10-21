@@ -320,7 +320,7 @@ class Dataset():
 
 
         #run sync dataset
-        self.execute_dataset_sync(dataset_id)
+        #self.execute_dataset_sync(dataset_id)
 
         # delete mysql user
         self.__ask_del_db_engine(dataset_id)
