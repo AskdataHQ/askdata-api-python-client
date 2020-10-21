@@ -279,7 +279,7 @@ class Dataset():
         settings_dataset = self.__get_dataset_settings_info(dataset_id, True)["settings"]
 
         engine, db_tablename = self.__ask_db_engine(dataset_id, settings_dataset)
-        logging.info("ENGINE {}".format(engine))
+        logging.info("ENGINE {}\n TABLENAME {}".format(engine, db_tablename))
 
         # with "with" we can close the connetion when we exit
         with engine.connect() as connection:
