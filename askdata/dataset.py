@@ -201,7 +201,7 @@ class Dataset():
             pass
         elif hasattr(self, '_dataset_slug') != '' and dataset_id == '':
             dataset_id = self._dataset_id
-            logging.debug("---- sync dataset with id '{}' ----- ".format(str(self._dataset_id)))
+            logging.info("---- sync dataset with id '{}' ----- ".format(str(self._dataset_id)))
         else:
             raise Exception("takes 2 positional arguments but dataset_id weren't given or dataset didn't"
                             " instantiate with slug")
@@ -285,7 +285,6 @@ class Dataset():
         with engine.connect() as connection:
 
             # to check type of column of the Dataframa for creating a correct and performing table structure
-
             dtype_table = dict()
             for clm in frame.select_dtypes(include=np.object).columns:
                 maxLen = frame[clm].str.len().max()
