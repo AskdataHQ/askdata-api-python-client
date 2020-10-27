@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='askdata',
-      version='0.4.334',
+      version='0.4.335',
       description='A library for creating a client for interacting with Askdata',
       url='https://github.com/AskdataInc/askdata-api-python-client',
       author=['Giuseppe De Maio','Matteo Giacalone'],
@@ -19,7 +19,8 @@ setup(name='askdata',
           'requests>=2',
           'urllib3>=1',
           'sqlalchemy>=1.3.8',
-          'mysql-connector>=2.2.9'
+          'mysql-connector>=2.2.9',
+          'NotebookScripter==6.0.0'
       ],
 
       classifiers=[
