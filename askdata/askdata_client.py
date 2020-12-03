@@ -131,6 +131,20 @@ class Agent(Insight, Channel, Catalog, Dataset):
         self._get_info_dataset_by_slug(slug)
         return self
 
+    def create_parquet_dataset(self, agent_slug, dataset_slug, file_path):
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_askdata + '/agents/'+agent_slug+'/datasets/'+dataset_slug+'/parquet'
+        logging.info("AUTH URL {}".format(authentication_url))
+        file = {'file': open(file_path, 'rb')}
+        response = s.post(url=authentication_url, files=file, headers=self._headers)
+        response.raise_for_status()
+        r = response.json()
+
     def delete_dataset(self, slug='', dataset_id=''):
 
         if slug != '':
