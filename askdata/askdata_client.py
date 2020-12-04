@@ -141,7 +141,8 @@ class Agent(Insight, Channel, Catalog, Dataset):
         authentication_url = self._base_url_askdata + '/smartbot/agents/'+agent_slug+'/datasets/'+dataset_slug+'/parquet'
         logging.info("AUTH URL {}".format(authentication_url))
         file = {'file': open(file_path, 'rb')}
-        response = s.post(url=authentication_url, files=file, headers=self._headers)
+        headers = {"Authorization": "Bearer" + " " + self._token}
+        response = s.post(url=authentication_url, files=file, headers=headers)
         response.raise_for_status()
         r = response.json()
 
