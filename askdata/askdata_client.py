@@ -138,7 +138,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self._base_url_askdata + '/agents/'+agent_slug+'/datasets/'+dataset_slug+'/parquet'
+        authentication_url = self._base_url_askdata + 'smartbot/agents/'+agent_slug+'/datasets/'+dataset_slug+'/parquet'
         logging.info("AUTH URL {}".format(authentication_url))
         file = {'file': open(file_path, 'rb')}
         response = s.post(url=authentication_url, files=file, headers=self._headers)
