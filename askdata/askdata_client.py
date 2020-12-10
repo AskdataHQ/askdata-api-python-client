@@ -170,7 +170,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self._base_url_askdata + '/smartdataset/grid/data/sdk?datasetSlug=' + datasetSlug
+        authentication_url = self._base_url_askdata + '/smartdataset/datasets/' + datasetSlug +'/grid/data/sdk'
         logging.info("AUTH URL {}".format(authentication_url))
 
         headers = {"Authorization": "Bearer" + " " + self._token}
@@ -178,6 +178,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         response.raise_for_status()
         r = response.json()
         print(r)
+        return pd.DataFrame(r['payload']['data'])
 
     def delete_dataset(self, slug='', dataset_id=''):
 
