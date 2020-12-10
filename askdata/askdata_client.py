@@ -161,6 +161,22 @@ class Agent(Insight, Channel, Catalog, Dataset):
         response = s.put(url=authentication_url, files=file, headers=headers)
         response.raise_for_status()
         r = response.json()
+        #print(r)
+
+
+    def load_dataset(self, datasetSlug):
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_askdata + '/smartdataset/grid/data?datasetSlug=' + datasetSlug
+        logging.info("AUTH URL {}".format(authentication_url))
+
+        headers = {"Authorization": "Bearer" + " " + self._token}
+        response = s.get(url=authentication_url, headers=headers)
+        response.raise_for_status()
+        r = response.json()
         print(r)
 
     def delete_dataset(self, slug='', dataset_id=''):
