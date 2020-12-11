@@ -204,7 +204,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self._base_url_askdata + '/smartdataset/datasets/slug' + slug
+        authentication_url = self._base_url_askdata + '/smartdataset/datasets/slug/' + slug
         logging.info("AUTH URL {}".format(authentication_url))
 
         headers = {"Authorization": "Bearer" + " " + self._token}
@@ -215,6 +215,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
             return r
         else:
             return None
+
 
     def create_or_replace_dataset(self, dataframe:pd.DataFrame, dataset_name:str, slug:str):
         #Check if dataset exists
