@@ -211,7 +211,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         response = s.get(url=authentication_url, headers=headers)
         response.raise_for_status()
         r = response.json()
-        if(response.status_code == 200):
+        if(response["found"]):
             return r
         else:
             return None
