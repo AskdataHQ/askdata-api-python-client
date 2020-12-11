@@ -131,6 +131,23 @@ class Agent(Insight, Channel, Catalog, Dataset):
         self._get_info_dataset_by_slug(slug)
         return self
 
+
+    def update_dataset_name(self, dataset_slug, dataset_name):
+
+        body = {"name": dataset_name}
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_askdata + '/smartdataset/datasets/'+dataset_slug+'/sdk'
+        logging.info("AUTH URL {}".format(authentication_url))
+
+        headers = {"Authorization": "Bearer" + " " + self._token}
+        response = s.put(url=authentication_url, data=body, headers=headers)
+        response.raise_for_status()
+
     def create_parquet_dataset(self, agent_slug, dataset_slug, file_path):
 
         s = requests.Session()
@@ -145,7 +162,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         response = s.post(url=authentication_url, files=file, headers=headers)
         response.raise_for_status()
         r = response.json()
-        print(r)
+
 
     def update_parquet_dataset(self, agent_slug, dataset_id, file_path, strategy):
 
@@ -170,7 +187,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self._base_url_askdata + '/smartdataset/datasets/' + datasetSlug +'/grid/data/sdk'
+        authentication_url = self._base_url_askdata + '/smartdataset/datasets/' + datasetSlug +'/sdk/grid/data'
         logging.info("AUTH URL {}".format(authentication_url))
 
         headers = {"Authorization": "Bearer" + " " + self._token}
@@ -179,6 +196,44 @@ class Agent(Insight, Channel, Catalog, Dataset):
         r = response.json()
         print(r)
         return pd.DataFrame(r['payload']['data'])
+
+
+    def get_dataset_by_slug(self, slug:str) -> Dataset:
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_askdata + '/smartdataset/datasets/slug' + slug
+        logging.info("AUTH URL {}".format(authentication_url))
+
+        headers = {"Authorization": "Bearer" + " " + self._token}
+        response = s.get(url=authentication_url, headers=headers)
+        response.raise_for_status()
+        r = response.json()
+        if(response.status_code == 200):
+            return r
+        else:
+            return None
+
+    def create_or_replace_dataset(self, dataframe:pd.DataFrame, dataset_name:str, slug:str):
+        #Check if dataset exists
+        dataset = self.get_dataset_by_slug(slug)
+        #Saving dataframe as parquet file
+        parquet_path = "./" + slug + ".parquet"
+        dataframe.to_parquet(parquet_path)
+        if(dataset != None):
+            #If it exists update it
+            self.update_parquet_dataset(self._agent_name, slug, parquet_path, "replace")
+            if(dataset_name != dataset._dataset_name):
+                self.update_dataset_name(slug, dataset_name)
+        else:
+            # If not exists create a new one
+            self.create_parquet_dataset(self._agent_name, slug, parquet_path)
+            self.update_dataset_name(slug, dataset_name)
+
+
+
 
     def delete_dataset(self, slug='', dataset_id=''):
 
