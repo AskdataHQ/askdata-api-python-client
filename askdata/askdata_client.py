@@ -144,7 +144,10 @@ class Agent(Insight, Channel, Catalog, Dataset):
         authentication_url = self._base_url_askdata + '/smartdataset/datasets/'+dataset_slug+'/sdk'
         logging.info("AUTH URL {}".format(authentication_url))
 
-        headers = {"Authorization": "Bearer" + " " + self._token}
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
         response = s.put(url=authentication_url, data=body, headers=headers)
         response.raise_for_status()
 
