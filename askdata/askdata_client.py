@@ -131,7 +131,6 @@ class Agent(Insight, Channel, Catalog, Dataset):
         self._get_info_dataset_by_slug(slug)
         return self
 
-
     def update_dataset_name(self, dataset_slug, dataset_name):
 
         body = {"name": dataset_name}
@@ -148,7 +147,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
             "Content-Type": "application/json",
             "Authorization": "Bearer" + " " + self._token
         }
-        response = s.put(url=authentication_url, data=body, headers=headers)
+        response = s.put(url=authentication_url, json=body, headers=headers)
         response.raise_for_status()
 
     def create_parquet_dataset(self, agent_slug, dataset_slug, file_path):
