@@ -228,7 +228,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         dataframe.to_parquet(parquet_path)
         if(dataset != None):
             #If it exists update it
-            self.update_parquet_dataset(self._agent_name, slug, parquet_path, "replace")
+            self.update_parquet_dataset(self._agent_name, dataset.get_dataset_id(), parquet_path, "replace")
             if(dataset_name != dataset._dataset_name):
                 self.update_dataset_name(slug, dataset_name)
         else:
