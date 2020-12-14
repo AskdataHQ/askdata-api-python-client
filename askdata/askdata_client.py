@@ -220,7 +220,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
             return None
 
 
-    def create_dataset(self, dataframe:pd.DataFrame, dataset_name:str, dataset_id:str):
+    def create_dataset(self, dataframe:pd.DataFrame, dataset_name:str, slug:str):
 
         body = {"label": dataset_name, "rows": dataframe.to_dict(orient="record")}
 
@@ -229,7 +229,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        url = self._base_url_askdata + '/smartagent/agents/'+self._agentId+'/datasets/'+dataset_id+'/sdk'
+        url = self._base_url_askdata + '/smartagent/agents/'+self._agentId+'/datasets/'+slug+'/sdk'
         logging.info("AUTH URL {}".format(url))
 
         headers = {
@@ -252,7 +252,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
                 self.update_dataset_name(slug, dataset_name)
         else:
             # If not exists create a new one
-            self.create_dataset(dataframe, dataset_name, dataset["id"])
+            self.create_dataset(dataframe, dataset_name, slug)
             self.update_dataset_name(slug, dataset_name)
 
 
