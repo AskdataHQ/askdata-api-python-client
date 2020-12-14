@@ -183,12 +183,15 @@ class Agent(Insight, Channel, Catalog, Dataset):
 
 
     def load_dataset(self, datasetSlug):
+
+        dataset = self.get_dataset_by_slug(datasetSlug)
+
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self._base_url_askdata + '/smartdataset/datasets/' + datasetSlug +'/sdk/grid/data'
+        authentication_url = self._base_url_askdata + '/smartdataset/datasets/' + dataset["id"] +'/sdk/grid/data'
         logging.info("AUTH URL {}".format(authentication_url))
 
         headers = {"Authorization": "Bearer" + " " + self._token}
@@ -217,6 +220,25 @@ class Agent(Insight, Channel, Catalog, Dataset):
             return None
 
 
+    def create_dataset(self, dataframe:pd.DataFrame, dataset_name:str, dataset_id:str):
+
+        body = {"label": dataset_name, "rows": dataframe.to_dict(orient="record")}
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_askdata + '/smartagent/datasets/'+dataset_id+'/sdk/populate'
+        logging.info("AUTH URL {}".format(authentication_url))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+        response = s.post(url=authentication_url, json=body, headers=headers)
+        response.raise_for_status()
+
     def create_or_replace_dataset(self, dataframe:pd.DataFrame, dataset_name:str, slug:str):
         #Check if dataset exists
         dataset = self.get_dataset_by_slug(slug)
@@ -230,7 +252,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
                 self.update_dataset_name(slug, dataset_name)
         else:
             # If not exists create a new one
-            self.create_parquet_dataset(self._agent_name, slug, parquet_path)
+            self.create_dataset(dataframe, dataset_name, dataset["id"])
             self.update_dataset_name(slug, dataset_name)
 
 
