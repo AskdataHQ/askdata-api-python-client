@@ -24,6 +24,10 @@ jobs:
             pip install
             pep517
             --user
+
+        - name: Build a binary wheel and a source tarball
+          run: >-
+            ls -l
          
         - name: Build a binary wheel and a source tarball
           run: >-
