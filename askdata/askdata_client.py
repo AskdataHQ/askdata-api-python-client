@@ -241,7 +241,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
 
     def create_or_replace_dataset(self, dataframe:pd.DataFrame, dataset_name:str, slug:str):
         #Check if dataset exists
-        dataset = self.get_dataset_by_slug(slug)
+        dataset = self.get_dataset_by_slug(self._agentId, slug)
         #Saving dataframe as parquet file
         parquet_path = "./" + slug + ".parquet"
         dataframe.to_parquet(parquet_path)
