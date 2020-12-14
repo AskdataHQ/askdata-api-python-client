@@ -229,7 +229,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        url = self._base_url_askdata + '/smartagent/agents/'+self._agentId+'/datasets/'+slug+'/sdk'
+        url = self._base_url_askdata + '/smartbot/agents/'+self._agentId+'/datasets/'+slug+'/sdk'
         logging.info("AUTH URL {}".format(url))
 
         headers = {
