@@ -229,14 +229,14 @@ class Agent(Insight, Channel, Catalog, Dataset):
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self._base_url_askdata + '/smartagent/datasets/'+dataset_id+'/sdk/populate'
-        logging.info("AUTH URL {}".format(authentication_url))
+        url = self._base_url_askdata + '/smartagent/agents/'+self._agentId+'/datasets/'+dataset_id+'/sdk'
+        logging.info("AUTH URL {}".format(url))
 
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer" + " " + self._token
         }
-        response = s.post(url=authentication_url, json=body, headers=headers)
+        response = s.post(url=url, json=body, headers=headers)
         response.raise_for_status()
 
     def create_or_replace_dataset(self, dataframe:pd.DataFrame, dataset_name:str, slug:str):
