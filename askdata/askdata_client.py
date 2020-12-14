@@ -184,7 +184,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
 
     def load_dataset(self, datasetSlug):
 
-        dataset = self.get_dataset_by_slug(datasetSlug)
+        dataset = self.get_dataset_by_slug(self._agentId, datasetSlug)
 
         s = requests.Session()
         s.keep_alive = False
@@ -201,13 +201,13 @@ class Agent(Insight, Channel, Catalog, Dataset):
         return pd.DataFrame(r['payload']['data'])
 
 
-    def get_dataset_by_slug(self, slug:str) -> Dataset:
+    def get_dataset_by_slug(self, agent_id, slug:str) -> Dataset:
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self._base_url_askdata + '/smartdataset/datasets/slug/' + slug
+        authentication_url = self._base_url_askdata + '/smartdataset/datasets/slug/'+ agent_id+'/'+ slug
         logging.info("AUTH URL {}".format(authentication_url))
 
         headers = {"Authorization": "Bearer" + " " + self._token}
