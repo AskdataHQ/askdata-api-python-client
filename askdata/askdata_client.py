@@ -180,7 +180,6 @@ class Agent(Insight, Channel, Catalog, Dataset):
         response = s.put(url=authentication_url, files=file, headers=headers)
         response.raise_for_status()
         r = response.json()
-        #print(r)
 
 
     def load_dataset(self, datasetSlug):
@@ -196,7 +195,6 @@ class Agent(Insight, Channel, Catalog, Dataset):
         response = s.get(url=authentication_url, headers=headers)
         response.raise_for_status()
         r = response.json()
-        print(r)
         return pd.DataFrame(r['payload']['data'])
 
 
@@ -222,7 +220,6 @@ class Agent(Insight, Channel, Catalog, Dataset):
     def create_or_replace_dataset(self, dataframe:pd.DataFrame, dataset_name:str, slug:str):
         #Check if dataset exists
         dataset = self.get_dataset_by_slug(slug)
-        print(dataset)
         #Saving dataframe as parquet file
         parquet_path = "./" + slug + ".parquet"
         dataframe.to_parquet(parquet_path)
@@ -235,7 +232,6 @@ class Agent(Insight, Channel, Catalog, Dataset):
             # If not exists create a new one
             self.create_parquet_dataset(self._agent_name, slug, parquet_path)
             self.update_dataset_name(slug, dataset_name)
-
 
 
 
