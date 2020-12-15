@@ -239,6 +239,26 @@ class Agent(Insight, Channel, Catalog, Dataset):
         response = s.post(url=url, json=body, headers=headers)
         response.raise_for_status()
 
+    def update_dataset(self, dataframe: pd.DataFrame, dataset_name: str, slug: str):
+
+        body = {"label": dataset_name, "rows": dataframe.to_dict(orient="record")}
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        url = self._base_url_askdata + '/smartbot/agents/' + self._agentId + '/datasets/' + slug + '/sdk'
+        logging.info("AUTH URL {}".format(url))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+        response = s.put(url=url, json=body, headers=headers)
+        response.raise_for_status()
+
+
     def create_or_replace_dataset(self, dataframe:pd.DataFrame, dataset_name:str, slug:str):
         #Check if dataset exists
         dataset = self.get_dataset_by_slug(self._agentId, slug)
@@ -247,13 +267,10 @@ class Agent(Insight, Channel, Catalog, Dataset):
         dataframe.to_parquet(parquet_path)
         if(dataset != None):
             #If it exists update it
-            self.update_parquet_dataset(self._agent_name, dataset["id"], parquet_path, "replace")
-            if(dataset_name != dataset["name"]):
-                self.update_dataset_name(slug, dataset_name)
+            self.update_dataset(dataframe, dataset_name, slug)
         else:
             # If not exists create a new one
             self.create_dataset(dataframe, dataset_name, slug)
-            self.update_dataset_name(slug, dataset_name)
 
 
 
