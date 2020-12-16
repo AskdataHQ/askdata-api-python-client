@@ -121,6 +121,26 @@ class Agent(Insight, Channel, Catalog, Dataset):
 
         return df
 
+    def ask_as_json(self, text, payload=''):
+
+        data = {
+            "text": text,
+            "payload": payload
+        }
+
+        if self._env == 'dev':
+            request_agent_url = url_list['BASE_URL_FEED_DEV'] + '/' + self._domain + '/agent/' + self._agentId + '/'
+        if self._env == 'qa':
+            request_agent_url = url_list['BASE_URL_FEED_QA'] + '/' + self._domain + '/agent/' + self._agentId + '/'
+        if self._env == 'prod':
+            request_agent_url = url_list['BASE_URL_FEED_PROD'] + '/' + self._domain + '/agent/' + self._agentId + '/'
+
+        response = requests.post(url=request_agent_url, headers=self._headers, json=data)
+        response.raise_for_status()
+        r = response.json()
+
+        return r
+
     def dataset(self, slug):
         """
         set in the agent object the properties of specific dataset
