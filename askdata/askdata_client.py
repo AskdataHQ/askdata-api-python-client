@@ -240,9 +240,17 @@ class Agent(Insight, Channel, Catalog, Dataset):
             return None
 
 
-    def create_dataset(self, dataframe:pd.DataFrame, dataset_name:str, slug:str):
+    def create_dataset(self, dataframe:pd.DataFrame, dataset_name:str, slug: str, settings: dict = None):
 
         body = {"label": dataset_name, "rows": dataframe.to_dict(orient="record")}
+
+        settings_list = []
+        if(settings != None):
+            for key in settings.keys():
+                settings[key]["column_name"] = key
+                settings_list.append(settings[key])
+            body["settings"] = settings_list
+
 
         s = requests.Session()
         s.keep_alive = False
@@ -259,9 +267,15 @@ class Agent(Insight, Channel, Catalog, Dataset):
         response = s.post(url=url, json=body, headers=headers)
         response.raise_for_status()
 
-    def update_dataset(self, dataframe: pd.DataFrame, dataset_name: str, slug: str):
+    def update_dataset(self, dataframe: pd.DataFrame, dataset_name: str, slug: str, settings: dict = None):
 
         body = {"label": dataset_name, "rows": dataframe.to_dict(orient="record")}
+
+        settings_list = []
+        if (settings != None):
+            for key in settings.keys():
+                settings_list.append(settings[key])
+            body["settings"] = settings_list
 
         s = requests.Session()
         s.keep_alive = False
@@ -278,19 +292,39 @@ class Agent(Insight, Channel, Catalog, Dataset):
         response = s.put(url=url, json=body, headers=headers)
         response.raise_for_status()
 
+    '''La prima chiave è la stringa colonna del dataframe. Per ogni chiave ho dei setting:
+    Name stringa
+    Type(dimension o measure)
+    IsDate booleano
+    Synonyms: [] array di stringhe
+    Date(pattern della data)
+    Format
+    DefaultAggreation(sum, avg..)
 
-    def create_or_replace_dataset(self, dataframe:pd.DataFrame, dataset_name:str, slug:str):
+    {
+        "column_name": {
+            "Name": "column_name",
+            "Type": "Dimension",
+            "IsDate": False,
+            "Synonyms": [],
+            "Date",
+            "Format": "",
+            "DefaultAggreation": "sum"
+        }
+    }
+'''
+
+
+    def create_or_replace_dataset(self, dataframe:pd.DataFrame, dataset_name:str, slug:str, settings:dict = None):
         #Check if dataset exists
         dataset = self.get_dataset_by_slug(self._agentId, slug)
-        #Saving dataframe as parquet file
-        parquet_path = "./" + slug + ".parquet"
-        dataframe.to_parquet(parquet_path)
+
         if(dataset != None):
             #If it exists update it
-            self.update_dataset(dataframe, dataset_name, slug)
+            self.update_dataset(dataframe, dataset_name, slug, settings)
         else:
             # If not exists create a new one
-            self.create_dataset(dataframe, dataset_name, slug)
+            self.create_dataset(dataframe, dataset_name, slug, settings)
 
 
 
