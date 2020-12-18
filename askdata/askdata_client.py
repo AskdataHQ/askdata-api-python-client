@@ -279,6 +279,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
             body["settings"] = settings_list
 
         s = requests.Session()
+
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
@@ -290,7 +291,9 @@ class Agent(Insight, Channel, Catalog, Dataset):
             "Content-Type": "application/json",
             "Authorization": "Bearer" + " " + self._token
         }
+        print(body)
         response = s.put(url=url, json=body, headers=headers)
+
         response.raise_for_status()
 
     '''La prima chiave è la stringa colonna del dataframe. Per ogni chiave ho dei setting:
