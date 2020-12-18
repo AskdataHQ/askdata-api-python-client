@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
 setup(name='askdata',
-      version='0.4.372',
-      description='A library for creating a client for interacting with Askdata',
+      version='0.4.3726',
+      description='The official Askdata Python SDK',
       url='https://github.com/AskdataInc/askdata-api-python-client',
-      author=['Giuseppe De Maio','Matteo Giacalone', 'Luca Sarcona'],
+      author=['Giuseppe De Maio','Matteo Giacalone', 'Luca Sarcona', 'Simone Di Somma'],
       author_email='datascience@askdata.com',
       license='Apache License 2.0',
       packages=find_packages(exclude=["dev","*.tests", "*.tests.*", "tests.*", "tests","entity.py","feed.py"]),
