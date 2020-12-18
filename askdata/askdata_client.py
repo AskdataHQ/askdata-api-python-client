@@ -274,6 +274,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         settings_list = []
         if (settings != None):
             for key in settings.keys():
+                settings[key]["column_name"] = key
                 settings_list.append(settings[key])
             body["settings"] = settings_list
 
