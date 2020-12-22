@@ -89,6 +89,14 @@ class Agent(Insight, Channel, Catalog, Dataset):
         if self._env == 'prod':
             self._base_url = url_list['BASE_URL_FEED_PROD']
 
+
+        if self._env == 'dev':
+            self._base_url_ch = url_list['BASE_URL_FEED_DEV']
+        if self._env == 'qa':
+            self._base_url_ch = url_list['BASE_URL_FEED_QA']
+        if self._env == 'prod':
+            self._base_url_ch = url_list['BASE_URL_FEED_PROD']
+
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
@@ -343,6 +351,40 @@ class Agent(Insight, Channel, Catalog, Dataset):
             logging.info("---- dataset '{}' deleted ----- ".format(dataset_id))
         else:
             raise Exception('takes 2 positional arguments "slug, datset_id" but 0 were given')
+
+
+    def create_channel(self, name, icon='https://storage.googleapis.com/askdata/smartfeed/icons/Channel@2x.png',
+                       visibility='PRIVATE'):
+
+        data = {
+            "name": name,
+            "icon": icon,
+            "agentId": self._agentId,
+            "visibility": visibility
+        }
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_ch + '/channels/'
+        r = s.post(url=authentication_url, headers=self._headers, json=data)
+        r.raise_for_status()
+        return r.json()['id']
+
+
+    def get_channel(self, agent_id, channel_code):
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        url = self._base_url_ch + '/channels/'+agent_id+'/'+channel_code
+        r = s.get(url=url, headers=self._headers)
+        r.raise_for_status()
+        return r.json()
+    
 
     def get_dataset_slug_from_id(self, dataset_id:str)->str:
         """
