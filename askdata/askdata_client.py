@@ -352,6 +352,42 @@ class Agent(Insight, Channel, Catalog, Dataset):
         else:
             raise Exception('takes 2 positional arguments "slug, datset_id" but 0 were given')
 
+    def create_datacard(self, channel: str, title: str, query: str):
+
+        channel = self.get_channel(self._agentId, channel)
+        channel_id = channel["id"]
+
+        body = {
+            "agentId": self._agentId,
+            "channelId": channel_id,
+            "name": title
+        }
+
+        if self._env == 'dev':
+            smart_insight_url = url_list['BASE_URL_INSIGHT_DEV']
+        if self._env == 'qa':
+            smart_insight_url = url_list['BASE_URL_INSIGHT_QA']
+        if self._env == 'prod':
+            smart_insight_url = url_list['BASE_URL_INSIGHT_PROD']
+
+        url = smart_insight_url+'/definitions'
+
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        logging.info("AUTH URL {}".format(url))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+        response = s.post(url=url, json=body, headers=headers)
+        response.raise_for_status()
+        print(response.json())
+
 
     def create_channel(self, name, icon='https://storage.googleapis.com/askdata/smartfeed/icons/Channel@2x.png',
                        visibility='PRIVATE'):
@@ -384,7 +420,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         r = s.get(url=url, headers=self._headers)
         r.raise_for_status()
         return r.json()
-    
+
 
     def get_dataset_slug_from_id(self, dataset_id:str)->str:
         """
