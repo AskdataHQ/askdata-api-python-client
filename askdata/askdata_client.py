@@ -372,7 +372,6 @@ class Agent(Insight, Channel, Catalog, Dataset):
 
         url = smart_insight_url+'/definitions'
 
-
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
@@ -386,7 +385,25 @@ class Agent(Insight, Channel, Catalog, Dataset):
         }
         response = s.post(url=url, json=body, headers=headers)
         response.raise_for_status()
-        print(response.json())
+        definition = response.json()
+
+        body_query = {"nl": query, "language": "en"}
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        logging.info("AUTH URL {}".format(url))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+        query_url = smart_insight_url+'/definitions/'+definition["id"]+'/nl_queries/'+definition["components"][0]["id"]+'/nl'
+        r = s.post(url=query_url, json=body_query, headers=headers)
+
+        #TODO return Insight object
+
 
 
     def create_channel(self, name, icon='https://storage.googleapis.com/askdata/smartfeed/icons/Channel@2x.png',
@@ -419,7 +436,10 @@ class Agent(Insight, Channel, Catalog, Dataset):
         url = self._base_url_ch + '/channels/'+agent_id+'/'+channel_code
         r = s.get(url=url, headers=self._headers)
         r.raise_for_status()
-        return r.json()
+        if(r != None):
+            return r.json()
+        else:
+            return None
 
 
     def get_dataset_slug_from_id(self, dataset_id:str)->str:
