@@ -65,10 +65,10 @@ class Insight_Definition:
             "Authorization": "Bearer" + " " + self._token
         }
         query_url = self.smart_insight_url + '/definitions/' + self.definition_id + '/components/'
-
+        logging.info("URL {}".format(query_url))
         r = s.post(url=query_url, json=body, headers=headers)
+        r.raise_for_status()
         print(r.json())
-
         self.components = r.json()["components"]
 
         if(query != "" and columns!=[]):
