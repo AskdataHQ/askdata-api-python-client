@@ -438,7 +438,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         r = s.get(url=url, headers=self._headers)
         r.raise_for_status()
         if(r != None):
-            return r.json()
+            return r.json()[0]
         else:
             return None
 
