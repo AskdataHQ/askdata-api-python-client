@@ -434,7 +434,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        url = self._base_url_ch + '/channels/'+agent_id+'/'+channel_code
+        url = self._base_url_ch + '/channels?agentId='+agent_id+'&slug='+channel_code
         r = s.get(url=url, headers=self._headers)
         r.raise_for_status()
         if(r != None):
