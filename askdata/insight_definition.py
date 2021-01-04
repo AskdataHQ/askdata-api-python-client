@@ -67,6 +67,7 @@ class Insight_Definition:
         query_url = self.smart_insight_url + '/definitions/' + self.definition_id + '/components/'
 
         r = s.post(url=query_url, json=body, headers=headers)
+        print(r.json())
 
         self.components = r.json()["components"]
 
