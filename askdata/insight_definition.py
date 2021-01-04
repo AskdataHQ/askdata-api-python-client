@@ -53,7 +53,7 @@ class Insight_Definition:
 
     def add_table(self, query="", columns=[]):
 
-        body = {"type": "table", "position": (len(self.components)+1)}
+        body = {"type": "table", "position": (len(self.components))}
 
         s = requests.Session()
         s.keep_alive = False
