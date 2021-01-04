@@ -9,6 +9,7 @@ from askdata.insight import Insight
 from askdata.channel import Channel
 from askdata.catalog import Catalog
 from askdata.dataset import Dataset
+from askdata.insight_definition import Insight_Definition
 from askdata.security import SignUp
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -402,7 +403,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         query_url = smart_insight_url+'/definitions/'+definition["id"]+'/nl_queries/'+definition["components"][0]["id"]+'/nl'
         r = s.post(url=query_url, json=body_query, headers=headers)
 
-        #TODO return Insight object
+        return Insight_Definition(self._env, r.json())
 
 
 
