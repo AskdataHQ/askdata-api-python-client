@@ -403,7 +403,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         query_url = smart_insight_url+'/definitions/'+definition["id"]+'/nl_queries/'+definition["components"][0]["id"]+'/nl'
         r = s.post(url=query_url, json=body_query, headers=headers)
 
-        return Insight_Definition(self._env, r.json())
+        return Insight_Definition(self._env, definition)
 
 
 
