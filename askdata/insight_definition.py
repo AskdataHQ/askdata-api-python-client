@@ -31,7 +31,7 @@ with open(yaml_path, 'r') as file:
 class Insight_Definition:
 
 
-    def __init__(self, env:str, defintion):
+    def __init__(self, env:str, token, defintion):
 
         self.definition_id = defintion["id"]
         self.agent_id = defintion["agentId"]
@@ -40,6 +40,8 @@ class Insight_Definition:
         self.slug = defintion["slug"]
         self.icon = defintion["icon"]
         self.components = defintion["components"]
+
+        self._token = token
 
         if env.lower() == 'dev':
             self.smart_insight_url = url_list['BASE_URL_INSIGHT_DEV']
