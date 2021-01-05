@@ -77,7 +77,7 @@ class Insight_Definition:
 
     def edit_table(self, query="", columns=[]):
 
-        url = self.smart_insight_url + "/definitions/" + self.definition_id + "/components/"\
+        url = self.smart_insight_url + "/definitions/" + self.definition_id + "/table/"\
               + self.components[-1]["id"]
 
         body = {
@@ -85,7 +85,7 @@ class Insight_Definition:
             "type": "table",
             "name": "Table",
             "customName":False,
-            "dependsOn":["q1"],
+            "dependsOn": ["q1"],
             "queryId": query,
             "columns": columns,
             "maxResults":50,
