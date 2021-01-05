@@ -106,3 +106,20 @@ class Insight_Definition:
         r = s.put(url=url, json=body, headers=headers)
 
         self.components = r.json()["components"]
+
+
+    def publish(self):
+
+        url = self.smart_insight_url + "/definitions/" + self.definition_id + "/publish/"
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+
+        r = s.post(url=url, headers=headers)
