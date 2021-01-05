@@ -394,13 +394,14 @@ class Agent(Insight, Channel, Catalog, Dataset):
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        logging.info("AUTH URL {}".format(url))
+
 
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer" + " " + self._token
         }
         query_url = smart_insight_url+'/definitions/'+definition["id"]+'/nl_queries/'+definition["components"][0]["id"]+'/nl'
+        logging.info("AUTH URL {}".format(query_url))
         r = s.post(url=query_url, json=body_query, headers=headers)
 
         return Insight_Definition(self._env, self._token, definition)
