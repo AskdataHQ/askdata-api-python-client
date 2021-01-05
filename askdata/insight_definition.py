@@ -77,7 +77,7 @@ class Insight_Definition:
 
     def edit_table(self, query="", columns=[]):
 
-        url = self.smart_insight_url + "/definitions/" + self.definition_id + "/table/"\
+        url = self.smart_insight_url + "/definitions/" + self.definition_id + "/tables/"\
               + self.components[-1]["id"]
 
         body = {
