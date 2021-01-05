@@ -44,7 +44,8 @@ class Insight_Definition:
         self._token = token
 
         if env.lower() == 'dev':
-            self.smart_insight_url = url_list['BASE_URL_INSIGHT_DEV']
+            self.smart_insight_url = "localhost:8085"
+            #self.smart_insight_url = url_list['BASE_URL_INSIGHT_DEV']
         if env.lower() == 'qa':
             self.smart_insight_url = url_list['BASE_URL_INSIGHT_QA']
         if env.lower() == 'prod':
