@@ -364,6 +364,8 @@ class Agent(Insight, Channel, Catalog, Dataset):
             "name": title
         }
 
+        logging.info("Channel id {}".format(channel_id))
+
         if self._env == 'dev':
             smart_insight_url = url_list['BASE_URL_INSIGHT_DEV']
         if self._env == 'qa':
@@ -403,7 +405,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         query_url = smart_insight_url+'/definitions/'+definition["id"]+'/nl_queries/'+definition["components"][0]["id"]+'/nl'
         logging.info("AUTH URL {}".format(query_url))
         r = s.post(url=query_url, json=body_query, headers=headers)
-
+        logging.info(r.json())
         return Insight_Definition(self._env, self._token, definition)
 
 
