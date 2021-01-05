@@ -104,7 +104,7 @@ class Insight_Definition:
         }
 
         r = s.put(url=url, json=body, headers=headers)
-
+        r.raise_for_status()
         self.components = r.json()["components"]
 
 
@@ -123,3 +123,4 @@ class Insight_Definition:
         }
 
         r = s.post(url=url, headers=headers)
+        r.raise_for_status()
