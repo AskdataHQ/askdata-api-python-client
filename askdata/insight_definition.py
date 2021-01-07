@@ -43,6 +43,8 @@ class Insight_Definition:
 
         self._token = token
 
+        if env.lower() == 'local':
+            self.smart_insight_url = "http://localhost:8085"
         if env.lower() == 'dev':
             self.smart_insight_url = url_list['BASE_URL_INSIGHT_DEV']
         if env.lower() == 'qa':
