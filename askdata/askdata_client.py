@@ -367,7 +367,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         logging.info("Channel id {}".format(channel_id))
 
         if self._env == 'dev':
-            smart_insight_url = "http://localhost:8085"
+            smart_insight_url = url_list['BASE_URL_INSIGHT_DEV']
         if self._env == 'qa':
             smart_insight_url = url_list['BASE_URL_INSIGHT_QA']
         if self._env == 'prod':
