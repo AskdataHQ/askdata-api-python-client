@@ -391,21 +391,20 @@ class Agent(Insight, Channel, Catalog, Dataset):
         definition = response.json()
 
         body_query = {"nl": query, "language": "en"}
+
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
-
-
 
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer" + " " + self._token
         }
         query_url = smart_insight_url+'/definitions/'+definition["id"]+'/nl_queries/'+definition["components"][0]["id"]+'/nl'
-        logging.info("AUTH URL {}".format(query_url))
-        r = s.post(url=query_url, json=body_query, headers=headers)
-        logging.info(r.json())
+        logging.info("QUERY URL {}".format(query_url))
+        r = s.put(url=query_url, json=body_query, headers=headers)
+        logging.info(r.json)
         return Insight_Definition(self._env, self._token, definition)
 
 
