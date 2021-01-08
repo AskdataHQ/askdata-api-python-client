@@ -73,18 +73,17 @@ class Insight_Definition:
         self.components = r.json()["components"]
 
         if(query != "" and columns!=[]):
-            self.edit_table(query, columns)
+            self.edit_table(self.components[position]["id"], query, columns)
 
         return self.components[position]["id"]
 
 
-    def edit_table(self, query="", columns=[]):
+    def edit_table(self, table_id, query="", columns=[]):
 
-        url = self.smart_insight_url + "/definitions/" + self.definition_id + "/tables/"\
-              + self.components[-1]["id"]
+        url = self.smart_insight_url + "/definitions/" + self.definition_id + "/tables/"+ table_id
 
         body = {
-            "id": self.components[-1]["id"],
+            "id": table_id,
             "type": "table",
             "name": "Table",
             "customName":False,
@@ -136,6 +135,53 @@ class Insight_Definition:
 
         return self.components[position]["id"]
 
+
+    def edit_chart(self, chart_id, type, query, params):
+
+        url = self.smart_insight_url + "/definitions/" + self.definition_id + "/charts/" + chart_id
+
+        body = {
+            "chartType": type,
+            "customName": False,
+            "dependsOn": [],
+            "id": chart_id,
+            "name": "Fusionfood",
+            "params": params,
+            "queryComponent": False,
+            "queryId": query,
+            "type": "chart",
+            "valid": True
+        }
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+
+        r = s.put(url=url, json=body, headers=headers)
+        r.raise_for_status()
+        self.components = r.json()["components"]
+
+
+    def delete_component(self, component_id):
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+        query_url = self.smart_insight_url + '/definitions/' + self.definition_id + '/components/'+component_id
+        logging.info("URL {}".format(query_url))
+        r = s.delete(url=query_url, headers=headers)
+        r.raise_for_status()
 
     def publish(self):
 
