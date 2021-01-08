@@ -53,7 +53,8 @@ class Insight_Definition:
 
     def add_table(self, query="", columns=[]):
 
-        body = {"type": "table", "position": (len(self.components))}
+        position = (len(self.components))
+        body = {"type": "table", "position": position}
 
         s = requests.Session()
         s.keep_alive = False
@@ -73,6 +74,8 @@ class Insight_Definition:
 
         if(query != "" and columns!=[]):
             self.edit_table(query, columns)
+
+        return self.components[position]["id"]
 
 
     def edit_table(self, query="", columns=[]):
@@ -106,6 +109,32 @@ class Insight_Definition:
         r = s.put(url=url, json=body, headers=headers)
         r.raise_for_status()
         self.components = r.json()["components"]
+
+
+    def add_chart(self):
+        position = (len(self.components))
+        body = {"type": "chart", "position": position}
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+        query_url = self.smart_insight_url + '/definitions/' + self.definition_id + '/components/'
+        logging.info("URL {}".format(query_url))
+        r = s.post(url=query_url, json=body, headers=headers)
+        r.raise_for_status()
+        print(r.json())
+        self.components = r.json()["components"]
+
+        '''if (query != "" and columns != []):
+            self.edit_table(query, columns)'''
+
+        return self.components[position]["id"]
 
 
     def publish(self):
