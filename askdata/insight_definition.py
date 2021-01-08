@@ -171,6 +171,12 @@ class Insight_Definition:
         self.components = r.json()["components"]
 
 
+    def add_list(self):
+        position = (len(self.components))
+        list_id = self.add_component("list", position)
+        return list_id
+    
+
     def add_sql_query(self, query_sql, dataset_slug):
 
         position = (len(self.components))
@@ -210,8 +216,38 @@ class Insight_Definition:
 
         r = s.put(url=url, json=body, headers=headers)
         r.raise_for_status()
+        self.components = r.json()["components"]
+
         return self.components[position]["id"]
 
+
+    #TODO : Query composer
+
+
+    def add_search_query(self, query):
+
+        position = (len(self.components))
+        query_id = self.add_component("nl_query", position)
+
+        body_query = {"nl": query, "language": "en"}
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+        query_url = self.smart_insight_url +'/definitions/'+ self.definition_id +'/nl_queries/'+ query_id + '/nl'
+
+        logging.info("QUERY URL {}".format(query_url))
+        r = s.put(url=query_url, json=body_query, headers=headers)
+
+        self.components = r.json()["components"]
+
+        return self.components[position]["id"]
 
     def add_component(self, type, position):
 
@@ -232,6 +268,7 @@ class Insight_Definition:
         r.raise_for_status()
         print(r.json())
         self.components = r.json()["components"]
+        return self.components[position]["id"]
 
     def delete_component(self, component_id):
         s = requests.Session()
