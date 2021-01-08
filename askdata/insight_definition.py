@@ -44,10 +44,13 @@ class Insight_Definition:
         self._token = token
 
         if env.lower() == 'dev':
+            self._base_url_askdata = url_list['BASE_URL_ASKDATA_DEV']
             self.smart_insight_url = url_list['BASE_URL_INSIGHT_DEV']
         if env.lower() == 'qa':
+            self._base_url_askdata = url_list['BASE_URL_ASKDATA_QA']
             self.smart_insight_url = url_list['BASE_URL_INSIGHT_QA']
         if env.lower() == 'prod':
+            self._base_url_askdata = url_list['BASE_URL_ASKDATA_PROD']
             self.smart_insight_url = url_list['BASE_URL_INSIGHT_PROD']
 
 
@@ -110,7 +113,7 @@ class Insight_Definition:
         self.components = r.json()["components"]
 
 
-    def add_chart(self):
+    def add_chart(self, type="", query="", params=[]):
         position = (len(self.components))
         body = {"type": "chart", "position": position}
 
@@ -130,8 +133,8 @@ class Insight_Definition:
         print(r.json())
         self.components = r.json()["components"]
 
-        '''if (query != "" and columns != []):
-            self.edit_table(query, columns)'''
+        if (type != "" and query != ""):
+            self.edit_chart(self.components[position]["id"], type, query, params)
 
         return self.components[position]["id"]
 
@@ -167,6 +170,68 @@ class Insight_Definition:
         r.raise_for_status()
         self.components = r.json()["components"]
 
+
+    def add_sql_query(self, query_sql, dataset_slug):
+
+        position = (len(self.components))
+
+        self.add_component("sql_query", position)
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_askdata + '/smartdataset/datasets/slug/' + self.agent_id + '/' + dataset_slug
+        logging.info("AUTH URL {}".format(authentication_url))
+
+        headers = {"Authorization": "Bearer" + " " + self._token}
+        response = s.get(url=authentication_url, headers=headers)
+        response.raise_for_status()
+        r = response.json()
+        dataset_id = r.json()["dataset"]["id"]
+
+        url = self.smart_insight_url+"/definitions/"+self.definition_id+"/sql_queries/"+self.components[position]["id"]+"/sql"
+
+        body = {
+            "datasetId": dataset_id,
+            "sql": query_sql
+        }
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+
+        r = s.put(url=url, json=body, headers=headers)
+        r.raise_for_status()
+        return self.components[position]["id"]
+
+
+    def add_component(self, type, position):
+
+        body = {"type": type, "position": position}
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+        query_url = self.smart_insight_url + '/definitions/' + self.definition_id + '/components/'
+        logging.info("URL {}".format(query_url))
+        r = s.post(url=query_url, json=body, headers=headers)
+        r.raise_for_status()
+        print(r.json())
+        self.components = r.json()["components"]
 
     def delete_component(self, component_id):
         s = requests.Session()
