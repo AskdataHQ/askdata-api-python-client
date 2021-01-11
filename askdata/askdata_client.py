@@ -444,7 +444,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         url = self._base_url_ch + '/channels?agentId='+agent_id+'&slug='+channel_code
         r = s.get(url=url, headers=self._headers)
         r.raise_for_status()
-        if(r != None):
+        if(r != None and r.json() != []):
             return r.json()[0]
         else:
             return None
