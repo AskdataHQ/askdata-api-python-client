@@ -417,10 +417,13 @@ class Agent(Insight, Channel, Catalog, Dataset):
                        visibility='PRIVATE'):
 
         data = {
+            "userId" : self.userid,
             "name": name,
             "icon": icon,
             "agentId": self._agentId,
-            "visibility": visibility
+            "visibility": visibility,
+            "code": name,
+            "autofollow": True
         }
 
         s = requests.Session()
