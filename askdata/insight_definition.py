@@ -133,18 +133,20 @@ class Insight_Definition:
         print(r.json())
         self.components = r.json()["components"]
 
-        if (type != "" and query != ""):
+        if (type != "" and query != "" and params!=[]):
             self.edit_chart(self.components[position]["id"], type, query, params)
+        else:
+            logging.info("One or more arguments between type, query and params are missing to update the chart")
 
         return self.components[position]["id"]
 
 
-    def edit_chart(self, chart_id, type, query, params):
+    def edit_chart(self, chart_id, type:str, query, params):
 
         url = self.smart_insight_url + "/definitions/" + self.definition_id + "/charts/" + chart_id
 
         body = {
-            "chartType": type,
+            "chartType": type.upper(),
             "customName": False,
             "dependsOn": [],
             "id": chart_id,

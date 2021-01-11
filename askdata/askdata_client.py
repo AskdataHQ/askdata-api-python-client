@@ -431,7 +431,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self._base_url_ch + '/channels/'
+        authentication_url = self._base_url_ch + '/channels'
         r = s.post(url=authentication_url, headers=self._headers, json=data)
         r.raise_for_status()
         return r.json()['id']
