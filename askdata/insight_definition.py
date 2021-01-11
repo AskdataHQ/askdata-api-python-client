@@ -177,6 +177,11 @@ class Insight_Definition:
         return list_id
 
 
+    def add_map(self):
+        position = (len(self.components))
+        map_id = self.add_component("map", position)
+        return map_id
+
     def add_sql_query(self, query_sql, dataset_slug):
 
         position = (len(self.components))
@@ -221,8 +226,61 @@ class Insight_Definition:
         return self.components[position]["id"]
 
 
-    #TODO : Query composer
+    '''def add_query_composer(self, dataset_slug, fields, conditions):
 
+        #Get dataset_id
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_askdata + '/smartdataset/datasets/slug/' + self.agent_id + '/' + dataset_slug
+        logging.info("AUTH URL {}".format(authentication_url))
+
+        headers = {"Authorization": "Bearer" + " " + self._token}
+        response = s.get(url=authentication_url, headers=headers)
+        response.raise_for_status()
+        r = response.json()
+
+        dataset_id = r.json()["dataset"]["id"]
+
+        #Get query composer element id
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        qc_url = self.smart_insight_url +"/composed_queries?datasetId=" + dataset_id
+        logging.info("AUTH URL {}".format(authentication_url))
+
+        headers = {"Authorization": "Bearer" + " " + self._token}
+        response = s.get(url=qc_url, headers=headers)
+        response.raise_for_status()
+        resp = response.json()
+        qc_id = resp["qc"]["id"]
+
+        
+        position = (len(self.components))
+        body = {
+            "position": position,
+            "qc": qc_id,
+            type: "query_composer"
+        }
+        url = self.smart_insight_url + "/definitions/"+self.definition_id+"/query_composers"
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+
+        logging.info("URL {}".format(url))
+        r = s.post(url=url, json=body, headers=headers)
+    '''
 
     def add_search_query(self, query):
 
