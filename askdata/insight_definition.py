@@ -175,7 +175,7 @@ class Insight_Definition:
         position = (len(self.components))
         list_id = self.add_component("list", position)
         return list_id
-    
+
 
     def add_sql_query(self, query_sql, dataset_slug):
 

@@ -353,10 +353,13 @@ class Agent(Insight, Channel, Catalog, Dataset):
         else:
             raise Exception('takes 2 positional arguments "slug, datset_id" but 0 were given')
 
-    def create_datacard(self, channel: str, title: str, query: str):
+    def create_datacard(self, channel: str, title: str, query:str = ""):
 
         channel = self.get_channel(self._agentId, channel)
-        channel_id = channel["id"]
+        if channel!=None:
+            channel_id = channel["id"]
+        else:
+            channel_id = self.create_channel(channel)
 
         body = {
             "agentId": self._agentId,
@@ -390,21 +393,22 @@ class Agent(Insight, Channel, Catalog, Dataset):
         response.raise_for_status()
         definition = response.json()
 
-        body_query = {"nl": query, "language": "en"}
+        if(query!=""):
+            body_query = {"nl": query, "language": "en"}
 
-        s = requests.Session()
-        s.keep_alive = False
-        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
-        s.mount('https://', HTTPAdapter(max_retries=retries))
+            s = requests.Session()
+            s.keep_alive = False
+            retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+            s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer" + " " + self._token
-        }
-        query_url = smart_insight_url+'/definitions/'+definition["id"]+'/nl_queries/'+definition["components"][0]["id"]+'/nl'
-        logging.info("QUERY URL {}".format(query_url))
-        r = s.put(url=query_url, json=body_query, headers=headers)
-        logging.info(r.json)
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer" + " " + self._token
+            }
+            query_url = smart_insight_url+'/definitions/'+definition["id"]+'/nl_queries/'+definition["components"][0]["id"]+'/nl'
+            logging.info("QUERY URL {}".format(query_url))
+            r = s.put(url=query_url, json=body_query, headers=headers)
+
         return Insight_Definition(self._env, self._token, definition)
 
 
@@ -431,6 +435,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
 
 
     def get_channel(self, agent_id, channel_code):
+
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
