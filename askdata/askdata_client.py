@@ -9,6 +9,7 @@ from askdata.insight import Insight
 from askdata.channel import Channel
 from askdata.catalog import Catalog
 from askdata.dataset import Dataset
+from askdata.insight_definition import Insight_Definition
 from askdata.security import SignUp
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -88,6 +89,14 @@ class Agent(Insight, Channel, Catalog, Dataset):
             self._base_url = url_list['BASE_URL_FEED_QA']
         if self._env == 'prod':
             self._base_url = url_list['BASE_URL_FEED_PROD']
+
+
+        if self._env == 'dev':
+            self._base_url_ch = url_list['BASE_URL_FEED_DEV']
+        if self._env == 'qa':
+            self._base_url_ch = url_list['BASE_URL_FEED_QA']
+        if self._env == 'prod':
+            self._base_url_ch = url_list['BASE_URL_FEED_PROD']
 
         s = requests.Session()
         s.keep_alive = False
@@ -343,6 +352,103 @@ class Agent(Insight, Channel, Catalog, Dataset):
             logging.info("---- dataset '{}' deleted ----- ".format(dataset_id))
         else:
             raise Exception('takes 2 positional arguments "slug, datset_id" but 0 were given')
+
+    def create_datacard(self, channel: str, title: str, query:str = ""):
+
+        channel = self.get_channel(self._agentId, channel)
+        if channel!=None:
+            channel_id = channel["id"]
+        else:
+            channel_id = self.create_channel(channel)
+
+        body = {
+            "agentId": self._agentId,
+            "channelId": channel_id,
+            "name": title
+        }
+
+        logging.info("Channel id {}".format(channel_id))
+
+        if self._env == 'dev':
+            smart_insight_url = url_list['BASE_URL_INSIGHT_DEV']
+        if self._env == 'qa':
+            smart_insight_url = url_list['BASE_URL_INSIGHT_QA']
+        if self._env == 'prod':
+            smart_insight_url = url_list['BASE_URL_INSIGHT_PROD']
+
+        url = smart_insight_url+'/definitions'
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        logging.info("AUTH URL {}".format(url))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+        response = s.post(url=url, json=body, headers=headers)
+        response.raise_for_status()
+        definition = response.json()
+
+        if(query!=""):
+            body_query = {"nl": query, "language": "en"}
+
+            s = requests.Session()
+            s.keep_alive = False
+            retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+            s.mount('https://', HTTPAdapter(max_retries=retries))
+
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer" + " " + self._token
+            }
+            query_url = smart_insight_url+'/definitions/'+definition["id"]+'/nl_queries/'+definition["components"][0]["id"]+'/nl'
+            logging.info("QUERY URL {}".format(query_url))
+            r = s.put(url=query_url, json=body_query, headers=headers)
+
+        return Insight_Definition(self._env, self._token, definition)
+
+
+
+    def create_channel(self, name, icon='https://storage.googleapis.com/askdata/smartfeed/icons/Channel@2x.png',
+                       visibility='PRIVATE'):
+
+        data = {
+            "name": name,
+            "icon": icon,
+            "agentId": self._agentId,
+            "visibility": visibility
+        }
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        authentication_url = self._base_url_ch + '/channels/'
+        r = s.post(url=authentication_url, headers=self._headers, json=data)
+        r.raise_for_status()
+        return r.json()['id']
+
+
+    def get_channel(self, agent_id, channel_code):
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        url = self._base_url_ch + '/channels?agentId='+agent_id+'&slug='+channel_code
+        r = s.get(url=url, headers=self._headers)
+        r.raise_for_status()
+        if(r != None):
+            return r.json()[0]
+        else:
+            return None
+
 
     def get_dataset_slug_from_id(self, dataset_id:str)->str:
         """
