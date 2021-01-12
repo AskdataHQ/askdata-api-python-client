@@ -35,7 +35,7 @@ jobs:
             .
             
         - name: Publish distribution 📦 to PyPI
-          if: startsWith(github.ref, 'refs/tags')
+#         if: startsWith(github.ref, 'refs/tags')
           uses: pypa/gh-action-pypi-publish@master
           with:
             password: ${{ secrets.PIP_ASKDATA_PROJECT }}
