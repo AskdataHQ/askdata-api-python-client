@@ -178,6 +178,101 @@ class Insight_Definition:
         list_id = self.add_component("list", position)
         return list_id
 
+    def add_text(self, text):
+        position = (len(self.components))
+        text_id = self.add_component("text", position)
+        self.edit_text(text_id, text)
+        return text_id
+
+
+    def edit_text(self, text_id , text, name="Text"):
+
+        url = self.smart_insight_url+"/definitions/"+self.definition_id+"/texts/"+text_id
+
+        body = {
+            "customName": False,
+            "dependsOn": [],
+            "id": text_id,
+            "name": name,
+            "queryComponent": False,
+            "text": "Ciao",
+            "type": text,
+            "valid": True
+        }
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+
+        r = s.put(url=url, json=body, headers=headers)
+        r.raise_for_status()
+        self.components = r.json()["components"]
+
+
+    def add_html(self, code):
+        position = (len(self.components))
+        html_id = self.add_component("html", position)
+        self.edit_html(html_id, code)
+        return html_id
+
+
+    def edit_html(self, html_id, code):
+
+        url = self.smart_insight_url+"/definitions/"+self.definition_id+"/htmls/"+html_id+"/content"
+
+        body = {
+            "html": code
+        }
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+
+        r = s.put(url=url, json=body, headers=headers)
+        r.raise_for_status()
+        self.components = r.json()["components"]
+
+
+    def add_script(self, script):
+        position = (len(self.components))
+        script_id = self.add_component("script", position)
+        self.edit_script(script_id, script)
+        return script_id
+
+
+    def edit_script(self, script_id, script):
+
+        url = self.smart_insight_url+"/definitions/"+self.definition_id+"/scripts/"+script_id+"/content"
+
+        body = {
+            "script": script
+        }
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+
+        r = s.put(url=url, json=body, headers=headers)
+        r.raise_for_status()
+        self.components = r.json()["components"]
 
     def add_map(self):
         position = (len(self.components))
@@ -227,6 +322,22 @@ class Insight_Definition:
 
         return self.components[position]["id"]
 
+
+    def delete(self):
+
+        url= self.smart_insight_url+"/definitions/"+self.definition_id
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+
+        r = s.delete(url=url, headers=headers)
+        r.raise_for_status()
 
     '''def add_query_composer(self, dataset_slug, fields, conditions):
 
