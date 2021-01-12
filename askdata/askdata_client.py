@@ -53,6 +53,13 @@ class Agent(Insight, Channel, Catalog, Dataset):
             "Authorization": "Bearer" + " " + self._token
         }
 
+        if self._env == 'dev':
+            self.smart_insight_url = url_list['BASE_URL_INSIGHT_DEV']
+        if self._env == 'qa':
+            self.smart_insight_url = url_list['BASE_URL_INSIGHT_QA']
+        if self._env == 'prod':
+            self.smart_insight_url = url_list['BASE_URL_INSIGHT_PROD']
+
         try:
             if slug != '':
                 agent = self.df_agents[self.df_agents['slug'] == slug.lower()]
@@ -353,7 +360,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
         else:
             raise Exception('takes 2 positional arguments "slug, datset_id" but 0 were given')
 
-    def create_datacard(self, channel: str, title: str, query:str = ""):
+    def create_datacard(self, channel: str, title: str,  search:str = "", slug: str = None):
 
         channel = self.get_channel(self._agentId, channel)
         if channel!=None:
@@ -364,7 +371,8 @@ class Agent(Insight, Channel, Catalog, Dataset):
         body = {
             "agentId": self._agentId,
             "channelId": channel_id,
-            "name": title
+            "name": title,
+            "slug": slug
         }
 
         logging.info("Channel id {}".format(channel_id))
@@ -393,8 +401,8 @@ class Agent(Insight, Channel, Catalog, Dataset):
         response.raise_for_status()
         definition = response.json()
 
-        if(query!=""):
-            body_query = {"nl": query, "language": "en"}
+        if(search!=""):
+            body_query = {"nl": search, "language": "en"}
 
             s = requests.Session()
             s.keep_alive = False
@@ -411,6 +419,21 @@ class Agent(Insight, Channel, Catalog, Dataset):
 
         return Insight_Definition(self._env, self._token, definition)
 
+
+    def get_datacard(self, slug):
+
+        url = self.smart_insight_url+"definitions/agent/"+self._agentId+"/slug/"+slug
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        r = s.get(url=url, headers=self._headers)
+        r.raise_for_status()
+
+        definition = r.json()
+        return Insight_Definition(self._env, self._token, definition)
 
 
     def create_channel(self, name, icon='https://storage.googleapis.com/askdata/smartfeed/icons/Channel@2x.png',
