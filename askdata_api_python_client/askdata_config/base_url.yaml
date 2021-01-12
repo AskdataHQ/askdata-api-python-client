@@ -1,0 +1,26 @@
+# base_url.yaml file
+
+BASE_URL_INSIGHT_PROD: 'https://smartinsightsv2.askdata.com'
+BASE_URL_INSIGHT_QA: 'https://smartinsightsv2-qa.askdata.com'
+BASE_URL_INSIGHT_DEV: 'https://smartinsightsv2-dev.askdata.com'
+
+BASE_URL_AUTH_PROD: 'https://security.askdata.com'
+BASE_URL_AUTH_QA: 'https://security-qa.askdata.com'
+BASE_URL_AUTH_DEV: 'https://security-dev.askdata.com'
+
+BASE_URL_AGENT_PROD: 'https://smartbot.askdata.com/agents?page=0&size=300'
+BASE_URL_AGENT_QA: 'https://smartbot-qa.askdata.com/agents?page=0&size=300'
+BASE_URL_AGENT_DEV: 'https://smartbot.askdata.com/agents?page=0&size=300'
+
+BASE_URL_DATASET_PROD: 'https://smartdataset.askdata.com'
+BASE_URL_DATASET_QA: 'https://smartdataset-qa.askdata.com'
+BASE_URL_DATASET_DEV: 'https://smartdataset-dev.askdata.com'
+
+BASE_URL_FEED_PROD: 'https://smartfeed.askdata.com'
+BASE_URL_FEED_QA: 'https://smartfeed-qa.askdata.com'
+BASE_URL_FEED_DEV: 'https://smartfeed-dev.askdata.com'
+
+BASE_URL_MANGER_PROD: 'https://smartmanager.askdata.com'
+BASE_URL_MANGER_QA: 'https://smartmanager-qa.askdata.com'
+BASE_URL_MANGER_DEV: 'https://smartmanager-dev.askdata.com'
+
