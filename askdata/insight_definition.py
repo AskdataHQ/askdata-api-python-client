@@ -141,17 +141,19 @@ class Insight_Definition:
         return self.components[position]["id"]
 
 
-    def edit_chart(self, chart_id, type:str, query, params):
+    def edit_chart(self, chart_id, chart_type:str, query, params):
 
         url = self.smart_insight_url + "/definitions/" + self.definition_id + "/charts/" + chart_id
 
+        upper_params = [p.upper() for p in params]
+
         body = {
-            "chartType": type.upper(),
+            "chartType": chart_type.upper(),
             "customName": False,
             "dependsOn": [],
             "id": chart_id,
             "name": "Fusionfood",
-            "params": params,
+            "params": upper_params,
             "queryComponent": False,
             "queryId": query,
             "type": "chart",
