@@ -391,10 +391,10 @@ class Insight_Definition:
                     new_fields.append(qc_field)
 
         query_composer["fields"] = new_fields
-
-        print(query_composer)
-
         del query_composer["relationships"]
+        query_composer["where"] = []
+        query_composer["orderBy"] = []
+        print(query_composer)
 
         post_url = self.smart_insight_url+"/composed_queries"
 
