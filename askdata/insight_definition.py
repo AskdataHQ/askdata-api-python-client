@@ -364,7 +364,7 @@ class Insight_Definition:
         response.raise_for_status()
         r = response.json()
 
-        dataset_id = r.json()["dataset"]["id"]
+        dataset_id = r["dataset"]["id"]
 
         url_get = self.smart_insight_url + "/composed_queries?datasetId=" + dataset_id
 
