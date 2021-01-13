@@ -341,16 +341,23 @@ class Insight_Definition:
         r = s.delete(url=url, headers=headers)
         r.raise_for_status()
 
-    '''def add_query_composer(self, dataset_slug, fields, conditions):
 
-        #Get dataset_id
+    def add_query(self, dataset_slug, fields):
+
+        '''
+        fields = [{column: "STATUS_HISTORY_NUOVO_TIME", aggregation: null,…}}
+        '''
+
+        position = (len(self.components))
+
+        # Get dataset_id
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        authentication_url = self._base_url_askdata + '/smartdataset/datasets/slug/' + self.agent_id + '/' + dataset_slug
-        logging.info("AUTH URL {}".format(authentication_url))
+        authentication_url = self._base_url_askdata + '/smartdataset/datasets/slug/' + \
+                             self.agent_id + '/' + dataset_slug
 
         headers = {"Authorization": "Bearer" + " " + self._token}
         response = s.get(url=authentication_url, headers=headers)
@@ -359,43 +366,60 @@ class Insight_Definition:
 
         dataset_id = r.json()["dataset"]["id"]
 
-        #Get query composer element id
+        url_get = self.smart_insight_url + "/composed_queries?datasetId=" + dataset_id
 
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
-
-        qc_url = self.smart_insight_url +"/composed_queries?datasetId=" + dataset_id
-        logging.info("AUTH URL {}".format(authentication_url))
 
         headers = {"Authorization": "Bearer" + " " + self._token}
-        response = s.get(url=qc_url, headers=headers)
+        response = s.get(url=url_get, headers=headers)
         response.raise_for_status()
-        resp = response.json()
-        qc_id = resp["qc"]["id"]
+        r = response.json()
 
-        
-        position = (len(self.components))
-        body = {
-            "position": position,
-            "qc": qc_id,
-            type: "query_composer"
-        }
-        url = self.smart_insight_url + "/definitions/"+self.definition_id+"/query_composers"
+        query_composer = r["qc"]
+
+        qc_fields = query_composer["fields"]
+
+        new_fields = []
+
+        for qc_field in qc_fields:
+            for field in fields:
+                if (field["column"] == qc_field["column"] or field["column"] == qc_field["alias"]):
+                    qc_field["aggregation"] = field["aggregation"]
+                    new_fields.append(qc_field)
+
+        query_composer["fields"] = new_fields
+
+        post_url = self.smart_insight_url+"/composed_queries"
+
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer" + " " + self._token
-        }
+        headers = {"Authorization": "Bearer" + " " + self._token}
+        response = s.post(url=post_url, json=query_composer, headers=headers)
+        response.raise_for_status()
+        r = response.json()
 
-        logging.info("URL {}".format(url))
-        r = s.post(url=url, json=body, headers=headers)
-    '''
+        qc_post_url = self.smart_insight_url+"/definitions/"+self.definition_id+"/query_composers"
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        body = {"type": "query_composer", "position": position, "qc": query_composer["id"]}
+
+        headers = {"Authorization": "Bearer" + " " + self._token}
+        response = s.post(url=qc_post_url, json=body, headers=headers)
+        response.raise_for_status()
+        r = response.json()
+
+
+
 
     def add_search_query(self, query):
 
