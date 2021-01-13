@@ -392,6 +392,8 @@ class Insight_Definition:
 
         query_composer["fields"] = new_fields
 
+        print(query_composer)
+
         post_url = self.smart_insight_url+"/composed_queries"
 
         s = requests.Session()
