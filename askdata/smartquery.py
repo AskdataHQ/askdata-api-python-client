@@ -7,6 +7,9 @@ from dataclasses import dataclass
 class Field:
     column: str
     aggregation: Optional[str] = None
+    dataset: Optional[str] = None
+    entityType: Optional[str] = None
+    granularity: Optional[str] = None
 
 
 class SQLOperator(Enum):
@@ -34,7 +37,7 @@ class SQLSorting(Enum):
 
 @dataclass
 class Sorting:
-    field: str
+    field: Field
     order: SQLSorting
 
 
@@ -50,21 +53,15 @@ class Component:
 
 
 @dataclass
-class GroupElement:
-    element: str
-
-
-@dataclass
 class From:
-    table: str
+    dataset: str
 
 
 @dataclass
 class Query:
     fields: List[Field]
-    froms: Optional[List[From]] = None
+    datasets: Optional[List[From]] = None
     where: Optional[List[Condition]] = None
-    groupBy: Optional[List[GroupElement]] = None
     orderBy: Optional[List[Sorting]] = None
     limit: Optional[int] = None
 
@@ -83,10 +80,12 @@ class Query:
         formatted_fields = ", ".join(fields_with_agg)
 
         froms_array = []
-        for f in self.froms:
-            froms_array.append(f.table)
-        table = ", ".join(froms_array)
-
+        if self.datasets is not None:
+            for f in self.datasets:
+                froms_array.append(f.dataset)
+            table = ", ".join(froms_array)
+        else:
+            table = "{{dataset.A}}"
         sql = sql.format(formatted_fields, table)
 
         where_conditions = []
@@ -115,11 +114,13 @@ class Query:
             sql += sql_where
 
         group_conditions = []
-        if self.groupBy is not None:
-            sql_groupBy = " GROUP BY {}"
+        sql_groupBy = " GROUP BY {}"
 
-            for group in self.groupBy:
-                group_conditions.append(group.element)
+        for field in self.fields:
+            if field.entityType is not None:
+                if "dimension" == field.entityType or "timeDimension" == field.entityType:
+                    group_conditions.append(field.column)
+        if group_conditions != []:
             formatted_group = ", ".join(group_conditions)
             sql_groupBy = sql_groupBy.format(formatted_group)
             sql += sql_groupBy
@@ -130,7 +131,7 @@ class Query:
 
             for sorting in self.orderBy:
                 sort_order = sorting.order.name
-                sort_condition = sorting.field + " " + sort_order
+                sort_condition = sorting.field.column + " " + sort_order
                 sorting_conditions.append(sort_condition)
 
             formatted_sorting = ", ".join(sorting_conditions)
