@@ -388,6 +388,7 @@ class Insight_Definition:
             for field in fields:
                 if (field["column"] == qc_field["column"] or field["column"] == qc_field["alias"]):
                     qc_field["aggregation"] = field["aggregation"]
+                    del qc_field["internalDataType"]
                     new_fields.append(qc_field)
 
         query_composer["fields"] = new_fields
@@ -397,6 +398,19 @@ class Insight_Definition:
         print(query_composer)
 
         post_url = self.smart_insight_url+"/composed_queries"
+
+        '''{'id': 'd265c1bf-646f-42fc-ae7e-9752fa3d89eb', 
+         'fields': [{'column': 'TITLES', 'alias': 'Titles', 'aggregation': 'sum', 'dataset': 'd098f863-26bc-468e-998d-2ec9d348e4e4-CSV-84f9a89f-d918-40c9-ae54-6a0a1cbb3f20', 'internalDataType': 'STRING'}], 
+         'datasets': [{'dataset': 'd098f863-26bc-468e-998d-2ec9d348e4e4-CSV-84f9a89f-d918-40c9-ae54-6a0a1cbb3f20'}], 
+         'where': [], 
+         'orderBy': [], 
+         'limit': 50}
+        {"id":"a8503bf7-f6c6-4189-9632-65812acac761",
+         "fields":[{"column":"STATUS_HISTORY_NUOVO_TIME","alias":"Status history nuovo time","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"TICKET_ID","alias":"Ticket id","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"ALIAS_SEDE","alias":"Alias sede","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"COGNOME_DENONIMAZIONE","alias":"Cognome denonimazione","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"CODICE_SERVIZIO","alias":"Codice servizio","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"STATUS_HISTORY_CHIUSO_TIME","alias":"Status history chiuso time","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"DISSERVIZIO","alias":"Disservizio","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"CATEGORIA","alias":"Categoria","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"SERVIZIO","alias":"Servizio","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"STATO","alias":"Stato","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"TOT_DISS_MIN_LORDO","alias":"Tot diss min lordo","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"INDEX","alias":"Index","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"PROBLEMA","alias":"Problema","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"ACCOUNT","alias":"Account","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"SEVERITA","alias":"Severita","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"NOME_APPARATO","alias":"Nome apparato","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"NUMERO","alias":"Numero","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"ORIGINE_RICHIESTA","alias":"Origine richiesta","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"TIPO_CONNESSIONE","alias":"Tipo connessione","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"CODICE_CHIUSURA","alias":"Codice chiusura","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"CAUSA_EFFETTIVA","alias":"Causa effettiva","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"},{"column":"TOT_DISS_MIN_NETTO","alias":"Tot diss min netto","aggregation":null,"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"}],
+         "datasets":[{"dataset":"d098f863-26bc-468e-998d-2ec9d348e4e4-CSV-99d04465-32cf-4f91-88a2-fed2cc1131b6"}],
+         "where":[],
+         "orderBy":[],
+         "limit":50}'''
 
         s = requests.Session()
         s.keep_alive = False
