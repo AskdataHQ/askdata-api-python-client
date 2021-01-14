@@ -37,7 +37,7 @@ class SQLSorting(Enum):
 
 @dataclass
 class Sorting:
-    field: Field
+    field: str
     order: SQLSorting
 
 
@@ -131,7 +131,7 @@ class Query:
 
             for sorting in self.orderBy:
                 sort_order = sorting.order.name
-                sort_condition = sorting.field.column + " " + sort_order
+                sort_condition = sorting.field + " " + sort_order
                 sorting_conditions.append(sort_condition)
 
             formatted_sorting = ", ".join(sorting_conditions)

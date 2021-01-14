@@ -11,7 +11,7 @@ if __name__ == '__main__':
     condition1 = Condition(field3, 'GOE', ["{{timePeriod.A}}"])
     condition2 = Condition(field3, 'LOE', ["{{timePeriod.B}}"])
     condition3 = Condition(field2, 'EQ', ["{{entity.A}}"])
-    sorting1 = Sorting(field1, SQLSorting.DESC)
+    sorting1 = Sorting("{{measure.A}}", SQLSorting.DESC)
     query1 = Query(fields=[field1, field2, field3], datasets=[from1, from2, from3], where=[condition1, condition2, condition3],
                    orderBy=[sorting1], limit=10)
     smartquery = SmartQuery([query1])
