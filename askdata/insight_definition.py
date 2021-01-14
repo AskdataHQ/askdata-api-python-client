@@ -366,6 +366,7 @@ class Insight_Definition:
 
         try:
             dataset_id = r["dataset"]["id"]
+            print(dataset_id)
         except:
             logging.error("DATASET NOT FOUND")
             return
