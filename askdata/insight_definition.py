@@ -395,7 +395,7 @@ class Insight_Definition:
         response = s.post(url=url_preview, json={}, headers=headers)
         response.raise_for_status()
         r = response.json()
-
+        print(r)
         qc_fields = query_composer["fields"]
 
         new_fields = []
