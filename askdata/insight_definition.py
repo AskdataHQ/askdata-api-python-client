@@ -364,7 +364,11 @@ class Insight_Definition:
         response.raise_for_status()
         r = response.json()
 
-        dataset_id = r["dataset"]["id"]
+        try:
+            dataset_id = r["dataset"]["id"]
+        except:
+            logging.error("DATASET NOT FOUND")
+            return
 
         url_get = self.smart_insight_url + "/composed_queries?datasetId=" + dataset_id
 
@@ -379,6 +383,18 @@ class Insight_Definition:
         r = response.json()
 
         query_composer = r["qc"]
+
+        url_preview = self.smart_insight_url+"/composed_queries/"+query_composer["id"]+"/preview?limit=100"
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {"Authorization": "Bearer" + " " + self._token}
+        response = s.post(url=url_preview, json={}, headers=headers)
+        response.raise_for_status()
+        r = response.json()
 
         qc_fields = query_composer["fields"]
 
