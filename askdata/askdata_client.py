@@ -422,7 +422,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
 
     def get_datacard(self, slug):
 
-        url = self.smart_insight_url+"definitions/agent/"+self._agentId+"/slug/"+slug
+        url = self.smart_insight_url+"/definitions/agent/"+self._agentId+"/slug/"+slug
 
         s = requests.Session()
         s.keep_alive = False

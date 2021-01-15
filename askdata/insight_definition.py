@@ -197,8 +197,8 @@ class Insight_Definition:
             "id": text_id,
             "name": name,
             "queryComponent": False,
-            "text": "Ciao",
-            "type": text,
+            "text": text,
+            "type": "text",
             "valid": True
         }
 
