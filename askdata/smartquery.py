@@ -95,7 +95,7 @@ class Query:
             sql_where = " WHERE {}"
 
             for condition in self.where:
-                formatted_value = "( " + ", ".join(condition.value) + " )"
+                formatted_value = "( " + ", ".join(str(condition.value)) + " )"
                 if isinstance(condition.operator, str):
                     operator = condition.operator
                 else:
