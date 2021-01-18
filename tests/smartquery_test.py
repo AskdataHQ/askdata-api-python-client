@@ -8,9 +8,9 @@ if __name__ == '__main__':
     from1 = From('{{dataset.A}}')
     from2 = From('{{dataset.B}}')
     from3 = From('{{dataset.C}}')
-    condition1 = Condition(field3, 'GOE', ["{{timePeriod.A}}"])
-    condition2 = Condition(field3, 'LOE', ["{{timePeriod.B}}"])
-    condition3 = Condition(field2, 'EQ', ["{{entity.A}}"])
+    condition1 = Condition(field3, SQLOperator.GOE, ["{{timePeriod.A}}"])
+    condition2 = Condition(field3, SQLOperator.LOE, ["{{timePeriod.B}}"])
+    condition3 = Condition(field1, SQLOperator.EQ, [2000])
     sorting1 = Sorting("{{measure.A}}", SQLSorting.DESC)
     query1 = Query(fields=[field1, field2, field3], datasets=[from1, from2, from3], where=[condition1, condition2, condition3],
                    orderBy=[sorting1], limit=10)

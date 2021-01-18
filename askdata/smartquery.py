@@ -97,8 +97,9 @@ class Query:
             for condition in self.where:
                 vars = []
                 for var in condition.value:
+                    var = str(var)
                     if var.isnumeric():
-                        vars.append(str(var))
+                        vars.append(var)
                     else:
                         vars.append(var)
                 formatted_value = "( " + ", ".join(vars) + " )"
