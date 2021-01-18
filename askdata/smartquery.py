@@ -95,7 +95,13 @@ class Query:
             sql_where = " WHERE {}"
 
             for condition in self.where:
-                formatted_value = "( " + ", ".join(str(condition.value)) + " )"
+                vars = []
+                for var in condition.value:
+                    if var.isnumeric():
+                        vars.append(str(var))
+                    else:
+                        vars.append(var)
+                formatted_value = "( " + ", ".join(vars) + " )"
                 if isinstance(condition.operator, str):
                     operator = condition.operator
                 else:
