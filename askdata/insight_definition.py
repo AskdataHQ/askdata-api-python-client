@@ -513,8 +513,30 @@ class Insight_Definition:
 
         url += "/card/"
         url += self.slug
-
+        print(url)
         return url
+
+
+    def get(self):
+
+        get_url = self.smart_insight_url+"/definitions/"+self.definition_id+"/card"
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+
+        r = s.get(url=get_url, headers=headers)
+        r.raise_for_status()
+
+        print(r.json())
+
+        
 
     def delete_component(self, component_id):
         s = requests.Session()
