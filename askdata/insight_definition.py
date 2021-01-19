@@ -46,12 +46,15 @@ class Insight_Definition:
         if env.lower() == 'dev':
             self._base_url_askdata = url_list['BASE_URL_ASKDATA_DEV']
             self.smart_insight_url = url_list['BASE_URL_INSIGHT_DEV']
+            self.app_url = "https://app-dev.askdata.com/"
         if env.lower() == 'qa':
             self._base_url_askdata = url_list['BASE_URL_ASKDATA_QA']
             self.smart_insight_url = url_list['BASE_URL_INSIGHT_QA']
+            self.app_url = "https://app-qa.askdata.com/"
         if env.lower() == 'prod':
             self._base_url_askdata = url_list['BASE_URL_ASKDATA_PROD']
             self.smart_insight_url = url_list['BASE_URL_INSIGHT_PROD']
+            self.app_url = "https://app.askdata.com/"
 
 
     def add_table(self, query="", columns=[]):
@@ -485,6 +488,33 @@ class Insight_Definition:
         print(r.json())
         self.components = r.json()["components"]
         return self.components[position]["id"]
+
+    def get_url(self):
+        url = self.app_url
+
+        get_url = self._base_url_askdata+"smartbot/agents/"+self.agent_id
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+
+        r = s.get(url=get_url, headers=headers)
+        r.raise_for_status()
+
+        agent_slug = r.json()["slug"]
+
+        url += agent_slug
+
+        url += "/card/"
+        url += self.slug
+
+        return url
 
     def delete_component(self, component_id):
         s = requests.Session()
