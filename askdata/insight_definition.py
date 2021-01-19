@@ -492,7 +492,7 @@ class Insight_Definition:
     def get_url(self):
         url = self.app_url
 
-        get_url = self._base_url_askdata+"smartbot/agents/"+self.agent_id
+        get_url = self._base_url_askdata+"/smartbot/agents/"+self.agent_id
 
         s = requests.Session()
         s.keep_alive = False
