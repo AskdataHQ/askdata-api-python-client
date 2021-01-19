@@ -1,8 +1,6 @@
 import requests
 import yaml
 import os
-import pandas as pd
-import numpy as np
 import logging
 from askdata.insight import Insight
 from askdata.channel import Channel
@@ -39,7 +37,7 @@ class Insight_Definition:
         self.name = defintion["name"]
         self.slug = defintion["slug"]
         self.icon = defintion["icon"]
-        self.components = defintion["components"]
+        self.components: list = defintion["components"]
 
         self._token = token
 
@@ -534,11 +532,16 @@ class Insight_Definition:
         r = s.get(url=get_url, headers=headers)
         r.raise_for_status()
 
-        print(r.json())
+        #print(r.json())
 
-        
+        return r.json()["attachment"]
 
     def delete_component(self, component_id):
+
+        for component in self.components:
+            if(component["id"]==component_id):
+                self.components.remove(component)
+
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
