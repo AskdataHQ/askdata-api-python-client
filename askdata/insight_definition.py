@@ -565,8 +565,12 @@ class Insight_Definition:
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        url = self._base_url_ch + '/channels?agentId=' + self.agent_id + '&slug=' + channel_slug
-        r = s.get(url=url, headers=self._headers)
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+        url = self._base_url_askdata + '/smartfeed/channels?agentId=' + self.agent_id + '&slug=' + channel_slug
+        r = s.get(url=url, headers=headers)
         r.raise_for_status()
 
         channel_id = r.json()["id"]
@@ -579,7 +583,7 @@ class Insight_Definition:
             "destination": {"channels":[channel_id],"code":None,"name":None,"icon":None,"visibility":None,"queryId":None,"empty":None},
             "condition": "always",
             "advancedConditions": None}
-        
+
 
         s = requests.Session()
         s.keep_alive = False
