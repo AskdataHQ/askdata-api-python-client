@@ -573,7 +573,7 @@ class Insight_Definition:
         r = s.get(url=url, headers=headers)
         r.raise_for_status()
 
-        channel_id = r.json()["id"]
+        channel_id = r.json()[0]["id"]
 
         url = self.smart_insight_url + "/definitions/" + self.definition_id + "/publishing/"
 
