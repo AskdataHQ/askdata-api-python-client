@@ -556,9 +556,30 @@ class Insight_Definition:
         r = s.delete(url=query_url, headers=headers)
         r.raise_for_status()
 
-    def publish(self):
+    def schedule_daily(self, channel_slug, hours, minutues, seconds):
 
-        url = self.smart_insight_url + "/definitions/" + self.definition_id + "/publish/"
+        cron = seconds + " " + minutues + " " + hours + " * * *"
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        url = self._base_url_ch + '/channels?agentId=' + self.agent_id + '&slug=' + channel_slug
+        r = s.get(url=url, headers=self._headers)
+        r.raise_for_status()
+
+        channel_id = r.json()["id"]
+
+        url = self.smart_insight_url + "/definitions/" + self.definition_id + "/publishing/"
+
+        body = {
+            "schedulingCron": cron,
+            "enabled": True,
+            "destination": {"channels":[channel_id],"code":None,"name":None,"icon":None,"visibility":None,"queryId":None,"empty":None},
+            "condition": "always",
+            "advancedConditions": None}
+        
 
         s = requests.Session()
         s.keep_alive = False
@@ -570,5 +591,5 @@ class Insight_Definition:
             "Authorization": "Bearer" + " " + self._token
         }
 
-        r = s.post(url=url, headers=headers)
+        r = s.post(url=url, json=body, headers=headers)
         r.raise_for_status()
