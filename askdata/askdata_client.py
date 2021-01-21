@@ -332,7 +332,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
             "DefaultAggreation": "sum"
         }
     }
-'''
+    '''
 
 
     def create_or_replace_dataset(self, dataframe:pd.DataFrame, dataset_name:str, slug:str, settings:dict = None):

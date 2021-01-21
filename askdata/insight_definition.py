@@ -203,6 +203,9 @@ class Insight_Definition:
             "valid": True
         }
 
+        logging.info("URL: {}".format(url))
+        logging.info("BODY: {}".format(body))
+
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
