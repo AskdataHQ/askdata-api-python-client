@@ -303,7 +303,7 @@ class Insight_Definition:
         response = s.get(url=authentication_url, headers=headers)
         response.raise_for_status()
         r = response.json()
-        dataset_id = r.json()["dataset"]["id"]
+        dataset_id = r["dataset"]["id"]
 
         url = self.smart_insight_url+"/definitions/"+self.definition_id+"/sql_queries/"+self.components[position]["id"]+"/sql"
 
