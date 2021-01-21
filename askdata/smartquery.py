@@ -63,7 +63,7 @@ class Query:
     datasets: Optional[List[From]] = None
     where: Optional[List[Condition]] = None
     orderBy: Optional[List[Sorting]] = None
-    limit: Optional[int] = None
+    limit: Optional[Union[int, str]] = None
 
     def to_sql(self, dataset: str = None):
         sql = "SELECT {} FROM {}"
