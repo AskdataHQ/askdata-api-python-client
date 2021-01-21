@@ -63,9 +63,9 @@ class Query:
     datasets: Optional[List[From]] = None
     where: Optional[List[Condition]] = None
     orderBy: Optional[List[Sorting]] = None
-    limit: Optional[int] = None
+    limit: Optional[Union[int, str]] = None
 
-    def to_sql(self):
+    def to_sql(self, dataset: str = None):
         sql = "SELECT {} FROM {}"
 
         fields_with_agg = []
@@ -84,6 +84,8 @@ class Query:
             for f in self.datasets:
                 froms_array.append(f.dataset)
             table = ", ".join(froms_array)
+        elif dataset is not None:
+            table = dataset
         else:
             table = "{{dataset.A}}"
         sql = sql.format(formatted_fields, table)
@@ -93,7 +95,14 @@ class Query:
             sql_where = " WHERE {}"
 
             for condition in self.where:
-                formatted_value = "( " + ", ".join(condition.value) + " )"
+                vars = []
+                for var in condition.value:
+                    var = str(var)
+                    if var.isnumeric():
+                        vars.append(var)
+                    else:
+                        vars.append(var)
+                formatted_value = "( " + ", ".join(vars) + " )"
                 if isinstance(condition.operator, str):
                     operator = condition.operator
                 else:
@@ -118,7 +127,7 @@ class Query:
 
         for field in self.fields:
             if field.entityType is not None:
-                if "dimension" == field.entityType or "timeDimension" == field.entityType:
+                if "P_DIMENSION" == field.entityType or "P_TIMEDIM" == field.entityType:
                     group_conditions.append(field.column)
         if group_conditions != []:
             formatted_group = ", ".join(group_conditions)
