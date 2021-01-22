@@ -310,12 +310,6 @@ class Insight_Definition:
         body = {
             "datasetId": dataset_id,
             "sql": query_sql,
-            "id": sql_id,
-            "nativeType": is_native,
-            "queryComponent": True,
-            "type": "sql_query",
-            "valid": True,
-            "variableName": sql_id+"Result"
         }
 
         print(body)
@@ -332,6 +326,31 @@ class Insight_Definition:
 
         r = s.put(url=url, json=body, headers=headers)
         r.raise_for_status()
+
+        url_put = self.smart_insight_url+"/definitions/"+self.definition_id+"/sql_queries/"+dataset_id
+        body2 = {
+            "datasetId": dataset_id,
+            "sql": query_sql,
+            "id": sql_id,
+            "nativeType": is_native,
+            "queryComponent": True,
+            "type": "sql_query",
+            "valid": True,
+            "variableName": sql_id + "Result"
+        }
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+
+        r = s.put(url=url_put, json=body2, headers=headers)
+        r.raise_for_status()
+
         self.components = r.json()["components"]
 
         return self.components[position]["id"]
