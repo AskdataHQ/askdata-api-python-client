@@ -360,7 +360,14 @@ class Agent(Insight, Channel, Catalog, Dataset):
         else:
             raise Exception('takes 2 positional arguments "slug, datset_id" but 0 were given')
 
-    def create_datacard(self, channel: str, title: str,  search:str = "", slug: str = None):
+    def create_datacard(self, channel: str, title: str,  search:str = "", slug: str = None, replace:bool = False):
+
+        if(replace==True and slug!= None):
+            datacard = self.get_datacard(slug)
+            datacard.delete()
+        elif(replace==True and slug!= None):
+            print("Please specify a datacard slug to replace!")
+            return
 
         channel = self.get_channel(self._agentId, channel)
         if channel!=None:
