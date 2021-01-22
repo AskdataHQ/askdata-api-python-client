@@ -305,27 +305,7 @@ class Insight_Definition:
         r = response.json()
         dataset_id = r["dataset"]["id"]
 
-        url = self.smart_insight_url+"/definitions/"+self.definition_id+"/sql_queries/"+self.components[position]["id"]+"/sql"
-
-        body = {
-            "datasetId": dataset_id,
-            "sql": query_sql,
-        }
-
-        s = requests.Session()
-        s.keep_alive = False
-        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
-        s.mount('https://', HTTPAdapter(max_retries=retries))
-
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer" + " " + self._token
-        }
-
-        r = s.put(url=url, json=body, headers=headers)
-        r.raise_for_status()
-
-        url_put = self.smart_insight_url+"/definitions/"+self.definition_id+"/sql_queries/"+sql_id
+        url_put = self.smart_insight_url + "/definitions/" + self.definition_id + "/sql_queries/" + sql_id
         body2 = {
             "datasetId": dataset_id,
             "sql": query_sql,
@@ -347,6 +327,26 @@ class Insight_Definition:
         }
 
         r = s.put(url=url_put, json=body2, headers=headers)
+        r.raise_for_status()
+
+        url = self.smart_insight_url+"/definitions/"+self.definition_id+"/sql_queries/"+self.components[position]["id"]+"/sql"
+
+        body = {
+            "datasetId": dataset_id,
+            "sql": query_sql,
+        }
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+
+        r = s.put(url=url, json=body, headers=headers)
         r.raise_for_status()
 
         self.components = r.json()["components"]
