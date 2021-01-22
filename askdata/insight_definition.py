@@ -313,7 +313,7 @@ class Insight_Definition:
             "id": sql_id,
             "nativeType": isNative,
             "queryComponent": True,
-            type: "sql_query",
+            "type": "sql_query",
             "valid": True
         }
 
