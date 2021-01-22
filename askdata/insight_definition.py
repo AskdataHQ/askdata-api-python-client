@@ -285,7 +285,7 @@ class Insight_Definition:
         map_id = self.add_component("map", position)
         return map_id
 
-    def add_sql_query(self, query_sql, dataset_slug, isNative = False):
+    def add_sql_query(self, query_sql, dataset_slug, is_native = False):
 
         position = (len(self.components))
 
@@ -311,12 +311,14 @@ class Insight_Definition:
             "datasetId": dataset_id,
             "sql": query_sql,
             "id": sql_id,
-            "nativeType": isNative,
+            "nativeType": is_native,
             "queryComponent": True,
             "type": "sql_query",
             "valid": True,
             "variableName": sql_id+"Result"
         }
+
+        print(body)
 
         s = requests.Session()
         s.keep_alive = False
@@ -449,7 +451,6 @@ class Insight_Definition:
 
 
 
-
     def add_search_query(self, query):
 
         position = (len(self.components))
@@ -541,7 +542,6 @@ class Insight_Definition:
         r = s.get(url=get_url, headers=headers)
         r.raise_for_status()
 
-        #print(r.json())
 
         return r.json()["attachment"]
 
