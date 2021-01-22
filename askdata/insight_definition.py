@@ -312,8 +312,6 @@ class Insight_Definition:
             "sql": query_sql,
         }
 
-        print(body)
-
         s = requests.Session()
         s.keep_alive = False
         retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
@@ -327,7 +325,7 @@ class Insight_Definition:
         r = s.put(url=url, json=body, headers=headers)
         r.raise_for_status()
 
-        url_put = self.smart_insight_url+"/definitions/"+self.definition_id+"/sql_queries/"+dataset_id
+        url_put = self.smart_insight_url+"/definitions/"+self.definition_id+"/sql_queries/"+sql_id
         body2 = {
             "datasetId": dataset_id,
             "sql": query_sql,
