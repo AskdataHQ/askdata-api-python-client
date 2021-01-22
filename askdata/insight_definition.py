@@ -314,7 +314,7 @@ class Insight_Definition:
             "nativeType": isNative,
             "queryComponent": True,
             type: "sql_query",
-            "valid": True,
+            "valid": True
         }
 
         s = requests.Session()
