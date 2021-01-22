@@ -285,11 +285,11 @@ class Insight_Definition:
         map_id = self.add_component("map", position)
         return map_id
 
-    def add_sql_query(self, query_sql, dataset_slug):
+    def add_sql_query(self, query_sql, dataset_slug, isNative = False):
 
         position = (len(self.components))
 
-        self.add_component("sql_query", position)
+        sql_id = self.add_component("sql_query", position)
 
         s = requests.Session()
         s.keep_alive = False
@@ -309,7 +309,12 @@ class Insight_Definition:
 
         body = {
             "datasetId": dataset_id,
-            "sql": query_sql
+            "sql": query_sql,
+            "id": sql_id,
+            "nativeType": isNative,
+            "queryComponent": True,
+            type: "sql_query",
+            "valid": True,
         }
 
         s = requests.Session()
