@@ -363,8 +363,11 @@ class Agent(Insight, Channel, Catalog, Dataset):
     def create_datacard(self, channel: str, title: str,  search:str = "", slug: str = None, replace:bool = False):
 
         if(replace==True and slug!= None):
-            datacard = self.get_datacard(slug)
-            datacard.delete()
+            try:
+                datacard = self.get_datacard(slug)
+                datacard.delete()
+            except:
+                pass
         elif(replace==True and slug!= None):
             print("Please specify a datacard slug to replace!")
             return
