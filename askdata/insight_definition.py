@@ -351,7 +351,16 @@ class Insight_Definition:
 
         self.components = r.json()["components"]
 
-        return self.components[position]["id"]
+        hasResultSet = True
+
+        for component in r.json()["components"]:
+            if component["id"] == sql_id:
+                if component["preview"] == []:
+                    hasResultSet = False
+                elif component["preview"][0]["details"]["rows"] == []:
+                    hasResultSet = False
+
+        return sql_id , hasResultSet
 
 
     def delete(self):
@@ -467,7 +476,6 @@ class Insight_Definition:
         r = response.json()
 
 
-
     def add_search_query(self, query):
 
         position = (len(self.components))
@@ -493,6 +501,7 @@ class Insight_Definition:
 
         return self.components[position]["id"]
 
+
     def add_component(self, type, position):
 
         body = {"type": type, "position": position}
@@ -513,6 +522,7 @@ class Insight_Definition:
         print(r.json())
         self.components = r.json()["components"]
         return self.components[position]["id"]
+
 
     def get_url(self):
         url = self.app_url
