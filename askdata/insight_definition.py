@@ -204,7 +204,6 @@ class Insight_Definition:
         }
 
         logging.info("URL: {}".format(url))
-        logging.info("BODY: {}".format(body))
 
         s = requests.Session()
         s.keep_alive = False
