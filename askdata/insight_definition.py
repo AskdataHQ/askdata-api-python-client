@@ -550,6 +550,40 @@ class Insight_Definition:
         print(url)
         return url
 
+    def edit_card(self, icon="", name=""):
+
+        if(icon==""):
+            icon = self.icon
+        else:
+            self.icon=icon
+
+        if(name==""):
+            name = self.name
+        else:
+            self.name=name
+
+        body={
+            "icon": icon,
+            "name": name,
+            "slug": self.slug
+        }
+
+        url = self.smart_insight_url+"/definitions/"+self.definition_id
+
+        s = requests.Session()
+        s.keep_alive = False
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer" + " " + self._token
+        }
+
+        r = s.put(url=url, json=body, headers=headers)
+        r.raise_for_status()
+        self.components = r.json()["components"]
+
 
     def get(self):
 
