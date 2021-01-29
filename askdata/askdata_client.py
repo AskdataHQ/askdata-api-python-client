@@ -258,6 +258,10 @@ class Agent(Insight, Channel, Catalog, Dataset):
 
     def create_dataset(self, dataframe:pd.DataFrame, dataset_name:str, slug: str, settings: dict = None):
 
+        for col in dataframe.columns:
+            if (dataframe[col].dtypes == "datetime64[ns]"):
+                dataframe[col] = dataframe[col].astype("string")
+
         body = {"label": dataset_name, "rows": dataframe.to_dict(orient="record")}
 
         settings_list = []
@@ -280,12 +284,17 @@ class Agent(Insight, Channel, Catalog, Dataset):
             "Content-Type": "application/json",
             "Authorization": "Bearer" + " " + self._token
         }
+
         response = s.post(url=url, json=body, headers=headers)
         response.raise_for_status()
 
     def update_dataset(self, dataframe: pd.DataFrame, dataset_name: str, slug: str, settings: dict = None):
 
-        body = {"label": dataset_name, "rows": dataframe.to_dict(orient="record")}
+        for col in dataframe.columns:
+            if (dataframe[col].dtypes == "datetime64[ns]"):
+                dataframe[col] = dataframe[col].astype("string")
+
+        body = {"label": dataset_name, "rows": dataframe.to_dict(orient="records")}
 
         settings_list = []
         if (settings != None):
@@ -307,7 +316,7 @@ class Agent(Insight, Channel, Catalog, Dataset):
             "Content-Type": "application/json",
             "Authorization": "Bearer" + " " + self._token
         }
-        print(body)
+
         response = s.put(url=url, json=body, headers=headers)
 
         response.raise_for_status()
