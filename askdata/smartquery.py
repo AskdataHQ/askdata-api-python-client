@@ -3,10 +3,27 @@ from typing import List, Optional, Union
 from dataclasses import dataclass
 
 
+class SQLFunction(Enum):
+    MAX = auto()
+    MIN = auto()
+    AVG = auto()
+    COUNT = auto()
+    SUM = auto()
+
+
+class TimeDimensionGranularity(Enum):
+    year = auto()
+    quarter = auto()
+    month = auto()
+    week = auto()
+    day = auto()
+    hour = auto()
+
+
 @dataclass
 class Field:
     column: str
-    aggregation: Optional[str] = None
+    aggregation: Optional[Union[str, SQLFunction, TimeDimensionGranularity]] = None
     dataset: Optional[str] = None
     entityType: Optional[str] = None
 
@@ -71,7 +88,10 @@ class Query:
         fields_with_agg = []
         for field in self.fields:
             if field.aggregation is not None:
-                field_with_agg = field.aggregation + " ( " + field.column + " )"
+                if isinstance(field.aggregation, str):
+                    field_with_agg = field.aggregation + " ( " + field.column + " )"
+                elif isinstance(field.aggregation, SQLFunction):
+                    field_with_agg = SQLFunction[field.aggregation] + " ( " + field.column + " )"
             else:
                 field_with_agg = field.column
 
@@ -113,8 +133,15 @@ class Query:
                         operator = "<="
                     elif operator == "EQ":
                         operator = "=="
+                if condition.field.aggregation is not None:
+                    if isinstance(condition.field.aggregation, str):
+                        field_with_agg = condition.field.aggregation + " ( " + condition.field.column + " )"
+                    elif isinstance(condition.field.aggregation, SQLFunction):
+                        field_with_agg = SQLFunction[condition.field.aggregation] + " ( " + condition.field.column + " )"
+                else:
+                    field_with_agg = condition.field.column
                 where_condition = (
-                    condition.field.column + " " + operator + " " + str(formatted_value)
+                        field_with_agg + " " + operator + " " + str(formatted_value)
                 )
                 where_conditions.append(where_condition)
 

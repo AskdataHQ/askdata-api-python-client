@@ -2,7 +2,7 @@ import jsons
 from askdata.smartquery import *
 
 if __name__ == '__main__':
-    field1 = Field(column='{{measure.A}}', aggregation='MAX', dataset='{{dataset.A}}', entityType="measure")
+    field1 = Field(column='{{measure.A}}', aggregation="MAX", dataset='{{dataset.A}}', entityType="measure")
     field2 = Field(column='{{dimension.A}}', dataset='{{dataset.B}}', entityType="dimension")
     field3 = Field(column='{{timeDimension.A}}', dataset='{{dataset.C}}', entityType="timeDimension")
     from1 = From('{{dataset.A}}')
