@@ -140,6 +140,8 @@ class Query:
                         field_with_agg = condition.field.aggregation.name + " ( " + condition.field.column + " )"
                     elif isinstance(condition.field.aggregation, str):
                         field_with_agg = condition.field.aggregation + " ( " + condition.field.column + " )"
+                    else:
+                        field_with_agg = condition.field.column
                 else:
                     field_with_agg = condition.field.column
                 where_condition = (
