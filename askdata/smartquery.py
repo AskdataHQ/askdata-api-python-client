@@ -9,7 +9,6 @@ class Field:
     aggregation: Optional[str] = None
     dataset: Optional[str] = None
     entityType: Optional[str] = None
-    granularity: Optional[str] = None
 
 
 class SQLOperator(Enum):
@@ -43,7 +42,8 @@ class Sorting:
 
 @dataclass
 class Setting:
-    type: str
+    name: str
+    code: str
 
 
 @dataclass
@@ -156,6 +156,5 @@ class Query:
 @dataclass
 class SmartQuery:
     queries: List[Query]
-    chart: Optional[str] = None  # no more used
     components: Optional[List[Component]] = None  # use this instead of chart
     javascript: Optional[List[str]] = None
