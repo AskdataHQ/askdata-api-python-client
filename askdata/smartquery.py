@@ -59,13 +59,12 @@ class Sorting:
 
 @dataclass
 class Setting:
-    name: str
-    code: str
+    type: str
 
 
 @dataclass
 class Component:
-    type: str
+    component_type: str
     setting: Optional[List[Setting]] = None
 
 
@@ -187,5 +186,5 @@ class Query:
 @dataclass
 class SmartQuery:
     queries: List[Query]
-    components: Optional[List[Component]] = None  # use this instead of chart
+    components: Optional[List[Component]] = None  # use this for of charts
     javascript: Optional[List[str]] = None
