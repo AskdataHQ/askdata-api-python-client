@@ -89,10 +89,10 @@ class Query:
             if field.aggregation is not None:
                 if isinstance(field.aggregation, SQLFunction):
                     field_with_agg = field.aggregation.name + " ( " + field.column + " )"
-                elif isinstance(field.aggregation, str):
-                    field_with_agg = field.aggregation + " ( " + field.column + " )"
-                else:
+                elif isinstance(field.aggregation, TimeDimensionGranularity):
                     field_with_agg = field.column
+                else:
+                    field_with_agg = field.aggregation + " ( " + field.column + " )"
             else:
                 field_with_agg = field.column
 
@@ -137,10 +137,10 @@ class Query:
                 if condition.field.aggregation is not None:
                     if isinstance(condition.field.aggregation, SQLFunction):
                         field_with_agg = condition.field.aggregation.name + " ( " + condition.field.column + " )"
-                    elif isinstance(condition.field.aggregation, str):
-                        field_with_agg = condition.field.aggregation + " ( " + condition.field.column + " )"
-                    else:
+                    elif isinstance(condition.field.aggregation, TimeDimensionGranularity):
                         field_with_agg = condition.field.column
+                    else:
+                        field_with_agg = condition.field.aggregation + " ( " + condition.field.column + " )"
                 else:
                     field_with_agg = condition.field.column
                 where_condition = (
